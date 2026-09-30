@@ -1,0 +1,156 @@
+{
+  "id": "presence-simulation",
+  "title": "Presence simulation",
+  "description": "Make an empty home look lived in while away.",
+  "value": [
+    {
+      "time": "00:00",
+      "model": "dark"
+    },
+    {
+      "time": "18:30",
+      "model": "living"
+    },
+    {
+      "time": "22:30",
+      "model": "bedroom"
+    },
+    {
+      "time": "23:30",
+      "model": "dark"
+    }
+  ],
+  "models": [
+    {
+      "id": "dark",
+      "label": "Dark",
+      "icon": "🌑",
+      "off": true
+    },
+    {
+      "id": "living",
+      "label": "Living room",
+      "icon": "🛋️",
+      "preview": "#f4d35e",
+      "defaults": {
+        "rooms": "living"
+      },
+      "summary": "{rooms}"
+    },
+    {
+      "id": "bedroom",
+      "label": "Bedroom",
+      "icon": "🛏️",
+      "preview": "#e9c46a",
+      "defaults": {
+        "rooms": "upstairs"
+      },
+      "summary": "{rooms}"
+    },
+    {
+      "id": "random",
+      "label": "Random",
+      "icon": "🎲",
+      "preview": "#c77dff",
+      "defaults": {
+        "rooms": "all"
+      },
+      "summary": "{rooms}",
+      "fields": [
+        {
+          "key": "rooms",
+          "type": "select",
+          "default": "all",
+          "label": "Rooms",
+          "options": [
+            {
+              "value": "all",
+              "label": "All rooms"
+            },
+            {
+              "value": "living",
+              "label": "Living room only"
+            },
+            {
+              "value": "upstairs",
+              "label": "Upstairs"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "id": "vacation",
+      "label": "Vacation",
+      "slots": [
+        {
+          "time": "00:00",
+          "model": "dark"
+        },
+        {
+          "time": "18:30",
+          "model": "living"
+        },
+        {
+          "time": "22:30",
+          "model": "bedroom"
+        },
+        {
+          "time": "23:30",
+          "model": "dark"
+        }
+      ]
+    },
+    {
+      "id": "short-trip",
+      "label": "Short trip",
+      "slots": [
+        {
+          "time": "00:00",
+          "model": "dark"
+        },
+        {
+          "time": "19:00",
+          "model": "random",
+          "values": {
+            "rooms": "all"
+          }
+        },
+        {
+          "time": "23:00",
+          "model": "dark"
+        }
+      ]
+    }
+  ],
+  "messages": {
+    "en": {
+      "model.dark": "Dark",
+      "model.living": "Living room",
+      "model.bedroom": "Bedroom",
+      "model.random": "Random",
+      "field.rooms": "Rooms",
+      "opt.rooms.all": "All rooms",
+      "opt.rooms.living": "Living room only",
+      "opt.rooms.upstairs": "Upstairs",
+      "preset.vacation": "Vacation",
+      "preset.short-trip": "Short trip",
+      "title": "Presence simulation"
+    },
+    "it": {
+      "model.dark": "Buio",
+      "model.living": "Soggiorno",
+      "model.bedroom": "Camera",
+      "model.random": "Casuale",
+      "field.rooms": "Stanze",
+      "opt.rooms.all": "Tutte le stanze",
+      "opt.rooms.living": "Solo soggiorno",
+      "opt.rooms.upstairs": "Piano di sopra",
+      "preset.vacation": "Vacanza",
+      "preset.short-trip": "Breve viaggio",
+      "title": "Simulazione di presenza"
+    }
+  }
+}

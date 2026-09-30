@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dayrhythm - Tailwind</title>
+<link rel="stylesheet" href="./examples.css">
+</head>
+<body>
+<main>
+<p><a href="./index.html">Playground</a> &middot; <a href="https://github.com/MadeinTaly/dayrhythm">GitHub</a></p>
+<h1>Tailwind</h1>
+<p><code>render="light"</code> draws into the page (no shadow root), so page utility classes reach every part through <code>classes</code>. This demo loads the Tailwind Play CDN and needs network.</p>
+<script src="https://cdn.tailwindcss.com"></script>
+<day-rhythm render="light" theme="none" week="top"
+  config='{"classes":{"root":"rounded-3xl bg-white p-4 shadow-lg","slot":"rounded-xl border border-slate-200","slotActive":"ring-2 ring-emerald-500","button":"rounded-full border px-4 py-2 text-sm","weekTab":"rounded-lg border px-2 py-1 text-sm","weekTabSelected":"bg-emerald-100","handleGrip":"bg-emerald-600"}}'></day-rhythm>
+<script type="module">import '../src/index.js';</script>
+</main>
+</body>
+</html>

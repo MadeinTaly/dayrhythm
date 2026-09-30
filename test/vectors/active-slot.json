@@ -1,0 +1,56 @@
+{
+  "description": "Daily active-slot conformance vectors. `at`: HH:MM[:SS] | minutes | {iso, utcOffsetMinutes|timeZone}. `expect`: active slot id or null.",
+  "version": 1,
+  "suites": [
+    {"name":"spec example: 07:00 a, 19:30 b, 23:00 c","slots":[{"id":"a","time":"07:00","model":"a"},{"id":"b","time":"19:30","model":"b"},{"id":"c","time":"23:00","model":"c"}],"cases":[
+      {"at":"00:00","expect":"c"},
+      {"at":"06:59","expect":"c"},
+      {"at":"07:00","expect":"a"},
+      {"at":"19:29","expect":"a"},
+      {"at":"19:30","expect":"b"},
+      {"at":"22:59","expect":"b"},
+      {"at":"23:00","expect":"c"},
+      {"at":"23:59","expect":"c"},
+      {"at":"23:59:59","expect":"c"},
+      {"at":419.99,"expect":"c"},
+      {"at":420,"expect":"a"},
+      {"at":1440,"expect":"c"},
+      {"at":1860,"expect":"a"}
+    ]},
+    {"name":"unsorted input is sorted first","slots":[{"id":"m","time":"06:00","model":"m"},{"id":"n","time":"02:00","model":"n"}],"cases":[
+      {"at":"00:00","expect":"m"},
+      {"at":"01:59","expect":"m"},
+      {"at":"02:00","expect":"n"},
+      {"at":"05:59","expect":"n"},
+      {"at":"06:00","expect":"m"},
+      {"at":"23:59","expect":"m"}
+    ]},
+    {"name":"first slot at midnight (no wrap needed)","slots":[{"id":"x","time":"00:00","model":"x"},{"id":"y","time":"12:00","model":"y"}],"cases":[
+      {"at":"00:00","expect":"x"},
+      {"at":"11:59","expect":"x"},
+      {"at":"12:00","expect":"y"},
+      {"at":"23:59","expect":"y"}
+    ]},
+    {"name":"single slot is always active","slots":[{"id":"only","time":"09:15","model":"only"}],"cases":[
+      {"at":"00:00","expect":"only"},
+      {"at":"09:14","expect":"only"},
+      {"at":"09:15","expect":"only"},
+      {"at":"23:59","expect":"only"}
+    ]},
+    {"name":"empty day","slots":[],"cases":[
+      {"at":"12:00","expect":null}
+    ]},
+    {"name":"utcOffsetMinutes and timeZone (slots 07:00 a, 19:30 b, 23:00 c)","slots":[{"id":"a","time":"07:00","model":"a"},{"id":"b","time":"19:30","model":"b"},{"id":"c","time":"23:00","model":"c"}],"cases":[
+      {"at":{"iso":"2026-03-10T06:00:00Z","utcOffsetMinutes":60},"expect":"a"},
+      {"at":{"iso":"2026-03-10T05:59:00Z","utcOffsetMinutes":60},"expect":"c"},
+      {"at":{"iso":"2026-03-10T06:00:00Z","timeZone":"Europe/Rome"},"expect":"a"},
+      {"at":{"iso":"2026-07-10T06:00:00Z","timeZone":"Europe/Rome"},"expect":"a"},
+      {"at":{"iso":"2026-07-10T04:59:00Z","timeZone":"Europe/Rome"},"expect":"c"},
+      {"at":{"iso":"2026-07-10T22:00:00Z","utcOffsetMinutes":-300},"expect":"a"},
+      {"at":{"iso":"2026-07-10T14:30:00Z","utcOffsetMinutes":330},"expect":"b"},
+      {"at":{"iso":"2026-07-10T18:30:00Z","timeZone":"Asia/Kolkata"},"expect":"c"},
+      {"at":{"iso":"2026-07-10T23:59:00Z","utcOffsetMinutes":0},"expect":"c"},
+      {"at":{"iso":"2026-07-11T00:00:00Z","utcOffsetMinutes":0},"expect":"c"}
+    ]}
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://unpkg.com/dayrhythm/schema/config.schema.json",
+  "title": "dayrhythm config",
+  "description": "The single JSON object that configures <day-rhythm> (attribute, property or <script type=\"application/json\"> child).",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": { "type": "string", "description": "Pack metadata, ignored by the element." },
+    "title": { "type": "string", "description": "Pack metadata, ignored by the element." },
+    "description": { "type": "string", "description": "Pack metadata, ignored by the element." },
+    "value": { "$ref": "#/$defs/value", "description": "Initial value only; a later el.value wins." },
+    "name": { "type": "string", "description": "Form field name; the FormData entry is the JSON of the value." },
+    "models": { "type": "array", "items": { "$ref": "#/$defs/model" }, "minItems": 1 },
+    "presets": { "type": "array", "items": { "$ref": "#/$defs/preset" } },
+    "days": { "type": "array", "items": { "$ref": "#/$defs/day" } },
+    "load": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/http" }] },
+    "storage": { "oneOf": [{ "type": "null" }, { "type": "object", "properties": { "type": { "enum": ["local", "http"] }, "key": { "type": "string" }, "url": { "type": "string" }, "headers": { "type": "object", "additionalProperties": { "type": "string" } }, "credentials": { "enum": ["omit", "same-origin", "include"] } }, "required": ["type"], "additionalProperties": false }] },
+    "minGap": { "type": "integer", "minimum": 1, "maximum": 720, "description": "Minimum slot duration in minutes." },
+    "snap": { "type": "integer", "enum": [1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60], "description": "Must divide 60." },
+    "minSlots": { "type": ["integer", "null"], "minimum": 0 },
+    "maxSlots": { "type": ["integer", "null"], "minimum": 1 },
+    "origin": { "enum": ["first", "midnight"] },
+    "seamDrag": { "type": "boolean" },
+    "orientation": { "enum": ["auto", "horizontal", "vertical"] },
+    "breakpoint": { "type": "integer", "minimum": 0 },
+    "add": { "type": "boolean" }, "remove": { "type": "boolean" }, "rename": { "type": "boolean" }, "timeEdit": { "type": "boolean" },
+    "showPresets": { "type": "boolean" }, "showDays": { "type": "boolean" },
+    "spectrum": { "type": "boolean" }, "nowLine": { "type": "boolean" },
+    "clockOffset": { "type": "number" },
+    "timezone": { "type": ["string", "null"], "description": "IANA zone, e.g. Europe/Rome." },
+    "timeFormat": { "enum": ["24h", "12h"] },
+    "editor": { "enum": ["auto", "quick", "full"] },
+    "randomize": { "type": "boolean" }, "readonly": { "type": "boolean" }, "disabled": { "type": "boolean" },
+    "labelMax": { "type": "integer", "minimum": 1, "maximum": 200 },
+    "week": { "enum": ["auto", "top", "bottom", "off"] },
+    "day": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/weekday" }] },
+    "firstDay": { "oneOf": [{ "const": "auto" }, { "$ref": "#/$defs/weekday" }] },
+    "weekPreview": { "type": "boolean" }, "weekCopy": { "type": "boolean" }, "linkDays": { "type": "boolean" },
+    "theme": { "enum": ["organic", "neutral", "flat", "none"] },
+    "colorScheme": { "enum": ["auto", "light", "dark"] },
+    "locale": { "type": ["string", "null"] },
+    "messages": { "type": "object", "description": "Flat {key: string} and/or per-locale {it: {key: string}}.", "additionalProperties": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": { "type": "string" } }] } },
+    "classes": { "type": "object", "additionalProperties": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] } },
+    "render": { "enum": ["shadow", "light"] },
+    "inheritStyles": { "type": "boolean" },
+    "styles": { "type": ["string", "null"] },
+    "credits": { "enum": [true, false, "minimal", "support"], "description": "true/minimal: small 'Made with dayrhythm' link; support: adds a donation link; false: nothing." }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "weekday": { "enum": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] },
+    "time": { "type": "string", "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$" },
+    "http": { "type": "object", "properties": { "url": { "type": "string" }, "method": { "type": "string" }, "headers": { "type": "object", "additionalProperties": { "type": "string" } }, "credentials": { "enum": ["omit", "same-origin", "include"] } }, "required": ["url"], "additionalProperties": false },
+    "slot": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }, "time": { "$ref": "#/$defs/time" }, "model": { "type": "string" }, "label": { "type": "string" },
+        "values": { "type": "object" },
+        "locked": { "oneOf": [{ "type": "boolean" }, { "type": "array", "items": { "enum": ["time", "remove", "label", "model"] } }] }
+      },
+      "required": ["time", "model"]
+    },
+    "dayRef": { "type": "object", "properties": { "ref": { "type": "string" } }, "required": ["ref"] },
+    "value": {
+      "oneOf": [
+        { "type": "array", "items": { "$ref": "#/$defs/slot" } },
+        { "type": "object", "properties": { "week": { "type": "object", "propertyNames": { "$ref": "#/$defs/weekday" }, "additionalProperties": { "oneOf": [{ "type": "array", "items": { "$ref": "#/$defs/slot" } }, { "$ref": "#/$defs/dayRef" }] } } }, "required": ["week"] }
+      ]
+    },
+    "day": { "type": "object", "properties": { "id": { "type": "string" }, "name": { "type": "string" }, "slots": { "type": "array", "items": { "$ref": "#/$defs/slot" } } }, "required": ["id", "name", "slots"] },
+    "preset": {
+      "type": "object",
+      "properties": { "id": { "type": "string" }, "label": { "type": "string" }, "icon": { "type": "string" }, "group": { "type": "string" }, "slots": { "type": "array", "items": { "$ref": "#/$defs/slot" } }, "slotsUrl": { "type": "string" } },
+      "required": ["id", "label"]
+    },
+    "field": {
+      "type": "object",
+      "properties": {
+        "key": { "type": "string" }, "type": { "enum": ["range", "number", "select", "toggle", "color", "text"] }, "label": { "type": "string" }, "default": {},
+        "min": { "type": "number" }, "max": { "type": "number" }, "step": { "type": "number", "exclusiveMinimum": 0 }, "unit": { "type": "string" }, "format": { "type": "string" },
+        "options": { "type": "array", "items": { "type": "object", "properties": { "value": { "type": ["string", "number"] }, "label": { "type": "string" } }, "required": ["value", "label"] } },
+        "accent": { "type": "string" }
+      },
+      "required": ["key", "type"]
+    },
+    "model": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }, "label": { "type": "string" },
+        "icon": { "oneOf": [{ "type": "string" }, { "type": "object", "properties": { "src": { "type": "string" } }, "required": ["src"] }] },
+        "preview": { "type": "string" },
+        "previewScale": { "type": "object", "properties": { "field": { "type": "string" }, "min": { "type": "number" }, "max": { "type": "number" }, "from": { "type": "string" }, "to": { "type": "string" } }, "required": ["field", "min", "max", "from", "to"] },
+        "off": { "type": "boolean" }, "defaults": { "type": "object" },
+        "fields": { "type": "array", "items": { "$ref": "#/$defs/field" } },
+        "summary": { "type": "string" }, "group": { "type": "string" }, "hint": { "type": "string" },
+        "when": { "type": "object", "properties": { "from": { "$ref": "#/$defs/time" }, "to": { "$ref": "#/$defs/time" } }, "required": ["from", "to"] },
+        "days": { "type": "array", "items": { "$ref": "#/$defs/weekday" } },
+        "classes": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
+        "meta": {}
+      },
+      "required": ["id"]
+    }
+  }
+}

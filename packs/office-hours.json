@@ -1,0 +1,310 @@
+{
+  "id": "office-hours",
+  "title": "Opening hours",
+  "description": "Opening hours and presence for a team or a shop.",
+  "week": "top",
+  "value": {
+    "week": {
+      "mon": [
+        {
+          "time": "00:00",
+          "model": "closed"
+        },
+        {
+          "time": "08:30",
+          "model": "open"
+        },
+        {
+          "time": "12:30",
+          "model": "lunch"
+        },
+        {
+          "time": "13:30",
+          "model": "open"
+        },
+        {
+          "time": "17:30",
+          "model": "closed"
+        }
+      ],
+      "tue": [
+        {
+          "time": "00:00",
+          "model": "closed"
+        },
+        {
+          "time": "08:30",
+          "model": "open"
+        },
+        {
+          "time": "12:30",
+          "model": "lunch"
+        },
+        {
+          "time": "13:30",
+          "model": "open"
+        },
+        {
+          "time": "17:30",
+          "model": "closed"
+        }
+      ],
+      "wed": [
+        {
+          "time": "00:00",
+          "model": "closed"
+        },
+        {
+          "time": "08:30",
+          "model": "open"
+        },
+        {
+          "time": "12:30",
+          "model": "lunch"
+        },
+        {
+          "time": "13:30",
+          "model": "open"
+        },
+        {
+          "time": "17:30",
+          "model": "closed"
+        }
+      ],
+      "thu": [
+        {
+          "time": "00:00",
+          "model": "closed"
+        },
+        {
+          "time": "08:30",
+          "model": "open"
+        },
+        {
+          "time": "12:30",
+          "model": "lunch"
+        },
+        {
+          "time": "13:30",
+          "model": "open"
+        },
+        {
+          "time": "17:30",
+          "model": "closed"
+        }
+      ],
+      "fri": [
+        {
+          "time": "00:00",
+          "model": "closed"
+        },
+        {
+          "time": "08:30",
+          "model": "open"
+        },
+        {
+          "time": "12:30",
+          "model": "lunch"
+        },
+        {
+          "time": "13:30",
+          "model": "open"
+        },
+        {
+          "time": "17:30",
+          "model": "closed"
+        }
+      ],
+      "sat": [
+        {
+          "time": "00:00",
+          "model": "closed"
+        },
+        {
+          "time": "08:00",
+          "model": "open"
+        },
+        {
+          "time": "13:00",
+          "model": "closed"
+        }
+      ]
+    }
+  },
+  "models": [
+    {
+      "id": "open",
+      "label": "Open",
+      "icon": "🟢",
+      "preview": "#2a9d8f",
+      "defaults": {
+        "capacity": 20,
+        "note": ""
+      },
+      "summary": "{capacity}",
+      "fields": [
+        {
+          "key": "capacity",
+          "type": "number",
+          "min": 0,
+          "max": 500,
+          "step": 1,
+          "default": 20,
+          "label": "Capacity"
+        },
+        {
+          "key": "note",
+          "type": "text",
+          "default": "",
+          "label": "Note"
+        }
+      ]
+    },
+    {
+      "id": "lunch",
+      "label": "Lunch",
+      "icon": "🍽️",
+      "preview": "#e9c46a"
+    },
+    {
+      "id": "focus",
+      "label": "Focus time",
+      "icon": "🎧",
+      "preview": "#457b9d",
+      "defaults": {
+        "note": ""
+      },
+      "fields": [
+        {
+          "key": "note",
+          "type": "text",
+          "default": "",
+          "label": "Note"
+        }
+      ]
+    },
+    {
+      "id": "closed",
+      "label": "Closed",
+      "icon": "🔒",
+      "preview": "#6c757d"
+    },
+    {
+      "id": "on-call",
+      "label": "On call",
+      "icon": "📞",
+      "preview": "#e76f51",
+      "defaults": {
+        "note": ""
+      },
+      "fields": [
+        {
+          "key": "note",
+          "type": "text",
+          "default": "",
+          "label": "Note"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "id": "standard",
+      "label": "Standard",
+      "slots": [
+        {
+          "time": "00:00",
+          "model": "closed"
+        },
+        {
+          "time": "08:30",
+          "model": "open"
+        },
+        {
+          "time": "12:30",
+          "model": "lunch"
+        },
+        {
+          "time": "13:30",
+          "model": "open"
+        },
+        {
+          "time": "17:30",
+          "model": "closed"
+        }
+      ]
+    },
+    {
+      "id": "summer",
+      "label": "Summer",
+      "slots": [
+        {
+          "time": "00:00",
+          "model": "closed"
+        },
+        {
+          "time": "08:00",
+          "model": "open"
+        },
+        {
+          "time": "13:00",
+          "model": "closed"
+        }
+      ]
+    },
+    {
+      "id": "retail",
+      "label": "Retail",
+      "slots": [
+        {
+          "time": "00:00",
+          "model": "closed"
+        },
+        {
+          "time": "09:00",
+          "model": "open"
+        },
+        {
+          "time": "13:00",
+          "model": "lunch"
+        },
+        {
+          "time": "15:30",
+          "model": "open"
+        },
+        {
+          "time": "20:00",
+          "model": "closed"
+        }
+      ]
+    }
+  ],
+  "messages": {
+    "en": {
+      "model.open": "Open",
+      "field.capacity": "Capacity",
+      "field.note": "Note",
+      "model.lunch": "Lunch",
+      "model.focus": "Focus time",
+      "model.closed": "Closed",
+      "model.on-call": "On call",
+      "preset.standard": "Standard",
+      "preset.summer": "Summer",
+      "preset.retail": "Retail",
+      "title": "Opening hours"
+    },
+    "it": {
+      "model.open": "Aperto",
+      "field.capacity": "Capienza",
+      "field.note": "Nota",
+      "model.lunch": "Pausa pranzo",
+      "model.focus": "Tempo di concentrazione",
+      "model.closed": "Chiuso",
+      "model.on-call": "Reperibile",
+      "preset.standard": "Standard",
+      "preset.summer": "Estate",
+      "preset.retail": "Negozio",
+      "title": "Orari di apertura"
+    }
+  }
+}

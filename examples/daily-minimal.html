@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dayrhythm - daily, minimal</title>
+<link rel="stylesheet" href="./examples.css">
+</head>
+<body>
+<main>
+<p><a href="./index.html">Playground</a> &middot; <a href="https://github.com/MadeinTaly/dayrhythm">GitHub</a></p>
+<h1>Daily, zero config</h1>
+<p>The tag alone renders a valid on/off day with the default look.</p>
+<day-rhythm id="d"></day-rhythm>
+<pre id="out"></pre>
+<script type="module">
+  import '../src/index.js';
+  const d = document.getElementById('d');
+  const show = (e) => { document.getElementById('out').textContent = JSON.stringify(e.detail.value, null, 2); };
+  d.addEventListener('input', show);
+  d.addEventListener('change', show);
+</script>
+</main>
+</body>
+</html>

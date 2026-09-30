@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dayrhythm - JSON only</title>
+<link rel="stylesheet" href="./examples.css">
+</head>
+<body>
+<main>
+<p><a href="./index.html">Playground</a> &middot; <a href="https://github.com/MadeinTaly/dayrhythm">GitHub</a></p>
+<h1>JSON only</h1>
+<p>No JavaScript besides loading the module: the config is a <code>&lt;script type="application/json"&gt;</code> child.</p>
+<day-rhythm>
+  <script type="application/json">
+  {
+    "theme": "neutral", "locale": "en",
+    "models": [
+      { "id": "eco", "label": "Eco", "icon": "L", "preview": "#6d8fd6", "defaults": { "temp": 17 }, "summary": "{temp} °C" },
+      { "id": "comfort", "label": "Comfort", "icon": "H", "preview": "#e59a4b", "defaults": { "temp": 21 }, "summary": "{temp} °C" }
+    ],
+    "value": [ { "time": "06:30", "model": "comfort" }, { "time": "22:00", "model": "eco" } ]
+  }
+  </script>
+</day-rhythm>
+<script type="module">import '../src/index.js';</script>
+</main>
+</body>
+</html>

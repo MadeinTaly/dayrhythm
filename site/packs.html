@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dayrhythm packs</title>
+<meta name="description" content="Sixteen ready-made model packs for dayrhythm: thermostat, lamp scenes, irrigation and more.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23a6dfc5'/%3E%3Cpath d='M6 20h6v-8h6v6h8' fill='none' stroke='%23174d3e' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="./site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="wrap">
+<header class="site">
+  <a class="brand" href="./index.html"><span class="mark" aria-hidden="true">&#9719;</span>dayrhythm</a>
+  <nav class="main" aria-label="Main">
+    <a href="./index.html">Home</a>
+    <a href="./playground.html">Playground</a>
+    <a href="./packs.html" aria-current="page">Packs</a>
+    <a href="https://github.com/MadeinTaly/dayrhythm">GitHub</a>
+    <a href="https://gt.1471995.xyz" rel="noopener">Support</a>
+    <button class="btn" id="scheme-toggle" type="button">Dark mode</button>
+  </nav>
+</header>
+<main id="main">
+<h1 style="margin:.5rem 0 .5rem;letter-spacing:-.04em">Packs</h1>
+<p class="muted">A pack is a plain JSON config: models with icons and colours, presets, English and Italian labels. Use it as <code>el.config = pack</code> and adjust what you need. Field ranges are illustrative starting points.</p>
+<div class="grid cols3" id="gallery" aria-busy="true"><p class="muted">Loading packs...</p></div>
+</main>
+<script type="module">
+import './site.js';
+import { packs } from './vendor/packs.js';
+const box = document.getElementById('gallery');
+box.replaceChildren();
+const colorOf = (p, id) => { const m = p.models.find((x) => x.id === id); return m && !m.off ? (m.preview || (m.previewScale && m.previewScale.to) || '#888') : 'transparent'; };
+for (const p of Object.values(packs)) {
+  const card = document.createElement('article');
+  card.className = 'card pack-card';
+  const slots = Array.isArray(p.value) ? p.value : (p.value && p.value.week && (p.value.week.mon || p.value.week.tue)) || [];
+  const strip = document.createElement('div');
+  strip.className = 'strip';
+  strip.setAttribute('aria-hidden', 'true');
+  const sorted = [...slots].sort((a, b) => a.time.localeCompare(b.time));
+  const mins = (t) => +t.slice(0, 2) * 60 + +t.slice(3);
+  sorted.forEach((s, i) => {
+    const seg = document.createElement('span');
+    const next = sorted[(i + 1) % sorted.length];
+    let d = mins(next.time) - mins(s.time); if (d <= 0) d += 1440;
+    seg.style.flexGrow = d; seg.style.flexBasis = '0';
+    seg.style.background = colorOf(p, s.model);
+    strip.append(seg);
+  });
+  card.innerHTML = '<h3></h3><p class="muted"></p><div class="chips"></div><p class="tag"></p><div class="row" style="margin:0"></div>';
+  card.querySelector('h3').textContent = p.title;
+  card.querySelector('p').textContent = p.description;
+  card.insertBefore(strip, card.querySelector('.chips'));
+  const chips = card.querySelector('.chips');
+  for (const m of p.models) { const c = document.createElement('span'); c.className = 'pill'; c.textContent = `${m.icon || ''} ${m.label || m.id}`; chips.append(c); }
+  card.querySelector('.tag').textContent = `${p.week === 'top' ? 'Weekly' : 'Daily'} · ${p.presets.length} presets · id: ${p.id}`;
+  const a = document.createElement('a');
+  a.className = 'btn'; a.href = `./playground.html?pack=${p.id}`; a.textContent = 'Try it in the playground';
+  card.querySelector('.row').append(a);
+  box.append(card);
+}
+box.removeAttribute('aria-busy');
+</script>
+<footer class="site">
+  <span>dayrhythm is MIT licensed.</span>
+  <a href="https://github.com/MadeinTaly/dayrhythm">Source on GitHub</a>
+  <a href="https://gt.1471995.xyz" rel="noopener">Support the project (optional)</a>
+</footer>
+</div>
+</body></html>

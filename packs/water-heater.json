@@ -1,0 +1,258 @@
+{
+  "id": "water-heater",
+  "title": "Water heater",
+  "description": "Boiler or domestic hot water modes and setpoints.",
+  "week": "top",
+  "value": {
+    "week": {
+      "mon": [
+        {
+          "time": "06:00",
+          "model": "eco"
+        },
+        {
+          "time": "17:30",
+          "model": "comfort"
+        },
+        {
+          "time": "23:00",
+          "model": "boost"
+        }
+      ],
+      "tue": [
+        {
+          "time": "06:00",
+          "model": "eco"
+        },
+        {
+          "time": "17:30",
+          "model": "comfort"
+        },
+        {
+          "time": "23:00",
+          "model": "boost"
+        }
+      ],
+      "wed": [
+        {
+          "time": "06:00",
+          "model": "eco"
+        },
+        {
+          "time": "17:30",
+          "model": "comfort"
+        },
+        {
+          "time": "23:00",
+          "model": "boost"
+        }
+      ],
+      "thu": [
+        {
+          "time": "06:00",
+          "model": "eco"
+        },
+        {
+          "time": "17:30",
+          "model": "comfort"
+        },
+        {
+          "time": "23:00",
+          "model": "boost"
+        }
+      ],
+      "fri": [
+        {
+          "time": "06:00",
+          "model": "eco"
+        },
+        {
+          "time": "17:30",
+          "model": "comfort"
+        },
+        {
+          "time": "23:00",
+          "model": "boost"
+        }
+      ],
+      "sat": [
+        {
+          "time": "06:00",
+          "model": "eco"
+        },
+        {
+          "time": "17:30",
+          "model": "comfort"
+        },
+        {
+          "time": "23:00",
+          "model": "boost"
+        }
+      ],
+      "sun": [
+        {
+          "time": "06:00",
+          "model": "eco"
+        },
+        {
+          "time": "17:30",
+          "model": "comfort"
+        },
+        {
+          "time": "23:00",
+          "model": "boost"
+        }
+      ]
+    }
+  },
+  "models": [
+    {
+      "id": "off",
+      "label": "Off",
+      "icon": "⏻",
+      "off": true
+    },
+    {
+      "id": "eco",
+      "label": "Eco",
+      "icon": "🌿",
+      "preview": "#6d8fd6",
+      "defaults": {
+        "temp": 45
+      },
+      "summary": "{temp}",
+      "fields": [
+        {
+          "key": "temp",
+          "type": "range",
+          "min": 30,
+          "max": 70,
+          "step": 1,
+          "unit": " °C",
+          "default": 45,
+          "label": "Water temperature"
+        }
+      ]
+    },
+    {
+      "id": "comfort",
+      "label": "Comfort",
+      "icon": "🚿",
+      "preview": "#e59a4b",
+      "defaults": {
+        "temp": 55
+      },
+      "summary": "{temp}",
+      "fields": [
+        {
+          "key": "temp",
+          "type": "range",
+          "min": 30,
+          "max": 70,
+          "step": 1,
+          "unit": " °C",
+          "default": 55,
+          "label": "Water temperature"
+        }
+      ]
+    },
+    {
+      "id": "boost",
+      "label": "Boost",
+      "icon": "🔥",
+      "preview": "#e5533b",
+      "defaults": {
+        "temp": 65
+      },
+      "summary": "{temp}",
+      "fields": [
+        {
+          "key": "temp",
+          "type": "range",
+          "min": 30,
+          "max": 70,
+          "step": 1,
+          "unit": " °C",
+          "default": 65,
+          "label": "Water temperature"
+        }
+      ]
+    },
+    {
+      "id": "anti-legionella",
+      "label": "Anti-legionella",
+      "icon": "🦠",
+      "preview": "#8e2b6b",
+      "defaults": {
+        "temp": 70
+      },
+      "summary": "{temp} °C"
+    }
+  ],
+  "presets": [
+    {
+      "id": "night-tariff",
+      "label": "Night tariff",
+      "slots": [
+        {
+          "time": "06:00",
+          "model": "eco"
+        },
+        {
+          "time": "17:30",
+          "model": "comfort"
+        },
+        {
+          "time": "23:00",
+          "model": "boost"
+        }
+      ]
+    },
+    {
+      "id": "solar-surplus",
+      "label": "Solar surplus",
+      "slots": [
+        {
+          "time": "00:00",
+          "model": "off"
+        },
+        {
+          "time": "11:00",
+          "model": "boost"
+        },
+        {
+          "time": "16:00",
+          "model": "eco"
+        },
+        {
+          "time": "22:00",
+          "model": "off"
+        }
+      ]
+    }
+  ],
+  "messages": {
+    "en": {
+      "model.off": "Off",
+      "model.eco": "Eco",
+      "field.temp": "Water temperature",
+      "model.comfort": "Comfort",
+      "model.boost": "Boost",
+      "model.anti-legionella": "Anti-legionella",
+      "preset.night-tariff": "Night tariff",
+      "preset.solar-surplus": "Solar surplus",
+      "title": "Water heater"
+    },
+    "it": {
+      "model.off": "Spento",
+      "model.eco": "Eco",
+      "field.temp": "Temperatura acqua",
+      "model.comfort": "Comfort",
+      "model.boost": "Boost",
+      "model.anti-legionella": "Anti-legionella",
+      "preset.night-tariff": "Tariffa notturna",
+      "preset.solar-surplus": "Surplus solare",
+      "title": "Scaldabagno"
+    }
+  }
+}

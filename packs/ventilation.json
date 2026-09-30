@@ -1,0 +1,213 @@
+{
+  "id": "ventilation",
+  "title": "Ventilation",
+  "description": "Fan or mechanical ventilation speeds through the day.",
+  "value": [
+    {
+      "time": "00:00",
+      "model": "low"
+    },
+    {
+      "time": "06:30",
+      "model": "boost"
+    },
+    {
+      "time": "07:30",
+      "model": "low"
+    },
+    {
+      "time": "21:00",
+      "model": "boost"
+    },
+    {
+      "time": "21:30",
+      "model": "low"
+    }
+  ],
+  "models": [
+    {
+      "id": "off",
+      "label": "Off",
+      "icon": "⏻",
+      "off": true
+    },
+    {
+      "id": "low",
+      "label": "Low",
+      "icon": "🍃",
+      "preview": "#a8dadc",
+      "defaults": {
+        "speed": 30
+      },
+      "summary": "{speed}",
+      "fields": [
+        {
+          "key": "speed",
+          "type": "range",
+          "min": 10,
+          "max": 100,
+          "step": 10,
+          "unit": "%",
+          "default": 30,
+          "label": "Fan speed"
+        }
+      ]
+    },
+    {
+      "id": "normal",
+      "label": "Normal",
+      "icon": "🌬️",
+      "preview": "#5fa8d3",
+      "defaults": {
+        "speed": 60
+      },
+      "summary": "{speed}",
+      "fields": [
+        {
+          "key": "speed",
+          "type": "range",
+          "min": 10,
+          "max": 100,
+          "step": 10,
+          "unit": "%",
+          "default": 60,
+          "label": "Fan speed"
+        }
+      ]
+    },
+    {
+      "id": "boost",
+      "label": "Boost",
+      "icon": "💨",
+      "preview": "#1d6fa5",
+      "defaults": {
+        "speed": 100
+      },
+      "summary": "{speed}",
+      "fields": [
+        {
+          "key": "speed",
+          "type": "range",
+          "min": 10,
+          "max": 100,
+          "step": 10,
+          "unit": "%",
+          "default": 100,
+          "label": "Fan speed"
+        }
+      ]
+    },
+    {
+      "id": "night-cool",
+      "label": "Night cooling",
+      "icon": "❄️",
+      "preview": "#4361ee",
+      "defaults": {
+        "speed": 80
+      },
+      "summary": "{speed}% night"
+    }
+  ],
+  "presets": [
+    {
+      "id": "bathroom",
+      "label": "Bathroom",
+      "slots": [
+        {
+          "time": "00:00",
+          "model": "low"
+        },
+        {
+          "time": "06:30",
+          "model": "boost"
+        },
+        {
+          "time": "07:30",
+          "model": "low"
+        },
+        {
+          "time": "21:00",
+          "model": "boost"
+        },
+        {
+          "time": "21:30",
+          "model": "low"
+        }
+      ]
+    },
+    {
+      "id": "kitchen",
+      "label": "Kitchen",
+      "slots": [
+        {
+          "time": "00:00",
+          "model": "off"
+        },
+        {
+          "time": "07:00",
+          "model": "normal"
+        },
+        {
+          "time": "08:00",
+          "model": "off"
+        },
+        {
+          "time": "12:00",
+          "model": "boost"
+        },
+        {
+          "time": "13:00",
+          "model": "off"
+        },
+        {
+          "time": "19:00",
+          "model": "boost"
+        },
+        {
+          "time": "20:30",
+          "model": "off"
+        }
+      ]
+    },
+    {
+      "id": "summer-night",
+      "label": "Summer night",
+      "slots": [
+        {
+          "time": "06:30",
+          "model": "low"
+        },
+        {
+          "time": "21:30",
+          "model": "night-cool"
+        }
+      ]
+    }
+  ],
+  "messages": {
+    "en": {
+      "model.off": "Off",
+      "model.low": "Low",
+      "field.speed": "Fan speed",
+      "model.normal": "Normal",
+      "model.boost": "Boost",
+      "model.night-cool": "Night cooling",
+      "preset.bathroom": "Bathroom",
+      "preset.kitchen": "Kitchen",
+      "preset.summer-night": "Summer night",
+      "title": "Ventilation"
+    },
+    "it": {
+      "model.off": "Spenta",
+      "model.low": "Bassa",
+      "field.speed": "Velocità ventola",
+      "model.normal": "Normale",
+      "model.boost": "Boost",
+      "model.night-cool": "Raffrescamento notturno",
+      "preset.bathroom": "Bagno",
+      "preset.kitchen": "Cucina",
+      "preset.summer-night": "Notte d'estate",
+      "title": "Ventilazione"
+    }
+  }
+}

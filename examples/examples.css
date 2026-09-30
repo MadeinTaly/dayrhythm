@@ -1,0 +1,11 @@
+body { font-family: system-ui, "Segoe UI", Roboto, sans-serif; margin: 0; background: #f4f7f5; color: #163e38; line-height: 1.5; }
+main { width: min(60rem, 100% - 2rem); margin: 1.5rem auto 4rem; }
+a { color: #146b59; }
+label { margin-right: 1rem; font-size: .9rem; }
+select { padding: .3rem; margin-left: .3rem; }
+day-rhythm { margin: 1rem 0; }
+pre { background: #e2f0e9; padding: 1rem; border-radius: .8rem; overflow: auto; font-size: .8rem; max-height: 22rem; }
+.host { display: flex; gap: .8rem; align-items: center; flex-wrap: wrap; border: 1px dashed #7d9a90; border-radius: 1rem; padding: .7rem 1rem; }
+.host button { min-height: 2.6rem; padding: 0 1.4rem; border-radius: 999px; border: 0; background: #146b59; color: #fff; font: inherit; cursor: pointer; }
+.host button:disabled { opacity: .5; cursor: not-allowed; }
+@media (prefers-color-scheme: dark) { body { background: #102824; color: #edf7ef; } a { color: #a6dfc5; } pre { background: #193730; } }

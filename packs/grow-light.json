@@ -1,0 +1,215 @@
+{
+  "id": "grow-light",
+  "title": "Grow light",
+  "description": "Photoperiod for indoor plants with intensity and red/blue ratio.",
+  "value": [
+    {
+      "time": "00:00",
+      "model": "off"
+    },
+    {
+      "time": "06:00",
+      "model": "vegetative"
+    }
+  ],
+  "models": [
+    {
+      "id": "off",
+      "label": "Off",
+      "icon": "⏻",
+      "off": true
+    },
+    {
+      "id": "seedling",
+      "label": "Seedling",
+      "icon": "🌱",
+      "preview": "#95d5b2",
+      "defaults": {
+        "intensity": 50,
+        "ratio": 40
+      },
+      "summary": "{intensity} · {ratio}",
+      "fields": [
+        {
+          "key": "intensity",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 50,
+          "accent": "#328466",
+          "label": "Intensity"
+        },
+        {
+          "key": "ratio",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "% red",
+          "default": 40,
+          "accent": "#b5462f",
+          "label": "Red share"
+        }
+      ]
+    },
+    {
+      "id": "vegetative",
+      "label": "Vegetative",
+      "icon": "🌿",
+      "preview": "#52b788",
+      "defaults": {
+        "intensity": 75,
+        "ratio": 35
+      },
+      "summary": "{intensity} · {ratio}",
+      "fields": [
+        {
+          "key": "intensity",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 75,
+          "accent": "#328466",
+          "label": "Intensity"
+        },
+        {
+          "key": "ratio",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "% red",
+          "default": 35,
+          "accent": "#b5462f",
+          "label": "Red share"
+        }
+      ]
+    },
+    {
+      "id": "flowering",
+      "label": "Flowering",
+      "icon": "🌸",
+      "preview": "#d66ba0",
+      "defaults": {
+        "intensity": 100,
+        "ratio": 70
+      },
+      "summary": "{intensity} · {ratio}",
+      "fields": [
+        {
+          "key": "intensity",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 100,
+          "accent": "#328466",
+          "label": "Intensity"
+        },
+        {
+          "key": "ratio",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "% red",
+          "default": 70,
+          "accent": "#b5462f",
+          "label": "Red share"
+        }
+      ]
+    },
+    {
+      "id": "sunrise-ramp",
+      "label": "Sunrise ramp",
+      "icon": "🌅",
+      "preview": "#f4a261",
+      "defaults": {
+        "intensity": 30,
+        "ratio": 50
+      },
+      "summary": "{intensity}% ramp"
+    }
+  ],
+  "presets": [
+    {
+      "id": "18-6",
+      "label": "18/6",
+      "slots": [
+        {
+          "time": "00:00",
+          "model": "off"
+        },
+        {
+          "time": "06:00",
+          "model": "vegetative"
+        }
+      ]
+    },
+    {
+      "id": "12-12",
+      "label": "12/12",
+      "slots": [
+        {
+          "time": "06:00",
+          "model": "flowering"
+        },
+        {
+          "time": "18:00",
+          "model": "off"
+        }
+      ]
+    },
+    {
+      "id": "16-8",
+      "label": "16/8",
+      "slots": [
+        {
+          "time": "05:00",
+          "model": "sunrise-ramp"
+        },
+        {
+          "time": "05:30",
+          "model": "vegetative"
+        },
+        {
+          "time": "21:00",
+          "model": "off"
+        }
+      ]
+    }
+  ],
+  "messages": {
+    "en": {
+      "model.off": "Off",
+      "model.seedling": "Seedling",
+      "field.intensity": "Intensity",
+      "field.ratio": "Red share",
+      "model.vegetative": "Vegetative",
+      "model.flowering": "Flowering",
+      "model.sunrise-ramp": "Sunrise ramp",
+      "preset.18-6": "18/6",
+      "preset.12-12": "12/12",
+      "preset.16-8": "16/8",
+      "title": "Grow light"
+    },
+    "it": {
+      "model.off": "Spenta",
+      "model.seedling": "Germoglio",
+      "field.intensity": "Intensità",
+      "field.ratio": "Quota rosso",
+      "model.vegetative": "Vegetativa",
+      "model.flowering": "Fioritura",
+      "model.sunrise-ramp": "Alba graduale",
+      "preset.18-6": "18/6",
+      "preset.12-12": "12/12",
+      "preset.16-8": "16/8",
+      "title": "Luce di crescita"
+    }
+  }
+}

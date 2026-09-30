@@ -1,0 +1,346 @@
+{
+  "id": "aquarium-reef",
+  "title": "Reef aquarium lamp",
+  "description": "Photoperiod of a reef tank light with white and blue channels.",
+  "value": [
+    {
+      "time": "00:00",
+      "model": "moon"
+    },
+    {
+      "time": "08:00",
+      "model": "dawn"
+    },
+    {
+      "time": "09:00",
+      "model": "morning"
+    },
+    {
+      "time": "11:30",
+      "model": "midday"
+    },
+    {
+      "time": "16:00",
+      "model": "afternoon"
+    },
+    {
+      "time": "19:00",
+      "model": "dusk"
+    },
+    {
+      "time": "20:00",
+      "model": "moon"
+    }
+  ],
+  "models": [
+    {
+      "id": "dawn",
+      "label": "Dawn",
+      "icon": "🌅",
+      "preview": "#f0a36b",
+      "defaults": {
+        "white": 0,
+        "blue": 25,
+        "power": 20
+      },
+      "summary": "W {white}% · B {blue}% · {power}%"
+    },
+    {
+      "id": "morning",
+      "label": "Morning",
+      "icon": "🌤️",
+      "preview": "#8ecae6",
+      "defaults": {
+        "white": 35,
+        "blue": 60,
+        "power": 55
+      },
+      "summary": "W {white}% · B {blue}% · {power}%"
+    },
+    {
+      "id": "midday",
+      "label": "Midday",
+      "icon": "☀️",
+      "preview": "#4cc9f0",
+      "defaults": {
+        "white": 70,
+        "blue": 80,
+        "power": 85
+      },
+      "summary": "W {white}% · B {blue}% · {power}%"
+    },
+    {
+      "id": "afternoon",
+      "label": "Afternoon",
+      "icon": "🌞",
+      "preview": "#5aa9e6",
+      "defaults": {
+        "white": 45,
+        "blue": 70,
+        "power": 65
+      },
+      "summary": "W {white}% · B {blue}% · {power}%"
+    },
+    {
+      "id": "dusk",
+      "label": "Dusk",
+      "icon": "🌆",
+      "preview": "#9d6bd6",
+      "defaults": {
+        "white": 0,
+        "blue": 30,
+        "power": 25
+      },
+      "summary": "W {white}% · B {blue}% · {power}%"
+    },
+    {
+      "id": "moon",
+      "label": "Moon",
+      "icon": "🌙",
+      "preview": "#1d3a8a",
+      "defaults": {
+        "white": 0,
+        "blue": 5,
+        "power": 5
+      },
+      "summary": "W {white}% · B {blue}% · {power}%"
+    },
+    {
+      "id": "off",
+      "label": "Off",
+      "icon": "⏻",
+      "off": true
+    },
+    {
+      "id": "storm",
+      "label": "Storm",
+      "icon": "⛈️",
+      "preview": "#5d6d7e",
+      "defaults": {
+        "white": 10,
+        "blue": 40,
+        "power": 35
+      },
+      "summary": "W {white}% · B {blue}% · {power}%"
+    },
+    {
+      "id": "custom",
+      "label": "Custom",
+      "icon": "🎛️",
+      "previewScale": {
+        "field": "power",
+        "min": 0,
+        "max": 100,
+        "from": "#0b1e3a",
+        "to": "#8fd3ff"
+      },
+      "defaults": {
+        "white": 40,
+        "blue": 60,
+        "power": 60
+      },
+      "summary": "W {white} · B {blue} · {power}",
+      "fields": [
+        {
+          "key": "white",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 40,
+          "accent": "#789286",
+          "label": "White"
+        },
+        {
+          "key": "blue",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 60,
+          "accent": "#2a6fdb",
+          "label": "Blue"
+        },
+        {
+          "key": "power",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 60,
+          "accent": "#328466",
+          "label": "Power"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "id": "reef",
+      "label": "Reef",
+      "slots": [
+        {
+          "time": "00:00",
+          "model": "moon"
+        },
+        {
+          "time": "08:00",
+          "model": "dawn"
+        },
+        {
+          "time": "09:00",
+          "model": "morning"
+        },
+        {
+          "time": "11:30",
+          "model": "midday"
+        },
+        {
+          "time": "16:00",
+          "model": "afternoon"
+        },
+        {
+          "time": "19:00",
+          "model": "dusk"
+        },
+        {
+          "time": "20:00",
+          "model": "moon"
+        }
+      ]
+    },
+    {
+      "id": "fowlr",
+      "label": "FOWLR",
+      "slots": [
+        {
+          "time": "00:00",
+          "model": "off"
+        },
+        {
+          "time": "09:00",
+          "model": "dawn"
+        },
+        {
+          "time": "10:00",
+          "model": "morning"
+        },
+        {
+          "time": "13:00",
+          "model": "afternoon"
+        },
+        {
+          "time": "18:00",
+          "model": "dusk"
+        },
+        {
+          "time": "19:00",
+          "model": "moon"
+        },
+        {
+          "time": "22:00",
+          "model": "off"
+        }
+      ]
+    },
+    {
+      "id": "planted",
+      "label": "Planted",
+      "slots": [
+        {
+          "time": "00:00",
+          "model": "off"
+        },
+        {
+          "time": "08:00",
+          "model": "morning"
+        },
+        {
+          "time": "11:00",
+          "model": "midday"
+        },
+        {
+          "time": "15:00",
+          "model": "afternoon"
+        },
+        {
+          "time": "18:00",
+          "model": "dusk"
+        },
+        {
+          "time": "19:00",
+          "model": "off"
+        }
+      ]
+    },
+    {
+      "id": "acclimation",
+      "label": "Acclimation",
+      "slots": [
+        {
+          "time": "00:00",
+          "model": "off"
+        },
+        {
+          "time": "10:00",
+          "model": "dawn"
+        },
+        {
+          "time": "11:00",
+          "model": "morning"
+        },
+        {
+          "time": "15:00",
+          "model": "dusk"
+        },
+        {
+          "time": "16:00",
+          "model": "off"
+        }
+      ]
+    }
+  ],
+  "messages": {
+    "en": {
+      "model.dawn": "Dawn",
+      "model.morning": "Morning",
+      "model.midday": "Midday",
+      "model.afternoon": "Afternoon",
+      "model.dusk": "Dusk",
+      "model.moon": "Moon",
+      "model.off": "Off",
+      "model.storm": "Storm",
+      "model.custom": "Custom",
+      "field.white": "White",
+      "field.blue": "Blue",
+      "field.power": "Power",
+      "preset.reef": "Reef",
+      "preset.fowlr": "FOWLR",
+      "preset.planted": "Planted",
+      "preset.acclimation": "Acclimation",
+      "title": "Reef aquarium lamp"
+    },
+    "it": {
+      "model.dawn": "Alba",
+      "model.morning": "Mattina",
+      "model.midday": "Mezzogiorno",
+      "model.afternoon": "Pomeriggio",
+      "model.dusk": "Tramonto",
+      "model.moon": "Luna",
+      "model.off": "Spento",
+      "model.storm": "Temporale",
+      "model.custom": "Personalizzata",
+      "field.white": "Bianco",
+      "field.blue": "Blu",
+      "field.power": "Potenza",
+      "preset.reef": "Barriera",
+      "preset.fowlr": "FOWLR",
+      "preset.planted": "Piantumato",
+      "preset.acclimation": "Acclimatamento",
+      "title": "Lampada acquario marino"
+    }
+  }
+}

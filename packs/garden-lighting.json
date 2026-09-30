@@ -1,0 +1,157 @@
+{
+  "id": "garden-lighting",
+  "title": "Garden lighting",
+  "description": "Outdoor path, party and security lights.",
+  "value": [
+    {
+      "time": "06:00",
+      "model": "off"
+    },
+    {
+      "time": "19:00",
+      "model": "path"
+    },
+    {
+      "time": "23:30",
+      "model": "security"
+    }
+  ],
+  "models": [
+    {
+      "id": "off",
+      "label": "Off",
+      "icon": "⏻",
+      "off": true
+    },
+    {
+      "id": "path",
+      "label": "Path",
+      "icon": "🔦",
+      "preview": "#a7c957",
+      "defaults": {
+        "brightness": 50
+      },
+      "summary": "{brightness}",
+      "fields": [
+        {
+          "key": "brightness",
+          "type": "range",
+          "min": 10,
+          "max": 100,
+          "step": 10,
+          "unit": "%",
+          "default": 50,
+          "label": "Brightness"
+        }
+      ]
+    },
+    {
+      "id": "party",
+      "label": "Party",
+      "icon": "🎉",
+      "preview": "#c77dff",
+      "defaults": {
+        "brightness": 90
+      },
+      "summary": "{brightness}",
+      "fields": [
+        {
+          "key": "brightness",
+          "type": "range",
+          "min": 10,
+          "max": 100,
+          "step": 10,
+          "unit": "%",
+          "default": 90,
+          "label": "Brightness"
+        }
+      ]
+    },
+    {
+      "id": "security",
+      "label": "Security",
+      "icon": "🛡️",
+      "preview": "#e63946",
+      "defaults": {
+        "brightness": 100
+      },
+      "summary": "{brightness}",
+      "fields": [
+        {
+          "key": "brightness",
+          "type": "range",
+          "min": 10,
+          "max": 100,
+          "step": 10,
+          "unit": "%",
+          "default": 100,
+          "label": "Brightness"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "id": "dusk-to-dawn",
+      "label": "Dusk to dawn",
+      "slots": [
+        {
+          "time": "06:00",
+          "model": "off"
+        },
+        {
+          "time": "19:00",
+          "model": "path"
+        },
+        {
+          "time": "23:30",
+          "model": "security"
+        }
+      ]
+    },
+    {
+      "id": "party-evening",
+      "label": "Party evening",
+      "slots": [
+        {
+          "time": "06:00",
+          "model": "off"
+        },
+        {
+          "time": "19:00",
+          "model": "party"
+        },
+        {
+          "time": "01:00",
+          "model": "path"
+        },
+        {
+          "time": "02:00",
+          "model": "off"
+        }
+      ]
+    }
+  ],
+  "messages": {
+    "en": {
+      "model.off": "Off",
+      "model.path": "Path",
+      "field.brightness": "Brightness",
+      "model.party": "Party",
+      "model.security": "Security",
+      "preset.dusk-to-dawn": "Dusk to dawn",
+      "preset.party-evening": "Party evening",
+      "title": "Garden lighting"
+    },
+    "it": {
+      "model.off": "Spente",
+      "model.path": "Vialetto",
+      "field.brightness": "Luminosità",
+      "model.party": "Festa",
+      "model.security": "Sicurezza",
+      "preset.dusk-to-dawn": "Dal tramonto all'alba",
+      "preset.party-evening": "Serata in festa",
+      "title": "Luci da giardino"
+    }
+  }
+}

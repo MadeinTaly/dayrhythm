@@ -1,0 +1,297 @@
+{
+  "id": "blinds",
+  "title": "Blinds and shutters",
+  "description": "Open, close and tilt shutters through the week.",
+  "week": "top",
+  "value": {
+    "week": {
+      "mon": [
+        {
+          "time": "07:00",
+          "model": "open"
+        },
+        {
+          "time": "11:00",
+          "model": "sun-shade"
+        },
+        {
+          "time": "18:30",
+          "model": "half"
+        },
+        {
+          "time": "22:30",
+          "model": "closed"
+        }
+      ],
+      "tue": [
+        {
+          "time": "07:00",
+          "model": "open"
+        },
+        {
+          "time": "11:00",
+          "model": "sun-shade"
+        },
+        {
+          "time": "18:30",
+          "model": "half"
+        },
+        {
+          "time": "22:30",
+          "model": "closed"
+        }
+      ],
+      "wed": [
+        {
+          "time": "07:00",
+          "model": "open"
+        },
+        {
+          "time": "11:00",
+          "model": "sun-shade"
+        },
+        {
+          "time": "18:30",
+          "model": "half"
+        },
+        {
+          "time": "22:30",
+          "model": "closed"
+        }
+      ],
+      "thu": [
+        {
+          "time": "07:00",
+          "model": "open"
+        },
+        {
+          "time": "11:00",
+          "model": "sun-shade"
+        },
+        {
+          "time": "18:30",
+          "model": "half"
+        },
+        {
+          "time": "22:30",
+          "model": "closed"
+        }
+      ],
+      "fri": [
+        {
+          "time": "07:00",
+          "model": "open"
+        },
+        {
+          "time": "11:00",
+          "model": "sun-shade"
+        },
+        {
+          "time": "18:30",
+          "model": "half"
+        },
+        {
+          "time": "22:30",
+          "model": "closed"
+        }
+      ],
+      "sat": [
+        {
+          "time": "07:00",
+          "model": "open"
+        },
+        {
+          "time": "11:00",
+          "model": "sun-shade"
+        },
+        {
+          "time": "18:30",
+          "model": "half"
+        },
+        {
+          "time": "22:30",
+          "model": "closed"
+        }
+      ],
+      "sun": [
+        {
+          "time": "07:00",
+          "model": "open"
+        },
+        {
+          "time": "11:00",
+          "model": "sun-shade"
+        },
+        {
+          "time": "18:30",
+          "model": "half"
+        },
+        {
+          "time": "22:30",
+          "model": "closed"
+        }
+      ]
+    }
+  },
+  "models": [
+    {
+      "id": "open",
+      "label": "Open",
+      "icon": "🪟",
+      "preview": "#ffd166",
+      "defaults": {
+        "position": 100,
+        "tilt": 0
+      },
+      "summary": "{position}% · {tilt}°"
+    },
+    {
+      "id": "half",
+      "label": "Half",
+      "icon": "◑",
+      "preview": "#f4a261",
+      "defaults": {
+        "position": 50,
+        "tilt": 0
+      },
+      "summary": "{position}% · {tilt}°"
+    },
+    {
+      "id": "closed",
+      "label": "Closed",
+      "icon": "🌑",
+      "preview": "#3d5a80",
+      "defaults": {
+        "position": 0,
+        "tilt": 0
+      },
+      "summary": "{position}% · {tilt}°"
+    },
+    {
+      "id": "tilt",
+      "label": "Tilt",
+      "icon": "📐",
+      "previewScale": {
+        "field": "position",
+        "min": 0,
+        "max": 100,
+        "from": "#3d5a80",
+        "to": "#ffd166"
+      },
+      "defaults": {
+        "position": 100,
+        "tilt": 45
+      },
+      "summary": "{position} · {tilt}",
+      "fields": [
+        {
+          "key": "position",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 100,
+          "label": "Position"
+        },
+        {
+          "key": "tilt",
+          "type": "range",
+          "min": 0,
+          "max": 90,
+          "step": 5,
+          "unit": "°",
+          "default": 45,
+          "label": "Tilt"
+        }
+      ]
+    },
+    {
+      "id": "sun-shade",
+      "label": "Sun shade",
+      "icon": "🕶️",
+      "preview": "#e9c46a",
+      "defaults": {
+        "position": 60,
+        "tilt": 20
+      },
+      "summary": "{position}% · {tilt}°"
+    }
+  ],
+  "presets": [
+    {
+      "id": "summer-heat",
+      "label": "Summer heat",
+      "slots": [
+        {
+          "time": "07:00",
+          "model": "open"
+        },
+        {
+          "time": "11:00",
+          "model": "sun-shade"
+        },
+        {
+          "time": "18:30",
+          "model": "half"
+        },
+        {
+          "time": "22:30",
+          "model": "closed"
+        }
+      ]
+    },
+    {
+      "id": "winter",
+      "label": "Winter",
+      "slots": [
+        {
+          "time": "08:00",
+          "model": "open"
+        },
+        {
+          "time": "17:00",
+          "model": "closed"
+        }
+      ]
+    },
+    {
+      "id": "vacation",
+      "label": "Vacation",
+      "slots": [
+        {
+          "time": "00:00",
+          "model": "closed"
+        }
+      ]
+    }
+  ],
+  "messages": {
+    "en": {
+      "model.open": "Open",
+      "model.half": "Half",
+      "model.closed": "Closed",
+      "model.tilt": "Tilt",
+      "field.position": "Position",
+      "field.tilt": "Tilt",
+      "model.sun-shade": "Sun shade",
+      "preset.summer-heat": "Summer heat",
+      "preset.winter": "Winter",
+      "preset.vacation": "Vacation",
+      "title": "Blinds and shutters"
+    },
+    "it": {
+      "model.open": "Aperta",
+      "model.half": "Metà",
+      "model.closed": "Chiusa",
+      "model.tilt": "Inclinata",
+      "field.position": "Posizione",
+      "field.tilt": "Inclinazione",
+      "model.sun-shade": "Ombreggiante",
+      "preset.summer-heat": "Caldo estivo",
+      "preset.winter": "Inverno",
+      "preset.vacation": "Vacanza",
+      "title": "Tapparelle e tende"
+    }
+  }
+}

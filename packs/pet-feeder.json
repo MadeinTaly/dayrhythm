@@ -1,0 +1,167 @@
+{
+  "id": "pet-feeder",
+  "title": "Pet feeder",
+  "description": "Feeding times with portion and food type.",
+  "minGap": 15,
+  "value": [
+    {
+      "time": "07:30",
+      "model": "feed"
+    },
+    {
+      "time": "07:45",
+      "model": "none"
+    },
+    {
+      "time": "18:30",
+      "model": "feed"
+    },
+    {
+      "time": "18:45",
+      "model": "none"
+    }
+  ],
+  "models": [
+    {
+      "id": "none",
+      "label": "None",
+      "icon": "⏻",
+      "off": true
+    },
+    {
+      "id": "feed",
+      "label": "Feed",
+      "icon": "🦴",
+      "preview": "#e9a23b",
+      "defaults": {
+        "portion": 40,
+        "type": "dry"
+      },
+      "summary": "{portion} · {type}",
+      "fields": [
+        {
+          "key": "portion",
+          "type": "range",
+          "min": 5,
+          "max": 200,
+          "step": 5,
+          "unit": " g",
+          "default": 40,
+          "label": "Portion"
+        },
+        {
+          "key": "type",
+          "type": "select",
+          "default": "dry",
+          "label": "Food",
+          "options": [
+            {
+              "value": "dry",
+              "label": "Dry"
+            },
+            {
+              "value": "wet",
+              "label": "Wet"
+            },
+            {
+              "value": "treat",
+              "label": "Treat"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "id": "twice-daily",
+      "label": "Twice daily",
+      "slots": [
+        {
+          "time": "07:30",
+          "model": "feed"
+        },
+        {
+          "time": "07:45",
+          "model": "none"
+        },
+        {
+          "time": "18:30",
+          "model": "feed"
+        },
+        {
+          "time": "18:45",
+          "model": "none"
+        }
+      ]
+    },
+    {
+      "id": "three-meals",
+      "label": "Three meals",
+      "slots": [
+        {
+          "time": "07:30",
+          "model": "feed",
+          "values": {
+            "portion": 30,
+            "type": "dry"
+          }
+        },
+        {
+          "time": "07:45",
+          "model": "none"
+        },
+        {
+          "time": "13:00",
+          "model": "feed",
+          "values": {
+            "portion": 20,
+            "type": "wet"
+          }
+        },
+        {
+          "time": "13:15",
+          "model": "none"
+        },
+        {
+          "time": "19:00",
+          "model": "feed",
+          "values": {
+            "portion": 30,
+            "type": "dry"
+          }
+        },
+        {
+          "time": "19:15",
+          "model": "none"
+        }
+      ]
+    }
+  ],
+  "messages": {
+    "en": {
+      "model.none": "None",
+      "model.feed": "Feed",
+      "field.portion": "Portion",
+      "field.type": "Food",
+      "opt.type.dry": "Dry",
+      "opt.type.wet": "Wet",
+      "opt.type.treat": "Treat",
+      "preset.twice-daily": "Twice daily",
+      "preset.three-meals": "Three meals",
+      "title": "Pet feeder"
+    },
+    "it": {
+      "model.none": "Niente",
+      "model.feed": "Pasto",
+      "field.portion": "Porzione",
+      "field.type": "Cibo",
+      "opt.type.dry": "Secco",
+      "opt.type.wet": "Umido",
+      "opt.type.treat": "Snack",
+      "preset.twice-daily": "Due volte al giorno",
+      "preset.three-meals": "Tre pasti",
+      "title": "Distributore crocchette"
+    }
+  }
+}

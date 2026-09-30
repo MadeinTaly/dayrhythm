@@ -1,0 +1,246 @@
+{
+  "id": "screen-filter",
+  "title": "Screen filter",
+  "description": "Warm and dim a TV or monitor as the evening goes on.",
+  "value": [
+    {
+      "time": "00:00",
+      "model": "off"
+    },
+    {
+      "time": "18:00",
+      "model": "evening"
+    },
+    {
+      "time": "20:30",
+      "model": "cinema"
+    },
+    {
+      "time": "23:00",
+      "model": "night"
+    }
+  ],
+  "models": [
+    {
+      "id": "off",
+      "label": "Off",
+      "icon": "⏻",
+      "off": true
+    },
+    {
+      "id": "soft",
+      "label": "Soft",
+      "icon": "🔆",
+      "preview": "#e8d9b8",
+      "defaults": {
+        "red": 10,
+        "bright": 85,
+        "temp": 3600
+      },
+      "summary": "{bright}% · {temp} K"
+    },
+    {
+      "id": "evening",
+      "label": "Evening",
+      "icon": "🌇",
+      "preview": "#d9a86c",
+      "defaults": {
+        "red": 20,
+        "bright": 70,
+        "temp": 2800
+      },
+      "summary": "{bright}% · {temp} K"
+    },
+    {
+      "id": "cinema",
+      "label": "Cinema",
+      "icon": "🎬",
+      "preview": "#a9713f",
+      "defaults": {
+        "red": 25,
+        "bright": 55,
+        "temp": 2200
+      },
+      "summary": "{bright}% · {temp} K"
+    },
+    {
+      "id": "night",
+      "label": "Night",
+      "icon": "🌙",
+      "preview": "#7a4a2a",
+      "defaults": {
+        "red": 40,
+        "bright": 35,
+        "temp": 1600
+      },
+      "summary": "{bright}% · {temp} K"
+    },
+    {
+      "id": "deep",
+      "label": "Deep night",
+      "icon": "🌑",
+      "preview": "#3d2417",
+      "defaults": {
+        "red": 55,
+        "bright": 15,
+        "temp": 1200
+      },
+      "summary": "{bright}% · {temp} K"
+    },
+    {
+      "id": "custom",
+      "label": "Custom",
+      "icon": "🎚️",
+      "previewScale": {
+        "field": "bright",
+        "min": 5,
+        "max": 100,
+        "from": "#1b1b1b",
+        "to": "#cdbfa8"
+      },
+      "defaults": {
+        "red": 20,
+        "bright": 40,
+        "temp": 1100
+      },
+      "summary": "{bright} · {temp}",
+      "fields": [
+        {
+          "key": "red",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 20,
+          "accent": "#b57520",
+          "label": "Red tint"
+        },
+        {
+          "key": "bright",
+          "type": "range",
+          "min": 5,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 40,
+          "accent": "#328466",
+          "label": "Brightness"
+        },
+        {
+          "key": "temp",
+          "type": "range",
+          "min": 1000,
+          "max": 4000,
+          "step": 100,
+          "unit": "K",
+          "default": 1100,
+          "format": "{value} K",
+          "label": "Temperature"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "id": "movie",
+      "label": "Movie",
+      "slots": [
+        {
+          "time": "00:00",
+          "model": "off"
+        },
+        {
+          "time": "18:00",
+          "model": "evening"
+        },
+        {
+          "time": "20:30",
+          "model": "cinema"
+        },
+        {
+          "time": "23:00",
+          "model": "night"
+        }
+      ]
+    },
+    {
+      "id": "early",
+      "label": "Early",
+      "slots": [
+        {
+          "time": "07:00",
+          "model": "off"
+        },
+        {
+          "time": "17:00",
+          "model": "evening"
+        },
+        {
+          "time": "19:30",
+          "model": "night"
+        }
+      ]
+    },
+    {
+      "id": "late",
+      "label": "Late",
+      "slots": [
+        {
+          "time": "09:00",
+          "model": "off"
+        },
+        {
+          "time": "19:00",
+          "model": "soft"
+        },
+        {
+          "time": "21:00",
+          "model": "evening"
+        },
+        {
+          "time": "23:00",
+          "model": "cinema"
+        },
+        {
+          "time": "01:00",
+          "model": "deep"
+        }
+      ]
+    }
+  ],
+  "messages": {
+    "en": {
+      "model.off": "Off",
+      "model.soft": "Soft",
+      "model.evening": "Evening",
+      "model.cinema": "Cinema",
+      "model.night": "Night",
+      "model.deep": "Deep night",
+      "model.custom": "Custom",
+      "field.red": "Red tint",
+      "field.bright": "Brightness",
+      "field.temp": "Temperature",
+      "preset.movie": "Movie",
+      "preset.early": "Early",
+      "preset.late": "Late",
+      "title": "Screen filter"
+    },
+    "it": {
+      "model.off": "Spento",
+      "model.soft": "Morbido",
+      "model.evening": "Sera",
+      "model.cinema": "Cinema",
+      "model.night": "Notte",
+      "model.deep": "Notte fonda",
+      "model.custom": "Personalizzata",
+      "field.red": "Tinta rossa",
+      "field.bright": "Luminosità",
+      "field.temp": "Temperatura",
+      "preset.movie": "Film",
+      "preset.early": "Presto",
+      "preset.late": "Tardi",
+      "title": "Filtro schermo"
+    }
+  }
+}

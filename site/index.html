@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dayrhythm - daily and weekly schedule web component</title>
+<meta name="description" content="A zero-dependency web component to edit a 24-hour cyclic schedule of time slots, daily or weekly. Framework agnostic, React wrapper included.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23a6dfc5'/%3E%3Cpath d='M6 20h6v-8h6v6h8' fill='none' stroke='%23174d3e' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="./site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="wrap">
+<header class="site">
+  <a class="brand" href="./index.html"><span class="mark" aria-hidden="true">&#9719;</span>dayrhythm</a>
+  <nav class="main" aria-label="Main">
+    <a href="./index.html" aria-current="page">Home</a>
+    <a href="./playground.html">Playground</a>
+    <a href="./packs.html">Packs</a>
+    <a href="https://github.com/MadeinTaly/dayrhythm">GitHub</a>
+    <a href="https://gt.1471995.xyz" rel="noopener">Support</a>
+    <button class="btn" id="scheme-toggle" type="button">Dark mode</button>
+  </nav>
+</header>
+<main id="main">
+<section class="hero">
+  <span class="pill">Web component &middot; zero dependencies &middot; MIT</span>
+  <h1>Edit a day, or a whole week, as a rhythm.</h1>
+  <p class="lead"><code>&lt;day-rhythm&gt;</code> is a drag-and-drop editor for a 24-hour cyclic schedule: heating setpoints, lamp scenes, watering, blinds, opening hours. You bring the meaning, it handles time, slots, the week, dragging and accessibility, and gives you plain JSON back.</p>
+  <div class="actions">
+    <a class="btn primary" href="./playground.html">Open the playground</a>
+    <a class="btn" href="./packs.html">Browse 16 packs</a>
+    <a class="btn" href="https://github.com/MadeinTaly/dayrhythm">GitHub</a>
+  </div>
+</section>
+
+<section class="card" aria-labelledby="live-h">
+  <h2 id="live-h" style="margin-top:0">Live example</h2>
+  <p class="muted">A weekly heating schedule. Drag the handles, click a slot to change its setting, switch days, copy a day to others.</p>
+  <div class="row" style="margin:0 0 1rem" role="group" aria-label="Theme">
+    <button class="btn" type="button" data-theme="organic" aria-pressed="true">Organic</button>
+    <button class="btn" type="button" data-theme="neutral" aria-pressed="false">Neutral</button>
+    <button class="btn" type="button" data-theme="flat" aria-pressed="false">Flat</button>
+  </div>
+  <day-rhythm id="dr"></day-rhythm>
+  <div class="host-bar">
+    <button class="btn primary" id="host-apply" type="button" disabled>Apply</button>
+    <small>This Apply button belongs to the demo page. The component emits <code>change</code>; your app decides what to do with the value.</small>
+    <span class="status" id="host-status" role="status"></span>
+  </div>
+</section>
+
+<h2>Why</h2>
+<div class="grid cols3">
+  <div class="card"><h3>Zero config works</h3><p>Drop the tag in and you get a valid on/off day. Everything else is a documented option.</p></div>
+  <div class="card"><h3>One JSON config</h3><p>Models, presets, messages, classes and endpoints are keys of a single object: attribute, property or a JSON script child.</p></div>
+  <div class="card"><h3>Daily or weekly</h3><p>A daily schedule is a plain array. Weekly adds a week bar, carry-over between days, saved days and copy-to.</p></div>
+  <div class="card"><h3>Pure core</h3><p>All time logic lives in DOM-free functions you can import on a Node server, with shared test vectors for ports.</p></div>
+  <div class="card"><h3>Accessible</h3><p>Slider handles with keyboard control, native dialogs, live-region announcements, reduced-motion and forced-colors support.</p></div>
+  <div class="card"><h3>Styled your way</h3><p>Four themes, CSS variables, <code>::part()</code> and per-part classes that work with Tailwind.</p></div>
+</div>
+
+<h2>Quick start</h2>
+<pre><code>&lt;day-rhythm id="d"&gt;&lt;/day-rhythm&gt;
+&lt;script type="module" src="https://cdn.jsdelivr.net/npm/dayrhythm"&gt;&lt;/script&gt;
+&lt;script&gt;
+  d.addEventListener('change', (e) =&gt; console.log(e.detail.value));
+&lt;/script&gt;</code></pre>
+<p class="muted">More in the <a href="https://github.com/MadeinTaly/dayrhythm#readme">README</a>: npm, React, packs, theming.</p>
+
+<h2>Support</h2>
+<div class="support">
+  <p>dayrhythm is free and MIT licensed. If it saves you time, an optional donation helps me keep improving it. It is never required and the component does not show it inside your app by default.</p>
+  <a class="btn primary" href="https://gt.1471995.xyz" rel="noopener">Support the project</a>
+</div>
+</main>
+<script type="module">
+import './site.js';
+import { packs } from './vendor/packs.js';
+import './vendor/dayrhythm.js';
+const el = document.getElementById('dr');
+const status = document.getElementById('host-status');
+const btn = document.getElementById('host-apply');
+el.config = { ...JSON.parse(JSON.stringify(packs.thermostat)), locale: 'en' };
+let applied = JSON.stringify(el.value);
+const refresh = () => { btn.disabled = JSON.stringify(el.value) === applied; if (!btn.disabled) status.textContent = 'Changes not applied yet.'; };
+el.addEventListener('change', refresh);
+btn.addEventListener('click', () => { applied = JSON.stringify(el.value); btn.disabled = true; status.textContent = 'Applied at ' + new Date().toLocaleTimeString() + '.'; });
+document.querySelectorAll('[data-theme]').forEach((b) => b.addEventListener('click', () => {
+  el.theme = b.dataset.theme;
+  document.querySelectorAll('[data-theme]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+}));
+</script>
+<footer class="site">
+  <span>dayrhythm is MIT licensed.</span>
+  <a href="https://github.com/MadeinTaly/dayrhythm">Source on GitHub</a>
+  <a href="https://gt.1471995.xyz" rel="noopener">Support the project (optional)</a>
+</footer>
+</div>
+</body></html>

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dayrhythm - host-side apply</title>
+<link rel="stylesheet" href="./examples.css">
+</head>
+<body>
+<main>
+<p><a href="./index.html">Playground</a> &middot; <a href="https://github.com/MadeinTaly/dayrhythm">GitHub</a></p>
+<h1>Host-side Apply</h1>
+<p>The library has no Apply button and no dirty tracking: it emits <code>input</code> while dragging and <code>change</code> for committed edits. Your app decides when and how to save, with its own button.</p>
+<day-rhythm id="d" week="top"></day-rhythm>
+<p class="host"><button id="apply" type="button" disabled>Save schedule</button><span id="status" role="status"></span></p>
+<script type="module">
+  import '../src/index.js';
+  import thermostat from '../packs/thermostat.js';
+  const d = document.getElementById('d');
+  d.config = thermostat;
+  const btn = document.getElementById('apply');
+  let saved = JSON.stringify(d.value);
+  d.addEventListener('change', () => { btn.disabled = JSON.stringify(d.value) === saved; });
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    const body = JSON.stringify(d.getValue({ resolve: true }));      // every weekday expanded, no refs
+    // await fetch('/api/schedule', { method: 'PUT', headers: { 'content-type': 'application/json' }, body });
+    saved = JSON.stringify(d.value);
+    document.getElementById('status').textContent = 'Saved ' + body.length + ' bytes';
+  });
+</script>
+</main>
+</body>
+</html>

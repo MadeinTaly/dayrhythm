@@ -1,0 +1,340 @@
+{
+  "id": "sleep-wake",
+  "title": "Sleep and wake",
+  "description": "Wind-down and wake-up ramps for light and sound.",
+  "week": "top",
+  "value": {
+    "week": {
+      "mon": [
+        {
+          "time": "06:30",
+          "model": "wake-ramp"
+        },
+        {
+          "time": "07:00",
+          "model": "awake"
+        },
+        {
+          "time": "20:30",
+          "model": "wind-down"
+        },
+        {
+          "time": "21:30",
+          "model": "sleep"
+        }
+      ],
+      "tue": [
+        {
+          "time": "06:30",
+          "model": "wake-ramp"
+        },
+        {
+          "time": "07:00",
+          "model": "awake"
+        },
+        {
+          "time": "20:30",
+          "model": "wind-down"
+        },
+        {
+          "time": "21:30",
+          "model": "sleep"
+        }
+      ],
+      "wed": [
+        {
+          "time": "06:30",
+          "model": "wake-ramp"
+        },
+        {
+          "time": "07:00",
+          "model": "awake"
+        },
+        {
+          "time": "20:30",
+          "model": "wind-down"
+        },
+        {
+          "time": "21:30",
+          "model": "sleep"
+        }
+      ],
+      "thu": [
+        {
+          "time": "06:30",
+          "model": "wake-ramp"
+        },
+        {
+          "time": "07:00",
+          "model": "awake"
+        },
+        {
+          "time": "20:30",
+          "model": "wind-down"
+        },
+        {
+          "time": "21:30",
+          "model": "sleep"
+        }
+      ],
+      "fri": [
+        {
+          "time": "06:30",
+          "model": "wake-ramp"
+        },
+        {
+          "time": "07:00",
+          "model": "awake"
+        },
+        {
+          "time": "20:30",
+          "model": "wind-down"
+        },
+        {
+          "time": "21:30",
+          "model": "sleep"
+        }
+      ],
+      "sat": [
+        {
+          "time": "08:00",
+          "model": "wake-ramp"
+        },
+        {
+          "time": "08:45",
+          "model": "awake"
+        },
+        {
+          "time": "22:00",
+          "model": "wind-down"
+        },
+        {
+          "time": "23:00",
+          "model": "sleep"
+        }
+      ],
+      "sun": [
+        {
+          "time": "08:00",
+          "model": "wake-ramp"
+        },
+        {
+          "time": "08:45",
+          "model": "awake"
+        },
+        {
+          "time": "22:00",
+          "model": "wind-down"
+        },
+        {
+          "time": "23:00",
+          "model": "sleep"
+        }
+      ]
+    }
+  },
+  "models": [
+    {
+      "id": "sleep",
+      "label": "Sleep",
+      "icon": "😴",
+      "preview": "#3d5a80",
+      "defaults": {
+        "volume": 0,
+        "brightness": 0
+      },
+      "summary": "{volume} · {brightness}",
+      "fields": [
+        {
+          "key": "volume",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 0,
+          "label": "Volume"
+        },
+        {
+          "key": "brightness",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 0,
+          "label": "Brightness"
+        }
+      ]
+    },
+    {
+      "id": "wind-down",
+      "label": "Wind-down",
+      "icon": "🌙",
+      "preview": "#6d597a",
+      "defaults": {
+        "volume": 20,
+        "brightness": 25
+      },
+      "summary": "{volume} · {brightness}",
+      "fields": [
+        {
+          "key": "volume",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 20,
+          "label": "Volume"
+        },
+        {
+          "key": "brightness",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 25,
+          "label": "Brightness"
+        }
+      ]
+    },
+    {
+      "id": "wake-ramp",
+      "label": "Wake ramp",
+      "icon": "🌅",
+      "preview": "#f4a261",
+      "defaults": {
+        "volume": 30,
+        "brightness": 60
+      },
+      "summary": "{volume} · {brightness}",
+      "fields": [
+        {
+          "key": "volume",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 30,
+          "label": "Volume"
+        },
+        {
+          "key": "brightness",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 60,
+          "label": "Brightness"
+        }
+      ]
+    },
+    {
+      "id": "awake",
+      "label": "Awake",
+      "icon": "☀️",
+      "preview": "#ffd166",
+      "defaults": {
+        "volume": 50,
+        "brightness": 100
+      },
+      "summary": "{volume} · {brightness}",
+      "fields": [
+        {
+          "key": "volume",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 50,
+          "label": "Volume"
+        },
+        {
+          "key": "brightness",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 100,
+          "label": "Brightness"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "id": "school",
+      "label": "School",
+      "slots": [
+        {
+          "time": "06:30",
+          "model": "wake-ramp"
+        },
+        {
+          "time": "07:00",
+          "model": "awake"
+        },
+        {
+          "time": "20:30",
+          "model": "wind-down"
+        },
+        {
+          "time": "21:30",
+          "model": "sleep"
+        }
+      ]
+    },
+    {
+      "id": "weekend",
+      "label": "Weekend",
+      "slots": [
+        {
+          "time": "08:00",
+          "model": "wake-ramp"
+        },
+        {
+          "time": "08:45",
+          "model": "awake"
+        },
+        {
+          "time": "22:00",
+          "model": "wind-down"
+        },
+        {
+          "time": "23:00",
+          "model": "sleep"
+        }
+      ]
+    }
+  ],
+  "messages": {
+    "en": {
+      "model.sleep": "Sleep",
+      "field.volume": "Volume",
+      "field.brightness": "Brightness",
+      "model.wind-down": "Wind-down",
+      "model.wake-ramp": "Wake ramp",
+      "model.awake": "Awake",
+      "preset.school": "School",
+      "preset.weekend": "Weekend",
+      "title": "Sleep and wake"
+    },
+    "it": {
+      "model.sleep": "Sonno",
+      "field.volume": "Volume",
+      "field.brightness": "Luminosità",
+      "model.wind-down": "Relax serale",
+      "model.wake-ramp": "Sveglia graduale",
+      "model.awake": "Sveglio",
+      "preset.school": "Scuola",
+      "preset.weekend": "Fine settimana",
+      "title": "Sonno e sveglia"
+    }
+  }
+}

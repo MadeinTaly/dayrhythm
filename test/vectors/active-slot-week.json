@@ -1,0 +1,45 @@
+{
+  "description": "Weekly active-slot conformance vectors (carry-over). `at`: {day,time} | {iso, utcOffsetMinutes|timeZone}. `expect`: {id, day, dayOffset} or null.",
+  "version": 1,
+  "suites": [
+    {"name":"spec example: carry over empty days, week wraps","week":{"mon":[{"id":"a","time":"07:00","model":"a"},{"id":"b","time":"20:00","model":"b"}],"tue":[],"wed":[{"id":"c","time":"08:00","model":"c"}]},"cases":[
+      {"at":{"day":"mon","time":"06:59"},"expect":{"id":"c","day":"wed","dayOffset":-5}},
+      {"at":{"day":"mon","time":"07:00"},"expect":{"id":"a","day":"mon","dayOffset":0}},
+      {"at":{"day":"mon","time":"20:00"},"expect":{"id":"b","day":"mon","dayOffset":0}},
+      {"at":{"day":"tue","time":"12:00"},"expect":{"id":"b","day":"mon","dayOffset":-1}},
+      {"at":{"day":"wed","time":"07:59"},"expect":{"id":"b","day":"mon","dayOffset":-2}},
+      {"at":{"day":"wed","time":"08:00"},"expect":{"id":"c","day":"wed","dayOffset":0}},
+      {"at":{"day":"thu","time":"00:00"},"expect":{"id":"c","day":"wed","dayOffset":-1}},
+      {"at":{"day":"sun","time":"23:59"},"expect":{"id":"c","day":"wed","dayOffset":-4}},
+      {"at":{"day":"mon","time":419.99},"expect":{"id":"c","day":"wed","dayOffset":-5}},
+      {"at":{"day":"mon","time":420},"expect":{"id":"a","day":"mon","dayOffset":0}}
+    ]},
+    {"name":"empty week","week":{},"cases":[
+      {"at":{"day":"mon","time":"12:00"},"expect":null},
+      {"at":{"day":"sun","time":"23:59"},"expect":null}
+    ]},
+    {"name":"one slot in the whole week is always active","week":{"fri":[{"id":"z","time":"10:00","model":"z"}]},"cases":[
+      {"at":{"day":"mon","time":"00:00"},"expect":{"id":"z","day":"fri","dayOffset":-3}},
+      {"at":{"day":"fri","time":"10:00"},"expect":{"id":"z","day":"fri","dayOffset":0}},
+      {"at":{"day":"sun","time":"23:59"},"expect":{"id":"z","day":"fri","dayOffset":-2}}
+    ]},
+    {"name":"saved-day refs are resolved against days","week":{"mon":[{"id":"a","time":"09:00","model":"a"}],"tue":{"ref":"d1"}},"days":[{"id":"d1","name":"Office","slots":[{"id":"r","time":"06:00","model":"r"},{"id":"s","time":"18:00","model":"s"}]}],"cases":[
+      {"at":{"day":"mon","time":"08:59"},"expect":{"id":"s","day":"tue","dayOffset":-6}},
+      {"at":{"day":"tue","time":"05:59"},"expect":{"id":"a","day":"mon","dayOffset":-1}},
+      {"at":{"day":"tue","time":"06:00"},"expect":{"id":"r","day":"tue","dayOffset":0}},
+      {"at":{"day":"wed","time":"00:00"},"expect":{"id":"s","day":"tue","dayOffset":-1}},
+      {"at":{"day":"sun","time":"12:00"},"expect":{"id":"s","day":"tue","dayOffset":-5}}
+    ]},
+    {"name":"unknown ref behaves as an empty day","week":{"mon":[{"id":"a","time":"09:00","model":"a"}],"tue":{"ref":"nope"}},"cases":[
+      {"at":{"day":"tue","time":"12:00"},"expect":{"id":"a","day":"mon","dayOffset":-1}}
+    ]},
+    {"name":"Date input with utcOffsetMinutes / timeZone (2026-01-05 is a Monday)","week":{"mon":[{"id":"a","time":"07:00","model":"a"},{"id":"b","time":"20:00","model":"b"}],"tue":[],"wed":[{"id":"c","time":"08:00","model":"c"}]},"cases":[
+      {"at":{"iso":"2026-01-05T06:59:00Z","utcOffsetMinutes":0},"expect":{"id":"c","day":"wed","dayOffset":-5}},
+      {"at":{"iso":"2026-01-04T23:30:00Z","utcOffsetMinutes":120},"expect":{"id":"c","day":"wed","dayOffset":-5}},
+      {"at":{"iso":"2026-01-05T06:30:00Z","utcOffsetMinutes":30},"expect":{"id":"a","day":"mon","dayOffset":0}},
+      {"at":{"iso":"2026-01-04T22:30:00Z","timeZone":"Asia/Tokyo"},"expect":{"id":"a","day":"mon","dayOffset":0}},
+      {"at":{"iso":"2026-01-05T01:00:00Z","timeZone":"America/New_York"},"expect":{"id":"c","day":"wed","dayOffset":-4}},
+      {"at":{"iso":"2026-01-06T12:00:00Z","utcOffsetMinutes":0},"expect":{"id":"b","day":"mon","dayOffset":-1}}
+    ]}
+  ]
+}

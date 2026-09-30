@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dayrhythm - Heating schedule pack</title>
+<link rel="stylesheet" href="../examples.css">
+</head>
+<body>
+<main>
+  <p><a href="../index.html">Playground</a> &middot; <a href="https://github.com/MadeinTaly/dayrhythm">GitHub</a></p>
+  <h1>Heating schedule</h1>
+  <p>Weekly heating or cooling setpoints. Weekly schedule, pack id <code>thermostat</code>. Needs a local static server (ES modules): <code>node scripts/serve.mjs</code>.</p>
+
+  <label>Language <select id="lang"><option value="en">English</option><option value="it">Italiano</option></select></label>
+  <label>Theme <select id="theme"><option>organic</option><option>neutral</option><option>flat</option></select></label>
+
+  <day-rhythm id="d"></day-rhythm>
+
+  <p class="host">
+    <button id="apply" type="button" disabled>Apply</button>
+    <span id="status" role="status"></span>
+    <small>The Apply button is part of this page (the host app), not of the library.</small>
+  </p>
+  <h2>Value</h2>
+  <pre id="out"></pre>
+</main>
+<script type="module">
+  import '../../src/index.js';
+  import pack from '../../packs/thermostat.js';
+
+  const d = document.getElementById('d');
+  d.config = pack;                       // a pack is a plain config object
+
+  const out = document.getElementById('out');
+  const apply = document.getElementById('apply');
+  let applied = JSON.stringify(d.value);
+  const show = () => {
+    out.textContent = JSON.stringify(d.value, null, 2);
+    apply.disabled = JSON.stringify(d.value) === applied;
+  };
+  d.addEventListener('input', show);
+  d.addEventListener('change', show);
+  show();
+  apply.addEventListener('click', () => {
+    applied = JSON.stringify(d.value);                    // a real app would send d.getValue({ resolve: true }) to its server
+    document.getElementById('status').textContent = 'Applied at ' + new Date().toLocaleTimeString();
+    show();
+  });
+  document.getElementById('lang').addEventListener('change', (e) => { d.locale = e.target.value; });
+  document.getElementById('theme').addEventListener('change', (e) => { d.theme = e.target.value; });
+</script>
+</body>
+</html>

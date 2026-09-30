@@ -1,0 +1,43 @@
+{
+  "name": "dayrhythm",
+  "version": "0.1.0",
+  "description": "Zero-dependency web component for editing a 24-hour cyclic schedule of time slots, daily or weekly.",
+  "keywords": ["web-component", "custom-element", "schedule", "timeline", "scheduler", "24-hour", "weekly", "smart-home", "thermostat", "react"],
+  "license": "MIT",
+  "author": "MadeinTaly",
+  "repository": { "type": "git", "url": "git+https://github.com/MadeinTaly/dayrhythm.git" },
+  "homepage": "https://madeintaly.github.io/dayrhythm/",
+  "bugs": "https://github.com/MadeinTaly/dayrhythm/issues",
+  "type": "module",
+  "sideEffects": ["./src/index.js", "./src/element.js", "./dist/*"],
+  "private": true,
+  "main": "./src/index.js",
+  "module": "./src/index.js",
+  "types": "./types/index.d.ts",
+  "unpkg": "dist/dayrhythm.min.js",
+  "jsdelivr": "dist/dayrhythm.min.js",
+  "exports": {
+    ".": { "types": "./types/index.d.ts", "default": "./src/index.js" },
+    "./element": { "types": "./types/index.d.ts", "default": "./src/element.js" },
+    "./core": { "types": "./types/core.d.ts", "import": "./src/core/index.js", "require": "./dist/dayrhythm-core.cjs" },
+    "./storage": { "types": "./types/storage.d.ts", "default": "./src/storage.js" },
+    "./react": { "types": "./types/react.d.ts", "default": "./react/index.js" },
+    "./packs": { "types": "./types/packs.d.ts", "default": "./packs/index.js" },
+    "./packs/*": { "types": "./types/packs.d.ts", "default": "./packs/*.js" },
+    "./locales/*": "./src/i18n/*.js",
+    "./config.schema.json": "./schema/config.schema.json",
+    "./dist/*": "./dist/*",
+    "./package.json": "./package.json"
+  },
+  "files": ["src", "react", "types", "schema", "packs", "dist", "docs/API.md", "README.md", "LICENSE", "CHANGELOG.md"],
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\"",
+    "build": "node scripts/build.mjs",
+    "size": "node scripts/size-check.mjs",
+    "packs:json": "node scripts/packs-json.mjs",
+    "serve": "node scripts/serve.mjs",
+    "check": "npm run test && npm run build && npm run size"
+  },
+  "peerDependencies": { "react": ">=18" },
+  "peerDependenciesMeta": { "react": { "optional": true } }
+}

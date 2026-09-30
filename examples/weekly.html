@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dayrhythm - weekly</title>
+<link rel="stylesheet" href="./examples.css">
+</head>
+<body>
+<main>
+<p><a href="./index.html">Playground</a> &middot; <a href="https://github.com/MadeinTaly/dayrhythm">GitHub</a></p>
+<h1>Weekly</h1>
+<p>A value with a <code>week</code> key turns on the week bar. Days that are not listed are empty and carry the previous day's last slot.</p>
+<day-rhythm week="top" first-day="mon"
+  config='{"models":[{"id":"eco","label":"Eco","icon":"L","preview":"#6d8fd6","defaults":{"temp":17},"summary":"{temp} °C"},{"id":"comfort","label":"Comfort","icon":"H","preview":"#e59a4b","defaults":{"temp":21},"summary":"{temp} °C"}]}'
+  value='{"week":{"mon":[{"time":"06:30","model":"comfort"},{"time":"08:30","model":"eco"}],"sat":[{"time":"09:00","model":"comfort"},{"time":"23:00","model":"eco"}]}}'></day-rhythm>
+</main>
+</body>
+</html>

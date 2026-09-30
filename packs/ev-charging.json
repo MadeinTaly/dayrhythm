@@ -1,0 +1,264 @@
+{
+  "id": "ev-charging",
+  "title": "EV charging",
+  "description": "Charge by tariff window, solar surplus or manual limits.",
+  "week": "top",
+  "value": {
+    "week": {
+      "mon": [
+        {
+          "time": "07:00",
+          "model": "pause"
+        },
+        {
+          "time": "23:00",
+          "model": "cheap"
+        }
+      ],
+      "tue": [
+        {
+          "time": "07:00",
+          "model": "pause"
+        },
+        {
+          "time": "23:00",
+          "model": "cheap"
+        }
+      ],
+      "wed": [
+        {
+          "time": "07:00",
+          "model": "pause"
+        },
+        {
+          "time": "23:00",
+          "model": "cheap"
+        }
+      ],
+      "thu": [
+        {
+          "time": "07:00",
+          "model": "pause"
+        },
+        {
+          "time": "23:00",
+          "model": "cheap"
+        }
+      ],
+      "fri": [
+        {
+          "time": "07:00",
+          "model": "pause"
+        },
+        {
+          "time": "23:00",
+          "model": "cheap"
+        }
+      ],
+      "sat": [
+        {
+          "time": "09:00",
+          "model": "solar-only"
+        },
+        {
+          "time": "17:00",
+          "model": "off"
+        }
+      ],
+      "sun": [
+        {
+          "time": "09:00",
+          "model": "solar-only"
+        },
+        {
+          "time": "17:00",
+          "model": "off"
+        }
+      ]
+    }
+  },
+  "models": [
+    {
+      "id": "off",
+      "label": "Off",
+      "icon": "⏻",
+      "off": true
+    },
+    {
+      "id": "solar-only",
+      "label": "Solar only",
+      "icon": "☀️",
+      "preview": "#f4d35e",
+      "defaults": {
+        "limit": 90
+      },
+      "summary": "{limit}",
+      "fields": [
+        {
+          "key": "limit",
+          "type": "range",
+          "min": 50,
+          "max": 100,
+          "step": 5,
+          "unit": "% SoC",
+          "default": 90,
+          "label": "Charge limit"
+        }
+      ]
+    },
+    {
+      "id": "cheap",
+      "label": "Cheap tariff",
+      "icon": "💡",
+      "preview": "#83c5be",
+      "defaults": {
+        "current": 16,
+        "limit": 80
+      },
+      "summary": "{current} · {limit}",
+      "fields": [
+        {
+          "key": "current",
+          "type": "range",
+          "min": 6,
+          "max": 32,
+          "step": 1,
+          "unit": " A",
+          "default": 16,
+          "label": "Current"
+        },
+        {
+          "key": "limit",
+          "type": "range",
+          "min": 50,
+          "max": 100,
+          "step": 5,
+          "unit": "% SoC",
+          "default": 80,
+          "label": "Charge limit"
+        }
+      ]
+    },
+    {
+      "id": "fast",
+      "label": "Fast",
+      "icon": "⚡",
+      "preview": "#e63946",
+      "defaults": {
+        "current": 32,
+        "limit": 100
+      },
+      "summary": "{current} · {limit}",
+      "fields": [
+        {
+          "key": "current",
+          "type": "range",
+          "min": 6,
+          "max": 32,
+          "step": 1,
+          "unit": " A",
+          "default": 32,
+          "label": "Current"
+        },
+        {
+          "key": "limit",
+          "type": "range",
+          "min": 50,
+          "max": 100,
+          "step": 5,
+          "unit": "% SoC",
+          "default": 100,
+          "label": "Charge limit"
+        }
+      ]
+    },
+    {
+      "id": "pause",
+      "label": "Pause",
+      "icon": "⏸️",
+      "preview": "#adb5bd",
+      "defaults": {},
+      "summary": ""
+    }
+  ],
+  "presets": [
+    {
+      "id": "two-rate-night",
+      "label": "Two-rate night",
+      "slots": [
+        {
+          "time": "07:00",
+          "model": "pause"
+        },
+        {
+          "time": "23:00",
+          "model": "cheap"
+        }
+      ]
+    },
+    {
+      "id": "three-rate",
+      "label": "Three-rate F1/F2/F3",
+      "slots": [
+        {
+          "time": "07:00",
+          "model": "solar-only"
+        },
+        {
+          "time": "08:00",
+          "model": "pause"
+        },
+        {
+          "time": "19:00",
+          "model": "solar-only"
+        },
+        {
+          "time": "23:00",
+          "model": "cheap"
+        }
+      ]
+    },
+    {
+      "id": "solar",
+      "label": "Solar",
+      "slots": [
+        {
+          "time": "09:00",
+          "model": "solar-only"
+        },
+        {
+          "time": "17:00",
+          "model": "off"
+        }
+      ]
+    }
+  ],
+  "messages": {
+    "en": {
+      "model.off": "Off",
+      "model.solar-only": "Solar only",
+      "field.limit": "Charge limit",
+      "model.cheap": "Cheap tariff",
+      "field.current": "Current",
+      "model.fast": "Fast",
+      "model.pause": "Pause",
+      "preset.two-rate-night": "Two-rate night",
+      "preset.three-rate": "Three-rate F1/F2/F3",
+      "preset.solar": "Solar",
+      "title": "EV charging"
+    },
+    "it": {
+      "model.off": "Spenta",
+      "model.solar-only": "Solo solare",
+      "field.limit": "Limite di carica",
+      "model.cheap": "Tariffa bassa",
+      "field.current": "Corrente",
+      "model.fast": "Veloce",
+      "model.pause": "Pausa",
+      "preset.two-rate-night": "Bioraria notturna",
+      "preset.three-rate": "Trioraria F1/F2/F3",
+      "preset.solar": "Solare",
+      "title": "Ricarica auto elettrica"
+    }
+  }
+}

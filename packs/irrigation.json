@@ -1,0 +1,204 @@
+{
+  "id": "irrigation",
+  "title": "Garden watering",
+  "description": "Watering windows per weekday, with zone and flow.",
+  "week": "top",
+  "minGap": 15,
+  "value": {
+    "week": {
+      "mon": [
+        {
+          "time": "05:30",
+          "model": "water"
+        },
+        {
+          "time": "06:15",
+          "model": "off"
+        },
+        {
+          "time": "21:00",
+          "model": "water"
+        },
+        {
+          "time": "21:45",
+          "model": "off"
+        }
+      ],
+      "wed": [
+        {
+          "time": "05:30",
+          "model": "water"
+        },
+        {
+          "time": "06:15",
+          "model": "off"
+        },
+        {
+          "time": "21:00",
+          "model": "water"
+        },
+        {
+          "time": "21:45",
+          "model": "off"
+        }
+      ],
+      "fri": [
+        {
+          "time": "05:30",
+          "model": "water"
+        },
+        {
+          "time": "06:15",
+          "model": "off"
+        },
+        {
+          "time": "21:00",
+          "model": "water"
+        },
+        {
+          "time": "21:45",
+          "model": "off"
+        }
+      ],
+      "sat": [
+        {
+          "time": "06:00",
+          "model": "water",
+          "values": {
+            "zone": "all",
+            "flow": 70
+          }
+        },
+        {
+          "time": "06:30",
+          "model": "off"
+        }
+      ]
+    }
+  },
+  "models": [
+    {
+      "id": "off",
+      "label": "Off",
+      "icon": "⏻",
+      "off": true
+    },
+    {
+      "id": "water",
+      "label": "Water",
+      "icon": "💧",
+      "preview": "#3aa6d8",
+      "defaults": {
+        "zone": "all",
+        "flow": 100
+      },
+      "summary": "{zone} · {flow}",
+      "fields": [
+        {
+          "key": "zone",
+          "type": "select",
+          "default": "all",
+          "label": "Zone",
+          "options": [
+            {
+              "value": "all",
+              "label": "All zones"
+            },
+            {
+              "value": "lawn",
+              "label": "Lawn"
+            },
+            {
+              "value": "beds",
+              "label": "Flower beds"
+            },
+            {
+              "value": "veg",
+              "label": "Vegetable garden"
+            }
+          ]
+        },
+        {
+          "key": "flow",
+          "type": "range",
+          "min": 10,
+          "max": 100,
+          "step": 10,
+          "unit": "%",
+          "default": 100,
+          "label": "Flow"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "id": "summer",
+      "label": "Summer",
+      "slots": [
+        {
+          "time": "05:30",
+          "model": "water"
+        },
+        {
+          "time": "06:15",
+          "model": "off"
+        },
+        {
+          "time": "21:00",
+          "model": "water"
+        },
+        {
+          "time": "21:45",
+          "model": "off"
+        }
+      ]
+    },
+    {
+      "id": "spring-autumn",
+      "label": "Spring/Autumn",
+      "slots": [
+        {
+          "time": "06:00",
+          "model": "water",
+          "values": {
+            "zone": "all",
+            "flow": 70
+          }
+        },
+        {
+          "time": "06:30",
+          "model": "off"
+        }
+      ]
+    }
+  ],
+  "messages": {
+    "en": {
+      "model.off": "Off",
+      "model.water": "Water",
+      "field.zone": "Zone",
+      "opt.zone.all": "All zones",
+      "opt.zone.lawn": "Lawn",
+      "opt.zone.beds": "Flower beds",
+      "opt.zone.veg": "Vegetable garden",
+      "field.flow": "Flow",
+      "preset.summer": "Summer",
+      "preset.spring-autumn": "Spring/Autumn",
+      "title": "Garden watering"
+    },
+    "it": {
+      "model.off": "Spento",
+      "model.water": "Irriga",
+      "field.zone": "Zona",
+      "opt.zone.all": "Tutte le zone",
+      "opt.zone.lawn": "Prato",
+      "opt.zone.beds": "Aiuole",
+      "opt.zone.veg": "Orto",
+      "field.flow": "Portata",
+      "preset.summer": "Estate",
+      "preset.spring-autumn": "Primavera/Autunno",
+      "title": "Irrigazione giardino"
+    }
+  }
+}

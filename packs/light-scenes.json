@@ -1,0 +1,256 @@
+{
+  "id": "light-scenes",
+  "title": "Light scenes",
+  "description": "Smart lamp or mood lighting through the day.",
+  "value": [
+    {
+      "time": "06:30",
+      "model": "sunrise"
+    },
+    {
+      "time": "08:00",
+      "model": "day"
+    },
+    {
+      "time": "18:30",
+      "model": "sunset"
+    },
+    {
+      "time": "20:00",
+      "model": "evening"
+    },
+    {
+      "time": "22:30",
+      "model": "night"
+    }
+  ],
+  "models": [
+    {
+      "id": "sunrise",
+      "label": "Sunrise",
+      "icon": "🌅",
+      "preview": "#f4a261",
+      "defaults": {
+        "brightness": 40,
+        "kelvin": 2400
+      },
+      "summary": "{brightness}% · {kelvin} K"
+    },
+    {
+      "id": "day",
+      "label": "Day",
+      "icon": "☀️",
+      "preview": "#ffd166",
+      "defaults": {
+        "brightness": 100,
+        "kelvin": 5000
+      },
+      "summary": "{brightness}% · {kelvin} K"
+    },
+    {
+      "id": "sunset",
+      "label": "Sunset",
+      "icon": "🌇",
+      "preview": "#e76f51",
+      "defaults": {
+        "brightness": 60,
+        "kelvin": 2500
+      },
+      "summary": "{brightness}% · {kelvin} K"
+    },
+    {
+      "id": "evening",
+      "label": "Evening",
+      "icon": "🛋️",
+      "preview": "#e9a23b",
+      "defaults": {
+        "brightness": 45,
+        "kelvin": 2700
+      },
+      "summary": "{brightness}% · {kelvin} K"
+    },
+    {
+      "id": "night",
+      "label": "Night",
+      "icon": "🌙",
+      "preview": "#3d5a80",
+      "defaults": {
+        "brightness": 15,
+        "kelvin": 2200
+      },
+      "summary": "{brightness}% · {kelvin} K"
+    },
+    {
+      "id": "moonlight",
+      "label": "Moonlight",
+      "icon": "✨",
+      "preview": "#98c1d9",
+      "defaults": {
+        "brightness": 5,
+        "kelvin": 4000
+      },
+      "summary": "{brightness}% · {kelvin} K"
+    },
+    {
+      "id": "off",
+      "label": "Off",
+      "icon": "⏻",
+      "off": true
+    },
+    {
+      "id": "custom",
+      "label": "Custom",
+      "icon": "🎛️",
+      "previewScale": {
+        "field": "brightness",
+        "min": 0,
+        "max": 100,
+        "from": "#1b1b1b",
+        "to": "#ffe9b0"
+      },
+      "defaults": {
+        "brightness": 70,
+        "kelvin": 3500
+      },
+      "summary": "{brightness} · {kelvin}",
+      "fields": [
+        {
+          "key": "brightness",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 70,
+          "accent": "#b57520",
+          "label": "Brightness"
+        },
+        {
+          "key": "kelvin",
+          "type": "range",
+          "min": 2000,
+          "max": 6500,
+          "step": 100,
+          "unit": "K",
+          "default": 3500,
+          "format": "{value} K",
+          "label": "Colour temperature"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "id": "standard",
+      "label": "Standard",
+      "slots": [
+        {
+          "time": "06:30",
+          "model": "sunrise"
+        },
+        {
+          "time": "08:00",
+          "model": "day"
+        },
+        {
+          "time": "18:30",
+          "model": "sunset"
+        },
+        {
+          "time": "20:00",
+          "model": "evening"
+        },
+        {
+          "time": "22:30",
+          "model": "night"
+        }
+      ]
+    },
+    {
+      "id": "early-bird",
+      "label": "Early bird",
+      "slots": [
+        {
+          "time": "05:30",
+          "model": "sunrise"
+        },
+        {
+          "time": "07:00",
+          "model": "day"
+        },
+        {
+          "time": "17:30",
+          "model": "sunset"
+        },
+        {
+          "time": "19:00",
+          "model": "evening"
+        },
+        {
+          "time": "21:00",
+          "model": "night"
+        }
+      ]
+    },
+    {
+      "id": "night-owl",
+      "label": "Night owl",
+      "slots": [
+        {
+          "time": "01:30",
+          "model": "night"
+        },
+        {
+          "time": "08:30",
+          "model": "sunrise"
+        },
+        {
+          "time": "10:00",
+          "model": "day"
+        },
+        {
+          "time": "20:00",
+          "model": "sunset"
+        },
+        {
+          "time": "22:00",
+          "model": "evening"
+        }
+      ]
+    }
+  ],
+  "messages": {
+    "en": {
+      "model.sunrise": "Sunrise",
+      "model.day": "Day",
+      "model.sunset": "Sunset",
+      "model.evening": "Evening",
+      "model.night": "Night",
+      "model.moonlight": "Moonlight",
+      "model.off": "Off",
+      "model.custom": "Custom",
+      "field.brightness": "Brightness",
+      "field.kelvin": "Colour temperature",
+      "preset.standard": "Standard",
+      "preset.early-bird": "Early bird",
+      "preset.night-owl": "Night owl",
+      "title": "Light scenes"
+    },
+    "it": {
+      "model.sunrise": "Alba",
+      "model.day": "Giorno",
+      "model.sunset": "Tramonto",
+      "model.evening": "Sera",
+      "model.night": "Notte",
+      "model.moonlight": "Chiaro di luna",
+      "model.off": "Spento",
+      "model.custom": "Personalizzata",
+      "field.brightness": "Luminosità",
+      "field.kelvin": "Temperatura colore",
+      "preset.standard": "Standard",
+      "preset.early-bird": "Mattiniero",
+      "preset.night-owl": "Nottambulo",
+      "title": "Scene di luce"
+    }
+  }
+}

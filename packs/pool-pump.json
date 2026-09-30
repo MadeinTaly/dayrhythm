@@ -1,0 +1,160 @@
+{
+  "id": "pool-pump",
+  "title": "Pool filtration",
+  "description": "Filter pump run times and speeds.",
+  "value": [
+    {
+      "time": "06:00",
+      "model": "normal"
+    },
+    {
+      "time": "10:00",
+      "model": "boost"
+    },
+    {
+      "time": "12:00",
+      "model": "normal"
+    },
+    {
+      "time": "18:00",
+      "model": "low"
+    },
+    {
+      "time": "21:00",
+      "model": "off"
+    }
+  ],
+  "models": [
+    {
+      "id": "off",
+      "label": "Off",
+      "icon": "⏻",
+      "off": true
+    },
+    {
+      "id": "low",
+      "label": "Low",
+      "icon": "💤",
+      "preview": "#8ecae6",
+      "defaults": {
+        "speed": 35
+      },
+      "summary": "{speed}%"
+    },
+    {
+      "id": "normal",
+      "label": "Normal",
+      "icon": "🌊",
+      "preview": "#4cc9f0",
+      "defaults": {
+        "speed": 70
+      },
+      "summary": "{speed}",
+      "fields": [
+        {
+          "key": "speed",
+          "type": "range",
+          "min": 40,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 70,
+          "label": "Speed"
+        }
+      ]
+    },
+    {
+      "id": "boost",
+      "label": "Boost",
+      "icon": "🚀",
+      "preview": "#0077b6",
+      "defaults": {
+        "speed": 100
+      },
+      "summary": "{speed}%"
+    }
+  ],
+  "presets": [
+    {
+      "id": "summer",
+      "label": "Summer",
+      "slots": [
+        {
+          "time": "06:00",
+          "model": "normal"
+        },
+        {
+          "time": "10:00",
+          "model": "boost"
+        },
+        {
+          "time": "12:00",
+          "model": "normal"
+        },
+        {
+          "time": "18:00",
+          "model": "low"
+        },
+        {
+          "time": "21:00",
+          "model": "off"
+        }
+      ]
+    },
+    {
+      "id": "winter",
+      "label": "Winter",
+      "slots": [
+        {
+          "time": "10:00",
+          "model": "low"
+        },
+        {
+          "time": "14:00",
+          "model": "off"
+        }
+      ]
+    },
+    {
+      "id": "solar-hours",
+      "label": "Solar hours",
+      "slots": [
+        {
+          "time": "09:30",
+          "model": "normal",
+          "values": {
+            "speed": 80
+          }
+        },
+        {
+          "time": "16:30",
+          "model": "off"
+        }
+      ]
+    }
+  ],
+  "messages": {
+    "en": {
+      "model.off": "Off",
+      "model.low": "Low",
+      "model.normal": "Normal",
+      "field.speed": "Speed",
+      "model.boost": "Boost",
+      "preset.summer": "Summer",
+      "preset.winter": "Winter",
+      "preset.solar-hours": "Solar hours",
+      "title": "Pool filtration"
+    },
+    "it": {
+      "model.off": "Spenta",
+      "model.low": "Bassa",
+      "model.normal": "Normale",
+      "field.speed": "Velocità",
+      "model.boost": "Boost",
+      "preset.summer": "Estate",
+      "preset.winter": "Inverno",
+      "preset.solar-hours": "Ore solari",
+      "title": "Filtrazione piscina"
+    }
+  }
+}
