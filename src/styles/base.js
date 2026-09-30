@@ -22,7 +22,7 @@ border:1px solid var(--x-border);border-radius:var(--x-radius-panel);padding:var
 .dr-input{min-height:2.6rem;padding:.5rem .8rem;border:1px solid var(--x-line);border-radius:var(--x-radius-input);background:var(--x-surface);accent-color:var(--x-field-accent,var(--x-accent))}
 .dr-input[aria-invalid=true]{border-color:var(--x-danger)}
 .dr-error{color:var(--x-danger);font-size:.8em}
-.dr-weekbar .dr-button{padding-inline:.7rem;min-width:var(--x-tap)}
+.dr-week-bar .dr-button{padding-inline:.7rem;min-width:var(--x-tap)}
 .dr-week-tab{border:1px solid var(--x-border);border-radius:var(--x-radius-tab);background:var(--x-surface);font-size:.8em;padding:.3rem .5rem}
 .dr-week-tab:hover{background:var(--x-surface-soft)}
 .dr-week-tab[aria-selected=true]{background:var(--x-accent-soft);border-color:var(--x-accent);font-weight:650}

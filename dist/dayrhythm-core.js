@@ -1,4 +1,4 @@
-/*! dayrhythm v0.1.0 | MIT | https://github.com/MadeinTaly/dayrhythm */
+/*! dayrhythm v0.1.1 | MIT | https://github.com/MadeinTaly/dayrhythm */
 
 // src/core/time.js
 var WEEKDAYS = Object.freeze(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);

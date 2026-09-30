@@ -12,16 +12,16 @@ display:flex;flex-direction:column;gap:calc(var(--x-gap)*2.5);position:relative;
 .dr-presets{flex-direction:column;align-items:stretch}
 .dr-toolbar{justify-content:space-between}
 .dr-toolbar-main{display:flex;flex-wrap:wrap;gap:var(--x-gap);align-items:center;flex:1}
-.dr-weekbar{display:flex;align-items:stretch;gap:var(--x-gap);min-height:var(--x-week-h)}
-.dr-weektabs{display:flex;flex:1;min-width:0;overflow-x:auto;gap:var(--x-gap);scrollbar-width:thin}
+.dr-week-bar{display:flex;align-items:stretch;gap:var(--x-gap);min-height:var(--x-week-h)}
+.dr-week-tablist{display:flex;flex:1;min-width:0;overflow-x:auto;gap:var(--x-gap);scrollbar-width:thin}
 .dr-week-tab{flex:1 0 auto;min-width:var(--x-tap);min-height:var(--x-tap);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.25rem;position:relative}
 .dr-week-tab-preview{align-self:stretch;height:.3rem;min-width:1.4rem}
 @container dr (max-width:420px){.dr-tab-long{display:none}}
 @container dr (min-width:421px){.dr-tab-short{display:none}}
 .dr-spectrum{display:flex;height:var(--x-spectrum-h);overflow:hidden}
 .dr-spectrum-segment{flex:0 1 0;min-width:0}
-.dr-trackwrap{position:relative;max-width:100%}
-.dr-root[data-orient=horizontal] .dr-trackwrap{overflow-x:auto;overflow-y:hidden}
+.dr-track-wrap{position:relative;max-width:100%}
+.dr-root[data-orient=horizontal] .dr-track-wrap{overflow-x:auto;overflow-y:hidden}
 .dr-track{display:flex;position:relative;gap:0;user-select:none;-webkit-user-select:none}
 .dr-track[data-orient=horizontal]{flex-direction:row;height:var(--x-track-thickness);min-width:calc(var(--n,1)*(var(--x-card-min) + var(--x-handle)))}
 .dr-track[data-orient=vertical]{flex-direction:column;min-height:max(var(--x-track-length),calc(var(--n,1)*(var(--x-card-min) + var(--x-handle))))}
