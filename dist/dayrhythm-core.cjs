@@ -1,4 +1,4 @@
-/*! dayrhythm v0.1.1 | MIT | https://github.com/MadeinTaly/dayrhythm */
+/*! dayrhythm v0.2.0 | MIT | https://github.com/MadeinTaly/dayrhythm */
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -40,6 +40,7 @@ __export(index_exports, {
   normalizeDay: () => normalizeDay,
   orderedWeekdays: () => orderedWeekdays,
   parseTime: () => parseTime,
+  pushBoundary: () => pushBoundary,
   removeSlotById: () => removeSlotById,
   resolveValues: () => resolveValues,
   resolveWeek: () => resolveWeek,
@@ -229,6 +230,48 @@ function moveBoundary(slots, id, toMinutes, opts = {}) {
   else v = Math.min(b.hi, Math.max(b.lo, target));
   const out = s.map((x, k) => k === b.index ? { ...x, time: formatTime(v) } : x);
   return { slots: out, time: formatTime(v), minutes: v, clamped: v !== target };
+}
+function pushBoundary(slots, id, toMinutes, opts = {}) {
+  const { snap = 5, minGap = 30, cyclic = true } = opts;
+  const s = sortSlots(slots);
+  const n = s.length;
+  const i = s.findIndex((x) => x.id === id);
+  if (i < 0) return { slots: s, time: null, minutes: null, clamped: false, pushed: [] };
+  const t = s.map((x) => parseTime(x.time));
+  const cur = t[i];
+  let lo, hi;
+  if (cyclic && i === 0) lo = n > 1 ? Math.max(0, t[n - 1] + minGap - 1440) : 0;
+  else {
+    const first = cyclic ? 1 : 0;
+    lo = cyclic ? t[0] + i * minGap : i * minGap;
+    for (let j = i - 1; j >= first; j--) if (isLocked(s[j], "time")) {
+      lo = t[j] + (i - j) * minGap;
+      break;
+    }
+  }
+  if (cyclic && i === 0) hi = 1439 - (n - 1) * minGap;
+  else hi = (cyclic ? Math.min(1439, t[0] + 1440 - minGap) : 1439) - (n - 1 - i) * minGap;
+  for (let j = i + 1; j < n; j++) if (isLocked(s[j], "time")) {
+    hi = t[j] - (j - i) * minGap;
+    break;
+  }
+  if (snap > 1) {
+    lo = Math.ceil(lo / snap) * snap;
+    hi = Math.floor(hi / snap) * snap;
+  }
+  const target = snapTo(toMinutes, snap);
+  const v = lo > hi ? cur : Math.min(hi, Math.max(lo, target));
+  const pushed = [];
+  const out = s.map((x, k) => {
+    let m = t[k];
+    if (k === i) m = v;
+    else if (k > i) m = Math.max(t[k], v + (k - i) * minGap);
+    else if (!(cyclic && k === 0) && !(cyclic && i === 0)) m = Math.min(t[k], v - (i - k) * minGap);
+    if (m === t[k] && k !== i) return x;
+    if (k !== i) pushed.push(x.id);
+    return { ...x, time: formatTime(m) };
+  });
+  return { slots: out, time: formatTime(v), minutes: v, clamped: v !== target, pushed };
 }
 function retimeSlot(slots, id, time, opts = {}) {
   const { minGap = 30, cyclic = true } = opts;
@@ -459,6 +502,7 @@ function nextChange(value, at, opts) {
   normalizeDay,
   orderedWeekdays,
   parseTime,
+  pushBoundary,
   removeSlotById,
   resolveValues,
   resolveWeek,

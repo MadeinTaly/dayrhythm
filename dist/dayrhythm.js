@@ -1,4 +1,4 @@
-/*! dayrhythm v0.1.1 | MIT | https://github.com/MadeinTaly/dayrhythm */
+/*! dayrhythm v0.2.0 | MIT | https://github.com/MadeinTaly/dayrhythm */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -6,7 +6,7 @@ var __export = (target, all) => {
 };
 
 // src/version.js
-var VERSION = "0.1.1";
+var VERSION = "0.2.0";
 
 // src/core/time.js
 var WEEKDAYS = Object.freeze(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
@@ -182,6 +182,48 @@ function moveBoundary(slots, id, toMinutes, opts = {}) {
   else v = Math.min(b.hi, Math.max(b.lo, target));
   const out = s.map((x, k) => k === b.index ? { ...x, time: formatTime(v) } : x);
   return { slots: out, time: formatTime(v), minutes: v, clamped: v !== target };
+}
+function pushBoundary(slots, id, toMinutes, opts = {}) {
+  const { snap = 5, minGap = 30, cyclic = true } = opts;
+  const s = sortSlots(slots);
+  const n = s.length;
+  const i = s.findIndex((x) => x.id === id);
+  if (i < 0) return { slots: s, time: null, minutes: null, clamped: false, pushed: [] };
+  const t = s.map((x) => parseTime(x.time));
+  const cur = t[i];
+  let lo, hi;
+  if (cyclic && i === 0) lo = n > 1 ? Math.max(0, t[n - 1] + minGap - 1440) : 0;
+  else {
+    const first = cyclic ? 1 : 0;
+    lo = cyclic ? t[0] + i * minGap : i * minGap;
+    for (let j = i - 1; j >= first; j--) if (isLocked(s[j], "time")) {
+      lo = t[j] + (i - j) * minGap;
+      break;
+    }
+  }
+  if (cyclic && i === 0) hi = 1439 - (n - 1) * minGap;
+  else hi = (cyclic ? Math.min(1439, t[0] + 1440 - minGap) : 1439) - (n - 1 - i) * minGap;
+  for (let j = i + 1; j < n; j++) if (isLocked(s[j], "time")) {
+    hi = t[j] - (j - i) * minGap;
+    break;
+  }
+  if (snap > 1) {
+    lo = Math.ceil(lo / snap) * snap;
+    hi = Math.floor(hi / snap) * snap;
+  }
+  const target = snapTo(toMinutes, snap);
+  const v = lo > hi ? cur : Math.min(hi, Math.max(lo, target));
+  const pushed = [];
+  const out = s.map((x, k) => {
+    let m = t[k];
+    if (k === i) m = v;
+    else if (k > i) m = Math.max(t[k], v + (k - i) * minGap);
+    else if (!(cyclic && k === 0) && !(cyclic && i === 0)) m = Math.min(t[k], v - (i - k) * minGap);
+    if (m === t[k] && k !== i) return x;
+    if (k !== i) pushed.push(x.id);
+    return { ...x, time: formatTime(m) };
+  });
+  return { slots: out, time: formatTime(v), minutes: v, clamped: v !== target, pushed };
 }
 function retimeSlot(slots, id, time, opts = {}) {
   const { minGap = 30, cyclic = true } = opts;
@@ -385,6 +427,7 @@ __export(core_exports, {
   normalizeDay: () => normalizeDay,
   orderedWeekdays: () => orderedWeekdays,
   parseTime: () => parseTime,
+  pushBoundary: () => pushBoundary,
   removeSlotById: () => removeSlotById,
   resolveValues: () => resolveValues,
   resolveWeek: () => resolveWeek,
@@ -445,6 +488,7 @@ var defaults = {
   maxSlots: null,
   origin: "first",
   seamDrag: true,
+  push: true,
   orientation: "auto",
   breakpoint: 640,
   add: true,
@@ -469,6 +513,7 @@ var defaults = {
   weekPreview: true,
   weekCopy: true,
   linkDays: false,
+  weekLayout: "rows",
   theme: "organic",
   colorScheme: "auto",
   locale: null,
@@ -491,6 +536,7 @@ var ATTRS = {
   "max-slots": ["maxSlots", "int"],
   origin: ["origin", "str"],
   "seam-drag": ["seamDrag", "toggle"],
+  push: ["push", "toggle"],
   orientation: ["orientation", "str"],
   breakpoint: ["breakpoint", "int"],
   add: ["add", "toggle"],
@@ -515,6 +561,7 @@ var ATTRS = {
   "week-preview": ["weekPreview", "toggle"],
   "week-copy": ["weekCopy", "toggle"],
   "link-days": ["linkDays", "toggle"],
+  "week-layout": ["weekLayout", "str"],
   theme: ["theme", "str"],
   "color-scheme": ["colorScheme", "str"],
   locale: ["locale", "str"],
@@ -1025,6 +1072,24 @@ display:flex;flex-direction:column;gap:calc(var(--x-gap)*2.5);position:relative;
 .dr-now-badge{position:absolute;white-space:nowrap;font-size:.7em;padding:.05rem .4rem;background:var(--x-now);color:#fff;border-radius:99px;transform:translate(-50%,0)}
 .dr-track[data-orient=horizontal] .dr-now-badge{top:.15rem;left:50%}
 .dr-track[data-orient=vertical] .dr-now-badge{left:auto;right:.3rem;top:0;transform:translate(0,-50%)}
+.dr-track-wrap[data-rows]{overflow:visible!important}
+.dr-week-rows{display:grid;gap:var(--dr-row-gap,.4rem);padding-top:1.4rem}
+.dr-week-row,.dr-week-axis{display:grid;grid-template-columns:var(--dr-row-label,2.8rem) minmax(0,1fr);align-items:center;gap:.4rem}
+.dr-week-axis-ticks{position:relative;height:1em}
+.dr-week-axis-tick{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.dr-week-axis-tick:first-child{transform:none}
+.dr-week-axis-tick:last-child{transform:translateX(-100%)}
+.dr-week-row-day{min-height:var(--dr-row-height,2.75rem);min-width:0;padding:0;position:relative;cursor:pointer}
+.dr-track[data-row-day]{height:var(--dr-row-height,2.75rem);min-width:0}
+.dr-track[data-row-day] .dr-slot{min-width:0;container-type:inline-size}
+.dr-track[data-row-day] .dr-slot-content{justify-content:center;align-items:center}
+.dr-track[data-row-day] :is(.dr-slot-time,.dr-slot-label,.dr-slot-model-name,.dr-slot-summary){display:none}
+.dr-track[data-row-day] .dr-slot-model{min-height:0;padding:0}
+@container (max-width:1.7rem){.dr-track[data-row-day] .dr-slot-icon{display:none}}
+.dr-track[data-row-day] .dr-handle{flex:0 0 0;width:0}
+.dr-track[data-row-day] .dr-handle::before{left:calc(50% - var(--dr-row-tap,28px)/2);width:var(--dr-row-tap,28px)}
+.dr-track[data-row-day] .dr-handle-time{top:-1.55rem}
+.dr-track[data-row-day] .dr-now-badge{display:none}
 .dr-dialog{padding:0;border:0;width:100%;max-width:min(94vw,30rem);max-height:min(90dvh,46rem)}
 .dr-dialog[open]{display:flex;flex-direction:column}
 .dr-dialog-body{overflow:auto;min-height:0}
@@ -1076,6 +1141,15 @@ border:1px solid var(--x-border);border-radius:var(--x-radius-panel);padding:var
 .dr-week-tab[data-empty]{color:var(--x-muted)}
 .dr-week-tab[data-linked]{border-style:dashed}
 .dr-week-tab-preview{border-radius:99px;opacity:.9}
+.dr-week-axis{font-size:.68em;color:var(--x-muted);font-variant-numeric:tabular-nums}
+.dr-week-row-day{border:1px solid var(--x-border);border-radius:var(--x-radius-input);background:var(--x-surface);font-size:.8em;font-weight:600;text-transform:capitalize}
+.dr-week-row[data-selected] .dr-week-row-day{background:var(--x-accent-soft);border-color:var(--x-accent)}
+.dr-week-row[data-today] .dr-week-row-day::after{content:'';position:absolute;top:.25rem;right:.25rem;width:.35rem;height:.35rem;border-radius:50%;background:var(--x-now)}
+.dr-track[data-row-day] .dr-slot{padding:0;border-radius:.55rem}
+.dr-track[data-row-day] .dr-slot-carry{border-style:dashed}
+.dr-week-row[data-selected] .dr-track[data-row-day] .dr-slot:not(.dr-slot-carry){border-color:color-mix(in srgb,var(--x-accent) 55%,var(--x-border))}
+.dr-track[data-row-day] .dr-handle-grip{width:3px;height:60%;opacity:.8;background:var(--x-ink)}
+.dr-toolbar-day{font-size:.85em;font-weight:650;text-transform:capitalize;margin-inline-end:.3rem}
 .dr-spectrum{border-radius:var(--x-radius-spectrum);background:var(--x-ink)}
 .dr-spectrum-segment{opacity:.9}
 .dr-slot{border:1px solid var(--x-border);border-radius:var(--x-radius-card);background:var(--x-surface-soft);padding:.5rem}
@@ -1217,9 +1291,9 @@ function gradientStops(pieces, colorOf) {
 
 // src/ui/drag.js
 function attachDrag(el) {
-  const track = el._$.track;
-  track.addEventListener("pointerdown", (e) => onDown(el, e));
-  track.addEventListener("keydown", (e) => onKey(el, e));
+  const wrap = el._$.trackwrap;
+  wrap.addEventListener("pointerdown", (e) => onDown(el, e));
+  wrap.addEventListener("keydown", (e) => onKey(el, e));
 }
 var handleOf = (e) => e.target.closest ? e.target.closest("[data-handle]") : null;
 function setFlex(node, dur) {
@@ -1228,47 +1302,58 @@ function setFlex(node, dur) {
   if (dur <= 0) node.dataset.zero = "";
   else delete node.dataset.zero;
 }
+function trackCtx(el, h) {
+  const track = h.parentElement;
+  const rowDay = track && track.dataset.rowDay;
+  if (rowDay && el._rows && el._rows.has(rowDay)) return { day: rowDay, track, ...el._rows.get(rowDay) };
+  return { day: el.weekMode ? el._sel : null, track: el._$.track, layout: el._layout, pieceEls: el._pieceEls, segEls: el._segEls };
+}
+function shift(el, slots, id, minutes, cyclic) {
+  const o = { snap: el._snap, minGap: el._minGap, cyclic };
+  return el.cfg.push === false ? moveBoundary(slots, id, minutes, o) : pushBoundary(slots, id, minutes, o);
+}
 function onDown(el, e) {
   const h = handleOf(e);
   if (!h || h.hasAttribute("data-alias") || e.button && e.button > 0 || el._drag) return;
   const id = h.dataset.slotId;
   const weekly = el.weekMode;
-  const slots = sortSlots(el._displaySlots());
+  const ctx = trackCtx(el, h);
+  const slots = sortSlots(el._slotsOf(ctx.day));
   const idx = slots.findIndex((s) => s.id === id);
   if (idx < 0) return;
   e.preventDefault();
-  const track = el._$.track;
+  const track = ctx.track;
   const frozen = !weekly && idx === 0 && el.cfg.origin !== "midnight";
   let handle = h;
   if (frozen) {
     el._frozen = true;
     el._renderTrack({ frozen: true });
+    ctx.layout = el._layout;
+    ctx.pieceEls = el._pieceEls;
+    ctx.segEls = el._segEls;
     handle = track.querySelector(`[data-handle][data-slot-id="${CSS.escape(id)}"]:not([data-alias])`) || h;
   }
-  const horiz = el.resolvedOrientation === "horizontal";
-  const rect = track.getBoundingClientRect();
-  const hs = handle.getBoundingClientRect();
-  const nHandles = track.querySelectorAll("[data-handle]").length;
-  const len = (horiz ? rect.width : rect.height) - nHandles * (horiz ? hs.width : hs.height);
+  const horiz = track.dataset.orient === "horizontal";
+  const carry = ctx.layout.pieces.find((p) => p.kind === "carry");
   const st = {
     id,
     weekly,
-    day: weekly ? el._sel : null,
+    day: ctx.day,
+    ctx,
     slots0: slots,
     base: el._value,
     frozen,
     handle,
     horiz,
-    ppm: Math.max(0.05, len / 1440),
-    startPos: horiz ? e.clientX : e.clientY,
+    opts: weekly ? { cyclic: false, carry: carry && carry.slot } : { cyclic: true, origin: el.cfg.origin === "midnight" ? "midnight" : "first" },
+    origin: ctx.layout.origin,
     pos: horiz ? e.clientX : e.clientY,
     startMin: parseTime(slots[idx].time),
     cur: parseTime(slots[idx].time),
     raf: 0,
-    dur0: new Map(el._layout.pieces.map((p) => [p.key, p.dur])),
+    durs: new Map(ctx.layout.pieces.map((p) => [p.key, p.dur])),
     alias: frozen ? track.querySelector("[data-handle][data-alias]") : null,
-    firstId: slots[0].id,
-    lastId: slots[slots.length - 1].id
+    last: null
   };
   el._drag = st;
   el._liveBase = el._value;
@@ -1298,57 +1383,75 @@ function onDown(el, e) {
   handle.addEventListener("pointercancel", up);
   handle.addEventListener("lostpointercapture", lost);
 }
+function offsetAt(st, pos) {
+  const tr = st.ctx.track.getBoundingClientRect();
+  const len = st.horiz ? tr.width : tr.height;
+  const ppm = Math.max(0.05, len / 1440);
+  let acc = 0, first = true, end = null;
+  for (const p of st.ctx.layout.pieces) {
+    const dur = st.durs.get(p.key);
+    const node = st.ctx.pieceEls.get(p.key);
+    if (!node || dur <= 0) continue;
+    const r = node.getBoundingClientRect();
+    const a0 = st.horiz ? r.left : r.top, a1 = st.horiz ? r.right : r.bottom;
+    if (pos < a0) return first ? (pos - a0) / ppm : acc;
+    if (pos <= a1) return acc + (a1 > a0 ? (pos - a0) / (a1 - a0) * dur : 0);
+    acc += dur;
+    first = false;
+    end = a1;
+  }
+  return end == null ? acc : acc + (pos - end) / ppm;
+}
+function frozenDurs(st, slots, v) {
+  const O = st.origin;
+  const keys = ["tail", ...slots.map((s) => "main:" + s.id), "tail-end"];
+  const at = [0, v >= O ? v - O : 0, ...slots.slice(1).map((s) => parseTime(s.time) - O), v < O ? v - O + 1440 : 1440, 1440];
+  return new Map(keys.map((k, i) => [k, at[i + 1] - at[i]]));
+}
 function frame(el, st) {
   st.raf = 0;
   if (el._drag !== st) return;
-  const target = st.startMin + (st.pos - st.startPos) / st.ppm;
-  const r = moveBoundary(st.slots0, st.id, target, { snap: el._snap, minGap: el._minGap, cyclic: !st.weekly });
-  if (r.minutes === st.cur) return;
+  const a = offsetAt(st, st.pos);
+  let target = st.origin + a;
+  if (st.frozen && Math.abs(target - 1440 - st.cur) < Math.abs(target - st.cur)) target -= 1440;
+  const cyclic = !st.weekly;
+  const r = shift(el, st.slots0, st.id, target, cyclic);
+  if (r.minutes === st.cur && st.last) return;
   st.cur = r.minutes;
-  const delta = r.minutes - st.startMin;
-  const durs = new Map(st.dur0);
-  const bKey = "main:" + st.id;
+  st.last = r.slots;
   const time = el.fmt(r.minutes);
-  if (st.frozen) {
-    const d = Math.max(0, delta), n = Math.max(0, -delta);
-    durs.set("tail", d);
-    durs.set("tail-end", n);
-    const fk = "main:" + st.firstId, lk = "main:" + st.lastId;
-    durs.set(fk, durs.get(fk) - d);
-    durs.set(lk, durs.get(lk) - n);
-    const early = delta < 0;
-    if (st.handle) {
-      if (early) st.handle.dataset.hide = "";
-      else delete st.handle.dataset.hide;
+  const durs = st.frozen ? frozenDurs(st, r.slots, r.minutes) : new Map(buildLayout(r.slots, st.opts).pieces.map((p) => [p.key, p.dur]));
+  st.durs = durs;
+  for (const [k, v] of durs) {
+    setFlex(st.ctx.pieceEls.get(k), v);
+    setFlex(st.ctx.segEls && st.ctx.segEls.get(k), v);
+  }
+  const ranges = slotRanges(r.slots, { cyclic });
+  for (const rg of ranges) {
+    const card = st.ctx.pieceEls.get("main:" + rg.slot.id);
+    if (!card) continue;
+    for (const n of card.querySelectorAll('[data-dr="time"],[data-dr="start"]')) n.textContent = el.fmt(rg.start);
+    for (const n of card.querySelectorAll('[data-dr="end"]')) n.textContent = el.fmt(rg.end % 1440);
+    const h = st.ctx.track.querySelector(`[data-handle][data-slot-id="${CSS.escape(rg.slot.id)}"]:not([data-alias])`);
+    if (h) {
+      h.setAttribute("aria-valuenow", rg.start);
+      h.setAttribute("aria-valuetext", el.fmt(rg.start));
     }
+  }
+  if (st.frozen) {
+    const early = r.minutes < st.origin;
+    if (early) st.handle.dataset.hide = "";
+    else delete st.handle.dataset.hide;
     if (st.alias) {
       if (early) st.alias.dataset.dragging = "";
       else delete st.alias.dataset.dragging;
     }
-    const active = early ? st.alias : st.handle;
-    const b = active && active.querySelector(".dr-handle-time");
-    if (b) b.textContent = time;
+    const b = early ? st.alias : st.handle;
+    const bub = b && b.querySelector(".dr-handle-time");
+    if (bub) bub.textContent = time;
   } else {
-    const keys = el._layout.pieces.map((p) => p.key);
-    const bi = keys.indexOf(bKey);
-    const aKey = keys[bi - 1];
-    if (aKey) durs.set(aKey, durs.get(aKey) + delta);
-    durs.set(bKey, durs.get(bKey) - delta);
-    const a = el._pieceEls.get(aKey), b = el._pieceEls.get(bKey);
-    if (b) for (const n of b.querySelectorAll('[data-dr="time"],[data-dr="start"]')) n.textContent = time;
-    if (a) for (const n of a.querySelectorAll('[data-dr="end"]')) n.textContent = time;
     const bub = st.handle.querySelector(".dr-handle-time");
     if (bub) bub.textContent = time;
-    st.handle.setAttribute("aria-valuenow", r.minutes);
-    st.handle.setAttribute("aria-valuetext", time);
-  }
-  for (const [k, v] of durs) {
-    setFlex(el._pieceEls.get(k), v);
-    setFlex(el._segEls && el._segEls.get(k), v);
-  }
-  if (st.frozen) {
-    const b = el._pieceEls.get("main:" + st.id);
-    if (b) for (const n of b.querySelectorAll('[data-dr="time"],[data-dr="start"]')) n.textContent = time;
   }
   el._live(el._withDay(st.day, r.slots), { source: "drag", id: st.id, ...st.day ? { day: st.day } : {} });
 }
@@ -1364,12 +1467,13 @@ function finish(el, st, cancel) {
   el._liveBase = null;
   el._value = st.base;
   el._syncForm();
+  if (st.day && el._sel !== st.day) el.selectDay(st.day);
   if (cancel || st.cur === st.startMin) {
     el._schedule("data");
     return;
   }
   const cyclic = !st.weekly;
-  const ok = el._edit(st.day, (slots) => ({ slots: moveBoundary(slots, st.id, st.cur, { snap: el._snap, minGap: el._minGap, cyclic }).slots }), { source: "drag", id: st.id });
+  const ok = el._edit(st.day, (slots) => ({ slots: shift(el, slots, st.id, st.cur, cyclic).slots }), { source: "drag", id: st.id });
   if (ok) {
     const s = el._locate(st.id);
     el._say(el.t("moved", { name: s && s.slot.label ? s.slot.label : el.t("slotDefault", { n: st.slots0.findIndex((x) => x.id === st.id) + 1 }), time: el.fmt(st.cur) }));
@@ -1381,7 +1485,8 @@ function onKey(el, e) {
   const snap = el._snap;
   const id = h.dataset.slotId;
   const weekly = el.weekMode;
-  const slots = sortSlots(el._displaySlots());
+  const { day } = trackCtx(el, h);
+  const slots = sortSlots(el._slotsOf(day));
   const s = slots.find((x) => x.id === id);
   if (!s) return;
   const cur = parseTime(s.time);
@@ -1414,13 +1519,14 @@ function onKey(el, e) {
       return;
   }
   e.preventDefault();
-  const r = moveBoundary(slots, id, target, { snap, minGap: el._minGap, cyclic });
+  const r = shift(el, slots, id, target, cyclic);
   if (r.minutes === cur) {
     el._refuse("min-gap", id);
     return;
   }
   el._focusHandle = id;
-  const ok = el._edit(weekly ? el._sel : null, (list) => ({ slots: moveBoundary(list, id, r.minutes, { snap, minGap: el._minGap, cyclic }).slots }), { source: "keyboard", id });
+  if (day && el._sel !== day) el.selectDay(day);
+  const ok = el._edit(day, (list) => ({ slots: shift(el, list, id, r.minutes, cyclic).slots }), { source: "keyboard", id });
   if (ok) {
     const now = Date.now();
     if (!el._lastMoveSay || now - el._lastMoveSay > 400) {
@@ -1976,7 +2082,7 @@ function renderData(el) {
   renderTrack(el);
   updateNow(el, true);
   if (el._focusHandle) {
-    const h = $.track.querySelector(`[data-handle][data-slot-id="${CSS2.escape(el._focusHandle)}"]:not([data-alias])`);
+    const h = $.trackwrap.querySelector(`[data-handle][data-slot-id="${CSS2.escape(el._focusHandle)}"]:not([data-alias])`);
     if (h) h.focus();
     el._focusHandle = null;
   }
@@ -2006,7 +2112,7 @@ function renderWeekBar(el) {
   weekTop.replaceChildren();
   weekBottom.replaceChildren();
   weekTop.hidden = weekBottom.hidden = true;
-  if (!el.weekMode) return;
+  if (!el.weekMode || el.weekRows) return;
   const pos = el.cfg.week === "bottom" ? weekBottom : weekTop;
   pos.hidden = false;
   pos.replaceChildren(weekBar(el));
@@ -2220,6 +2326,12 @@ function renderToolbar(el) {
       };
       main.append(b);
     }
+    if (el.weekRows && cfg.weekCopy) {
+      const b = el._mk("button", "week-copy", { generic: ["button"], text: t("copyDayTo") });
+      b.onclick = () => openCopy(el);
+      main.append(b);
+    }
+    if (el.weekRows) main.prepend(el._mk("span", "toolbar-day", { text: el.dayName(el._sel) }));
     if (cfg.randomize) {
       const b = el._mk("button", "randomize", { generic: ["button"], text: t("randomize") });
       b.onclick = () => el.randomize();
@@ -2232,7 +2344,7 @@ function renderToolbar(el) {
     }
   }
   box.append(main, region(el, "toolbar", "toolbar-extra"));
-  box.hidden = !cfg.add && !cfg.randomize && !el.hasDaysArea && !(el._slotted.toolbar || []).length;
+  box.hidden = !cfg.add && !cfg.randomize && !el.hasDaysArea && !(el.weekRows && cfg.weekCopy) && !(el._slotted.toolbar || []).length;
   if (cfg.readonly && !(el._slotted.toolbar || []).length) box.hidden = true;
 }
 function handleFor(el, slot, index, seam, bounds, orient) {
@@ -2357,16 +2469,55 @@ function stateBox(el, kind) {
   }
   return b;
 }
+function fillTrack(el, track, slots, layout, { weekly, day, carry, orient }) {
+  const cfg = el.cfg;
+  const ranges = slotRanges(slots, { cyclic: !weekly });
+  const issues = new Set(validateDay(slots, { minGap: el._minGap, cyclic: !weekly }).map((i) => i.id));
+  const bounds = {};
+  for (const s of slots) bounds[s.id] = boundaryBounds(slots, s.id, { minGap: el._minGap, cyclic: !weekly });
+  const pieceEls = /* @__PURE__ */ new Map();
+  track.replaceChildren();
+  track.dataset.orient = orient;
+  track.style.setProperty("--n", layout.pieces.length);
+  const frag = document.createDocumentFragment();
+  const canDrag = !cfg.readonly && !el._badWeek;
+  layout.pieces.forEach((p) => {
+    const idx = slots.findIndex((s) => s.id === p.slot.id);
+    if (canDrag && p.kind === "main" && !isLocked(p.slot, "time")) {
+      const seam = !weekly && idx === 0;
+      if (!(seam && cfg.seamDrag === false)) frag.append(handleFor(el, p.slot, idx, seam, bounds[p.slot.id], orient));
+    }
+    if (canDrag && p.key === "tail-end") {
+      const h = handleFor(el, p.slot, 0, true, bounds[p.slot.id], orient);
+      h.dataset.alias = "";
+      h.removeAttribute("role");
+      h.removeAttribute("tabindex");
+      h.setAttribute("aria-hidden", "true");
+      frag.append(h);
+    }
+    const card = cardFor(el, p, { ranges, index: idx, count: slots.length, day, invalid: issues.has(p.slot.id), carry });
+    pieceEls.set(p.key, card);
+    frag.append(card);
+  });
+  track.append(frag);
+  return pieceEls;
+}
 function renderTrack(el, o = {}) {
   const $ = el._$;
   const cfg = el.cfg;
   const weekly = el.weekMode;
   const orient = el.resolvedOrientation;
   el._pieceEls = /* @__PURE__ */ new Map();
+  el._rows = null;
   $.trackwrap.removeAttribute("role");
+  delete $.trackwrap.dataset.rows;
   if (el._state.status !== "idle") {
     $.spectrum.hidden = true;
     $.trackwrap.replaceChildren(stateBox(el, el._state.status));
+    return;
+  }
+  if (el.weekRows) {
+    renderRows(el);
     return;
   }
   const slots = el._displaySlots();
@@ -2386,36 +2537,9 @@ function renderTrack(el, o = {}) {
   }
   const layout = buildLayout(slots, { cyclic: !weekly, origin: weekly ? "midnight" : cfg.origin === "midnight" ? "midnight" : "first", carry: carry && carry.slot, frozen: o.frozen });
   el._layout = layout;
-  const ranges = slotRanges(slots, { cyclic: !weekly });
-  const issues = new Set(validateDay(slots, { minGap: el._minGap, cyclic: !weekly }).map((i) => i.id));
-  const bounds = {};
-  for (const s of slots) bounds[s.id] = boundaryBounds(slots, s.id, { minGap: el._minGap, cyclic: !weekly });
   const track = $.track;
-  track.replaceChildren();
-  track.dataset.orient = orient;
-  track.style.setProperty("--n", layout.pieces.length);
   track.setAttribute("aria-label", el.t(weekly ? "titleWeek" : "title"));
-  const frag = document.createDocumentFragment();
-  const canDrag = !cfg.readonly && !el._badWeek;
-  layout.pieces.forEach((p) => {
-    const idx = slots.findIndex((s) => s.id === p.slot.id);
-    if (canDrag && p.kind === "main" && !isLocked(p.slot, "time")) {
-      const seam = !weekly && idx === 0;
-      if (!(seam && cfg.seamDrag === false)) frag.append(handleFor(el, p.slot, idx, seam, bounds[p.slot.id], orient));
-    }
-    if (canDrag && p.key === "tail-end") {
-      const h = handleFor(el, p.slot, 0, true, bounds[p.slot.id], orient);
-      h.dataset.alias = "";
-      h.removeAttribute("role");
-      h.removeAttribute("tabindex");
-      h.setAttribute("aria-hidden", "true");
-      frag.append(h);
-    }
-    const card = cardFor(el, p, { ranges, index: idx, count: slots.length, day, invalid: issues.has(p.slot.id), carry });
-    el._pieceEls.set(p.key, card);
-    frag.append(card);
-  });
-  track.append(frag);
+  el._pieceEls = fillTrack(el, track, slots, layout, { weekly, day, carry, orient });
   $.trackwrap.replaceChildren(track);
   $.spectrum.replaceChildren(...layout.pieces.map((p) => {
     const seg = el._mk("span", "spectrum-segment");
@@ -2430,6 +2554,57 @@ function renderTrack(el, o = {}) {
     const b = e.target.closest && e.target.closest("[data-open]");
     if (b) openEditor(el, b.dataset.open);
   };
+}
+function renderRows(el) {
+  const $ = el._$;
+  $.spectrum.hidden = true;
+  $.trackwrap.dataset.rows = "";
+  const box = el._mk("div", "week-rows", { attrs: { role: "group", "aria-label": el.t("titleWeek") } });
+  const axis = el._mk("div", "week-axis", { attrs: { "aria-hidden": "true" } });
+  const ticks = el._mk("div", "week-axis-ticks");
+  for (const h of [0, 6, 12, 18, 24]) {
+    const tk = el._mk("span", "week-axis-tick", { text: String(h) });
+    tk.style.left = `${h / 24 * 100}%`;
+    ticks.append(tk);
+  }
+  axis.append(el._mk("span", "week-axis-spacer"), ticks);
+  box.append(axis);
+  el._rows = /* @__PURE__ */ new Map();
+  const nowDay = el.nowDay;
+  const view = el._weekView();
+  for (const d of el.dayOrder) {
+    const selected = d === el._sel;
+    const states = [];
+    if (selected) states.push("week-row-selected");
+    if (d === nowDay) states.push("week-row-today");
+    const row = el._mk("div", "week-row", { states });
+    row.dataset.day = d;
+    if (selected) row.dataset.selected = "";
+    if (d === nowDay) row.dataset.today = "";
+    const lab = el._mk("button", "week-row-day", { text: el.dayName(d, "short"), attrs: { "aria-pressed": selected ? "true" : "false", "aria-label": el.dayName(d), "data-day": d } });
+    lab.onclick = () => el.selectDay(d);
+    const slots = el._slotsOf(d);
+    const c = carrySlotFor(view, d, el._days);
+    const track = el._mk("div", "track", { attrs: { role: "list", "aria-label": el.dayName(d) } });
+    track.dataset.rowDay = d;
+    const layout = buildLayout(slots, { cyclic: false, carry: c && c.slot });
+    const pieceEls = fillTrack(el, track, slots, layout, { weekly: true, day: d, carry: c, orient: "horizontal" });
+    el._rows.set(d, { layout, pieceEls, segEls: null });
+    if (selected) {
+      el._layout = layout;
+      el._pieceEls = pieceEls;
+    }
+    row.append(lab, track);
+    box.append(row);
+  }
+  box.onclick = (e) => {
+    const b = e.target.closest && e.target.closest("[data-open]");
+    if (!b) return;
+    const row = b.closest("[data-row-day]");
+    if (row && row.dataset.rowDay !== el._sel) el.selectDay(row.dataset.rowDay);
+    openEditor(el, b.dataset.open);
+  };
+  $.trackwrap.replaceChildren(box);
 }
 function updateNow(el, force) {
   const $ = el._$;
@@ -2446,7 +2621,7 @@ function updateNow(el, force) {
   if (isWeek(el._value)) info = activeSlotAtWeek(el._value, { day: n.day, time: n.minutes }, { days: el._days });
   else info = activeSlotAtDay(el._value, n.minutes);
   el._active = info ? info.slot.id : null;
-  for (const card2 of $.track.querySelectorAll(".dr-slot")) {
+  for (const card2 of $.trackwrap.querySelectorAll(".dr-slot")) {
     const on = card2.dataset.slotId === el._active;
     setState(el, card2, "slot-active", on, "active");
     if (on && card2.dataset.piece && card2.dataset.piece.startsWith("main:")) card2.setAttribute("aria-current", "true");
@@ -2457,13 +2632,18 @@ function updateNow(el, force) {
     $.nowLine = null;
   }
   if (!cfg.nowLine || !el._layout || el._frozen) return;
-  if (el.weekMode && el._sel !== n.day) return;
-  const at = pieceAt(el._layout, n.minutes);
-  const card = at && el._pieceEls && el._pieceEls.get(at.piece.key);
+  let layout = el._layout, pieceEls = el._pieceEls;
+  if (el._rows) {
+    const r = el._rows.get(n.day);
+    if (!r) return;
+    ({ layout, pieceEls } = r);
+  } else if (el.weekMode && el._sel !== n.day) return;
+  const at = pieceAt(layout, n.minutes);
+  const card = at && pieceEls && pieceEls.get(at.piece.key);
   if (!card) return;
   const line = el._mk("div", "now-line", { attrs: { role: "img", "aria-label": el.t("nowAria", { time: el.fmt(n.minutes) }) } });
   const pct = `${(at.frac * 100).toFixed(3)}%`;
-  if (el.resolvedOrientation === "horizontal") line.style.left = pct;
+  if (el._rows || el.resolvedOrientation === "horizontal") line.style.left = pct;
   else line.style.top = pct;
   line.append(el._mk("span", "now-badge", { text: el.t("nowLabel") }));
   card.append(line);
@@ -2689,6 +2869,10 @@ var DayRhythmElement = class extends Base {
   }
   fmt(min) {
     return formatTime(min, { format: this.cfg.timeFormat });
+  }
+  /** Weekly value shown as seven editable rows (default) instead of one day under a tab bar. */
+  get weekRows() {
+    return this.weekMode && this.cfg.weekLayout !== "tabs";
   }
   get weekMode() {
     const w = this.cfg.week;

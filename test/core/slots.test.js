@@ -78,3 +78,33 @@ test('activeSlotAt reports elapsed/remaining (wrap slot)', () => {
   assert.equal(r.remaining, 360);
   assert.equal(r.end, 1860);
 });
+
+test('pushBoundary: pushes neighbours instead of stopping, never reorders', async () => {
+  const { pushBoundary } = await import('../../src/core/index.js');
+  const d = [{ id: 'a', time: '07:00' }, { id: 'b', time: '12:00' }, { id: 'c', time: '13:00' }, { id: 'd', time: '22:00' }];
+  // forward: b to 12:50 pushes c to 13:20
+  let r = pushBoundary(d, 'b', 12 * 60 + 50, { minGap: 30 });
+  assert.deepEqual(r.slots.map((s) => s.time), ['07:00', '12:50', '13:20', '22:00']);
+  assert.deepEqual(r.pushed, ['c']);
+  // forward to the limit: cyclic last slot <= first + 1440 - gap (and <= 23:59)
+  r = pushBoundary(d, 'b', 1439, { minGap: 30 });
+  assert.deepEqual(r.slots.map((s) => s.time), ['07:00', '22:55', '23:25', '23:55']);
+  assert.ok(r.clamped);
+  // backward: c to 07:10 pushes b but never the first (anchor) slot
+  r = pushBoundary(d, 'c', 7 * 60 + 10, { minGap: 30 });
+  assert.deepEqual(r.slots.map((s) => s.time), ['07:00', '07:30', '08:00', '22:00']);
+  // dragging the first slot pushes only forward
+  r = pushBoundary(d, 'a', 12 * 60 + 40, { minGap: 30 });
+  assert.deepEqual(r.slots.map((s) => s.time), ['12:40', '13:10', '13:40', '22:00']);
+  r = pushBoundary(d, 'a', 0, { minGap: 30 });
+  assert.equal(r.slots[0].time, '00:00');
+  assert.equal(r.slots[3].time, '22:00');
+  // weekly (non-cyclic): pushes down to 00:00 and up to 23:59
+  r = pushBoundary(d, 'b', 0, { minGap: 30, cyclic: false });
+  assert.deepEqual(r.slots.map((s) => s.time), ['00:00', '00:30', '13:00', '22:00']);
+  // locked slot is a wall
+  const l = d.map((s) => (s.id === 'c' ? { ...s, locked: ['time'] } : s));
+  r = pushBoundary(l, 'b', 14 * 60, { minGap: 30 });
+  assert.equal(r.slots[1].time, '12:30');
+  assert.equal(r.slots[2].time, '13:00');
+});

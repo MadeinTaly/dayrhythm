@@ -202,6 +202,8 @@ export class DayRhythmElement extends Base {
   set locale(v) { this._L.props.locale = v; this._invalidate(); }
   get t() { return this._t; }
   fmt(min) { return formatTime(min, { format: this.cfg.timeFormat }); }
+  /** Weekly value shown as seven editable rows (default) instead of one day under a tab bar. */
+  get weekRows() { return this.weekMode && this.cfg.weekLayout !== 'tabs'; }
   get weekMode() { const w = this.cfg.week; return w === 'off' ? false : w === 'top' || w === 'bottom' ? true : isWeek(this._value); }
   get _badWeek() { return this.cfg.week === 'off' && isWeek(this._value); }
   get _minSlots() { const m = this.cfg.minSlots; return m != null ? m : this.weekMode ? 0 : 1; }

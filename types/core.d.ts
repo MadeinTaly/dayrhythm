@@ -57,6 +57,7 @@ export function addSlotAt(slots: Slot[], opts?: { time?: string | number; minGap
 export function removeSlotById(slots: Slot[], id: string, opts?: { minSlots?: number }): Slot[] | { error: InvalidReason };
 export function boundaryBounds(slots: Slot[], id: string, opts?: { minGap?: number; cyclic?: boolean }): { lo: number; hi: number; index: number } | null;
 export function moveBoundary(slots: Slot[], id: string, toMinutes: number, opts?: { snap?: number; minGap?: number; cyclic?: boolean }): { slots: Slot[]; time: string | null; minutes: number | null; clamped: boolean };
+export function pushBoundary(slots: Slot[], id: string, toMinutes: number, opts?: { snap?: number; minGap?: number; cyclic?: boolean }): { slots: Slot[]; time: string | null; minutes: number | null; clamped: boolean; pushed: string[] };
 export function retimeSlot(slots: Slot[], id: string, time: string, opts?: { minGap?: number; cyclic?: boolean }): { slots: Slot[]; time: string } | { error: 'time-format' | 'duplicate-time' | 'min-gap' };
 export function validateDay(slots: Slot[], opts?: { minGap?: number; models?: Array<{ id: string }>; cyclic?: boolean }): Issue[];
 

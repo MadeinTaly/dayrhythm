@@ -30,6 +30,15 @@ border:1px solid var(--x-border);border-radius:var(--x-radius-panel);padding:var
 .dr-week-tab[data-empty]{color:var(--x-muted)}
 .dr-week-tab[data-linked]{border-style:dashed}
 .dr-week-tab-preview{border-radius:99px;opacity:.9}
+.dr-week-axis{font-size:.68em;color:var(--x-muted);font-variant-numeric:tabular-nums}
+.dr-week-row-day{border:1px solid var(--x-border);border-radius:var(--x-radius-input);background:var(--x-surface);font-size:.8em;font-weight:600;text-transform:capitalize}
+.dr-week-row[data-selected] .dr-week-row-day{background:var(--x-accent-soft);border-color:var(--x-accent)}
+.dr-week-row[data-today] .dr-week-row-day::after{content:'';position:absolute;top:.25rem;right:.25rem;width:.35rem;height:.35rem;border-radius:50%;background:var(--x-now)}
+.dr-track[data-row-day] .dr-slot{padding:0;border-radius:.55rem}
+.dr-track[data-row-day] .dr-slot-carry{border-style:dashed}
+.dr-week-row[data-selected] .dr-track[data-row-day] .dr-slot:not(.dr-slot-carry){border-color:color-mix(in srgb,var(--x-accent) 55%,var(--x-border))}
+.dr-track[data-row-day] .dr-handle-grip{width:3px;height:60%;opacity:.8;background:var(--x-ink)}
+.dr-toolbar-day{font-size:.85em;font-weight:650;text-transform:capitalize;margin-inline-end:.3rem}
 .dr-spectrum{border-radius:var(--x-radius-spectrum);background:var(--x-ink)}
 .dr-spectrum-segment{opacity:.9}
 .dr-slot{border:1px solid var(--x-border);border-radius:var(--x-radius-card);background:var(--x-surface-soft);padding:.5rem}

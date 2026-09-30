@@ -236,6 +236,7 @@ Types in `config` and as attributes (where it makes sense). **Toggle convention*
 | `max-slots` | int \| `null` | `null` (**unlimited**) | Optional cap (per day in weekly). The track grows (min card size) instead of clipping when many slots exist. |
 | `origin` | `first` \| `midnight` | `first` (daily); forced `midnight` in weekly | See 4.3. |
 | `seam-drag` | toggle | on | The seam edge is draggable (4.3). |
+| `push` | toggle | on | Dragging an edge into a neighbour pushes it along (kept `min-gap` apart) instead of stopping; see `pushBoundary` (7.2). Off = edges stop at `min-gap`. |
 | `orientation` | `auto` \| `horizontal` \| `vertical` | `auto` | `auto` uses the **component's own width** (`ResizeObserver`): horizontal when >= `breakpoint`. |
 | `breakpoint` | px | `640` | For `auto`. |
 | `add`, `remove`, `rename`, `time-edit` | toggle | on | Editing features. |
@@ -257,6 +258,7 @@ Types in `config` and as attributes (where it makes sense). **Toggle convention*
 | Attribute / config key | Type | Default | Notes |
 |---|---|---|---|
 | `week` | `auto` \| `top` \| `bottom` \| `off` | `auto` | Week bar position. `auto` = `top` iff `value` is weekly, else no bar (daily mode). `off` = daily only (a weekly value then logs an error and renders empty). The bar can always be disabled with `off`. |
+| `week-layout` | `rows` \| `tabs` | `rows` | Weekly view. `rows`: the seven days stacked as horizontal 24 h rows (hour axis on top), every row editable in place (drag edges, tap a band to edit, tap the day to select it for Add / Copy); no tab bar and no spectrum. `tabs`: one day at a time under the week bar (`week` picks its position). |
 | `day` | `mon`..`sun` | today (device clock) | Selected weekday. Reflected. Also settable via `selectDay()`. |
 | `first-day` | `auto` \| `mon`..`sun` | `auto` | Order of the 7 tabs. `auto`: `Intl.Locale(locale).getWeekInfo().firstDay` (fallback `weekInfo`, then `mon`). |
 | `week-preview` | toggle | on | Tiny colour strip inside each day tab. |
@@ -406,9 +408,12 @@ resolveValues(slot, models): object | undefined
 addSlotAt(slots, opts?: { time?; minGap?; snap?; maxSlots?; cyclic? }): { slots; added } | { error: InvalidReason }
 removeSlotById(slots, id, opts?: { minSlots? }): Slot[] | { error: InvalidReason }
 moveBoundary(slots, id, toMinutes, opts?: { snap?; minGap?; cyclic? }): { slots; time; clamped }
+pushBoundary(slots, id, toMinutes, opts?: { snap?; minGap?; cyclic? }): { slots; time; minutes; clamped; pushed }
 ```
 
 `moveBoundary`: the target is snapped, then clamped in the *clock day* to `[prev.time + minGap, next.time - minGap]`. With `cyclic: true` (daily, default): for the first slot `prev` is the last slot minus 1440 (lower bound `max(0, last.time + minGap - 1440)`), for the last slot `next` is the first slot plus 1440 (upper bound `min(1439, first.time + 1440 - minGap)`); this also governs the **seam handle**. With `cyclic: false` (weekly): the first slot's lower bound is 0 and the last slot's upper bound is 1439; no wrap terms. Dragging never reorders slots.
+
+`pushBoundary` (used by drag and keyboard when `push` is on): like `moveBoundary`, but neighbours in the way are pushed so each stays `minGap` from the previous one; it stops only when the pushed chain hits the end of the day (00:00 / 23:59, or in a cyclic day the wrap bound `first.time + 1440 - minGap`) or a slot locked on `time`. In a cyclic day the first slot anchors the axis: it is never pushed, and dragging it pushes only forward. Bounds are snapped inward. `pushed` lists the ids moved besides `id`.
 
 ### 7.3 `activeSlotAt` (daily)
 

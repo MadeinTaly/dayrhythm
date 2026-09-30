@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0
+
+- Weekly schedules are shown as **seven horizontal rows** (one 24 h row per day, hour axis on top), each editable in place: drag the edges, tap a band to edit it, tap the day to select it for Add / Copy. New option `week-layout` (`rows` default, `tabs` = previous one-day-at-a-time view).
+- Dragging an edge **pushes the neighbouring slots** instead of stopping at the minimum gap (`push`, default on; also for the keyboard). New core function `pushBoundary`.
+- The dragged edge follows the finger exactly: the pointer is mapped through the real card sizes (short slots are drawn larger than their share, which used to make the edge drift).
+
 ## 0.1.0 (unreleased)
 
 First version.

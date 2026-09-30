@@ -168,7 +168,7 @@ export function renderData(el) {
   renderTrack(el);
   updateNow(el, true);
   if (el._focusHandle) {
-    const h = $.track.querySelector(`[data-handle][data-slot-id="${CSS.escape(el._focusHandle)}"]:not([data-alias])`);
+    const h = $.trackwrap.querySelector(`[data-handle][data-slot-id="${CSS.escape(el._focusHandle)}"]:not([data-alias])`);
     if (h) h.focus();
     el._focusHandle = null;
   }
@@ -202,7 +202,7 @@ function renderWeekBar(el) {
   const { weekTop, weekBottom } = el._$;
   weekTop.replaceChildren(); weekBottom.replaceChildren();
   weekTop.hidden = weekBottom.hidden = true;
-  if (!el.weekMode) return;
+  if (!el.weekMode || el.weekRows) return;
   const pos = el.cfg.week === 'bottom' ? weekBottom : weekTop;
   pos.hidden = false;
   pos.replaceChildren(weekBar(el));
@@ -393,6 +393,12 @@ function renderToolbar(el) {
       b.onclick = () => { const s = el.addSlot(); if (s) queueMicrotask(() => el.focusSlot(s.id)); };
       main.append(b);
     }
+    if (el.weekRows && cfg.weekCopy) {
+      const b = el._mk('button', 'week-copy', { generic: ['button'], text: t('copyDayTo') });
+      b.onclick = () => openCopy(el);
+      main.append(b);
+    }
+    if (el.weekRows) main.prepend(el._mk('span', 'toolbar-day', { text: el.dayName(el._sel) }));
     if (cfg.randomize) {
       const b = el._mk('button', 'randomize', { generic: ['button'], text: t('randomize') });
       b.onclick = () => el.randomize();
@@ -405,7 +411,7 @@ function renderToolbar(el) {
     }
   }
   box.append(main, region(el, 'toolbar', 'toolbar-extra'));
-  box.hidden = !cfg.add && !cfg.randomize && !el.hasDaysArea && !(el._slotted.toolbar || []).length;
+  box.hidden = !cfg.add && !cfg.randomize && !el.hasDaysArea && !(el.weekRows && cfg.weekCopy) && !(el._slotted.toolbar || []).length;
   if (cfg.readonly && !(el._slotted.toolbar || []).length) box.hidden = true;
 }
 
@@ -523,18 +529,55 @@ function stateBox(el, kind) {
   return b;
 }
 
+/** Fills `track` with handles + cards for one day. Returns the piece elements by key. */
+function fillTrack(el, track, slots, layout, { weekly, day, carry, orient }) {
+  const cfg = el.cfg;
+  const ranges = slotRanges(slots, { cyclic: !weekly });
+  const issues = new Set(validateDay(slots, { minGap: el._minGap, cyclic: !weekly }).map((i) => i.id));
+  const bounds = {};
+  for (const s of slots) bounds[s.id] = boundaryBounds(slots, s.id, { minGap: el._minGap, cyclic: !weekly });
+  const pieceEls = new Map();
+  track.replaceChildren();
+  track.dataset.orient = orient;
+  track.style.setProperty('--n', layout.pieces.length);
+  const frag = document.createDocumentFragment();
+  const canDrag = !cfg.readonly && !el._badWeek;
+  layout.pieces.forEach((p) => {
+    const idx = slots.findIndex((s) => s.id === p.slot.id);
+    if (canDrag && p.kind === 'main' && !isLocked(p.slot, 'time')) {
+      const seam = !weekly && idx === 0;
+      if (!(seam && cfg.seamDrag === false)) frag.append(handleFor(el, p.slot, idx, seam, bounds[p.slot.id], orient));
+    }
+    if (canDrag && p.key === 'tail-end') {
+      const h = handleFor(el, p.slot, 0, true, bounds[p.slot.id], orient);
+      h.dataset.alias = '';
+      h.removeAttribute('role'); h.removeAttribute('tabindex');
+      h.setAttribute('aria-hidden', 'true');
+      frag.append(h);
+    }
+    const card = cardFor(el, p, { ranges, index: idx, count: slots.length, day, invalid: issues.has(p.slot.id), carry });
+    pieceEls.set(p.key, card);
+    frag.append(card);
+  });
+  track.append(frag);
+  return pieceEls;
+}
+
 export function renderTrack(el, o = {}) {
   const $ = el._$;
   const cfg = el.cfg;
   const weekly = el.weekMode;
   const orient = el.resolvedOrientation;
   el._pieceEls = new Map();
+  el._rows = null;
   $.trackwrap.removeAttribute('role');
+  delete $.trackwrap.dataset.rows;
   if (el._state.status !== 'idle') {
     $.spectrum.hidden = true;
     $.trackwrap.replaceChildren(stateBox(el, el._state.status));
     return;
   }
+  if (el.weekRows) { renderRows(el); return; }
   const slots = el._displaySlots();
   const day = weekly ? el._sel : undefined;
   const carry = weekly ? carrySlotFor(el._weekView(), day, el._days) : null;
@@ -552,35 +595,9 @@ export function renderTrack(el, o = {}) {
   }
   const layout = buildLayout(slots, { cyclic: !weekly, origin: weekly ? 'midnight' : cfg.origin === 'midnight' ? 'midnight' : 'first', carry: carry && carry.slot, frozen: o.frozen });
   el._layout = layout;
-  const ranges = slotRanges(slots, { cyclic: !weekly });
-  const issues = new Set(validateDay(slots, { minGap: el._minGap, cyclic: !weekly }).map((i) => i.id));
-  const bounds = {};
-  for (const s of slots) bounds[s.id] = boundaryBounds(slots, s.id, { minGap: el._minGap, cyclic: !weekly });
   const track = $.track;
-  track.replaceChildren();
-  track.dataset.orient = orient;
-  track.style.setProperty('--n', layout.pieces.length);
   track.setAttribute('aria-label', el.t(weekly ? 'titleWeek' : 'title'));
-  const frag = document.createDocumentFragment();
-  const canDrag = !cfg.readonly && !el._badWeek;
-  layout.pieces.forEach((p) => {
-    const idx = slots.findIndex((s) => s.id === p.slot.id);
-    if (canDrag && p.kind === 'main' && !isLocked(p.slot, 'time')) {
-      const seam = !weekly && idx === 0;
-      if (!(seam && cfg.seamDrag === false)) frag.append(handleFor(el, p.slot, idx, seam, bounds[p.slot.id], orient));
-    }
-    if (canDrag && p.key === 'tail-end') {
-      const h = handleFor(el, p.slot, 0, true, bounds[p.slot.id], orient);
-      h.dataset.alias = '';
-      h.removeAttribute('role'); h.removeAttribute('tabindex');
-      h.setAttribute('aria-hidden', 'true');
-      frag.append(h);
-    }
-    const card = cardFor(el, p, { ranges, index: idx, count: slots.length, day, invalid: issues.has(p.slot.id), carry });
-    el._pieceEls.set(p.key, card);
-    frag.append(card);
-  });
-  track.append(frag);
+  el._pieceEls = fillTrack(el, track, slots, layout, { weekly, day, carry, orient });
   $.trackwrap.replaceChildren(track);
   // spectrum
   $.spectrum.replaceChildren(...layout.pieces.map((p) => {
@@ -599,6 +616,56 @@ export function renderTrack(el, o = {}) {
   };
 }
 
+/** Week as seven horizontal rows (one track per day), all editable in place. */
+function renderRows(el) {
+  const $ = el._$;
+  $.spectrum.hidden = true;
+  $.trackwrap.dataset.rows = '';
+  const box = el._mk('div', 'week-rows', { attrs: { role: 'group', 'aria-label': el.t('titleWeek') } });
+  const axis = el._mk('div', 'week-axis', { attrs: { 'aria-hidden': 'true' } });
+  const ticks = el._mk('div', 'week-axis-ticks');
+  for (const h of [0, 6, 12, 18, 24]) {
+    const tk = el._mk('span', 'week-axis-tick', { text: String(h) });
+    tk.style.left = `${(h / 24) * 100}%`;
+    ticks.append(tk);
+  }
+  axis.append(el._mk('span', 'week-axis-spacer'), ticks);
+  box.append(axis);
+  el._rows = new Map();
+  const nowDay = el.nowDay;
+  const view = el._weekView();
+  for (const d of el.dayOrder) {
+    const selected = d === el._sel;
+    const states = [];
+    if (selected) states.push('week-row-selected');
+    if (d === nowDay) states.push('week-row-today');
+    const row = el._mk('div', 'week-row', { states });
+    row.dataset.day = d;
+    if (selected) row.dataset.selected = '';
+    if (d === nowDay) row.dataset.today = '';
+    const lab = el._mk('button', 'week-row-day', { text: el.dayName(d, 'short'), attrs: { 'aria-pressed': selected ? 'true' : 'false', 'aria-label': el.dayName(d), 'data-day': d } });
+    lab.onclick = () => el.selectDay(d);
+    const slots = el._slotsOf(d);
+    const c = carrySlotFor(view, d, el._days);
+    const track = el._mk('div', 'track', { attrs: { role: 'list', 'aria-label': el.dayName(d) } });
+    track.dataset.rowDay = d;
+    const layout = buildLayout(slots, { cyclic: false, carry: c && c.slot });
+    const pieceEls = fillTrack(el, track, slots, layout, { weekly: true, day: d, carry: c, orient: 'horizontal' });
+    el._rows.set(d, { layout, pieceEls, segEls: null });
+    if (selected) { el._layout = layout; el._pieceEls = pieceEls; }
+    row.append(lab, track);
+    box.append(row);
+  }
+  box.onclick = (e) => {
+    const b = e.target.closest && e.target.closest('[data-open]');
+    if (!b) return;
+    const row = b.closest('[data-row-day]');
+    if (row && row.dataset.rowDay !== el._sel) el.selectDay(row.dataset.rowDay);
+    openEditor(el, b.dataset.open);
+  };
+  $.trackwrap.replaceChildren(box);
+}
+
 // ------------------------------------------------------------------ now / active
 export function updateNow(el, force) {
   const $ = el._$;
@@ -611,7 +678,7 @@ export function updateNow(el, force) {
   if (isWeek(el._value)) info = activeSlotAtWeek(el._value, { day: n.day, time: n.minutes }, { days: el._days });
   else info = activeSlotAtDay(el._value, n.minutes);
   el._active = info ? info.slot.id : null;
-  for (const card of $.track.querySelectorAll('.dr-slot')) {
+  for (const card of $.trackwrap.querySelectorAll('.dr-slot')) {
     const on = card.dataset.slotId === el._active;
     setState(el, card, 'slot-active', on, 'active');
     if (on && card.dataset.piece && card.dataset.piece.startsWith('main:')) card.setAttribute('aria-current', 'true');
@@ -619,13 +686,18 @@ export function updateNow(el, force) {
   }
   if ($.nowLine) { $.nowLine.remove(); $.nowLine = null; }
   if (!cfg.nowLine || !el._layout || el._frozen) return;
-  if (el.weekMode && el._sel !== n.day) return;
-  const at = pieceAt(el._layout, n.minutes);
-  const card = at && el._pieceEls && el._pieceEls.get(at.piece.key);
+  let layout = el._layout, pieceEls = el._pieceEls;
+  if (el._rows) {
+    const r = el._rows.get(n.day);
+    if (!r) return;
+    ({ layout, pieceEls } = r);
+  } else if (el.weekMode && el._sel !== n.day) return;
+  const at = pieceAt(layout, n.minutes);
+  const card = at && pieceEls && pieceEls.get(at.piece.key);
   if (!card) return;
   const line = el._mk('div', 'now-line', { attrs: { role: 'img', 'aria-label': el.t('nowAria', { time: el.fmt(n.minutes) }) } });
   const pct = `${(at.frac * 100).toFixed(3)}%`;
-  if (el.resolvedOrientation === 'horizontal') line.style.left = pct; else line.style.top = pct;
+  if (el._rows || el.resolvedOrientation === 'horizontal') line.style.left = pct; else line.style.top = pct;
   line.append(el._mk('span', 'now-badge', { text: el.t('nowLabel') }));
   card.append(line);
   $.nowLine = line;

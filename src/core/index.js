@@ -4,7 +4,7 @@ import { isWeek, activeSlotAtWeek, nextChangeWeek } from './week.js';
 
 export * from './time.js';
 export {
-  sortSlots, normalizeDay, slotRanges, resolveValues, addSlotAt, removeSlotById, moveBoundary,
+  sortSlots, normalizeDay, slotRanges, resolveValues, addSlotAt, removeSlotById, moveBoundary, pushBoundary,
   boundaryBounds, retimeSlot, isLocked, genId,
 } from './slots.js';
 export { validateDay, validateWeek } from './validate.js';

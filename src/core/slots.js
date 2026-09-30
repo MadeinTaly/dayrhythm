@@ -138,6 +138,46 @@ export function moveBoundary(slots, id, toMinutes, opts = {}) {
   return { slots: out, time: formatTime(v), minutes: v, clamped: v !== target };
 }
 
+/**
+ * Like moveBoundary, but a neighbour in the way is pushed along (kept `minGap` apart) instead of
+ * stopping the drag. Never reorders; slots locked on 'time' act as walls. In a cyclic day the first
+ * slot is the axis anchor: it is never pushed, and dragging it pushes only forward.
+ * Returns { slots, time, minutes, clamped, pushed: id[] }.
+ */
+export function pushBoundary(slots, id, toMinutes, opts = {}) {
+  const { snap = 5, minGap = 30, cyclic = true } = opts;
+  const s = sortSlots(slots);
+  const n = s.length;
+  const i = s.findIndex((x) => x.id === id);
+  if (i < 0) return { slots: s, time: null, minutes: null, clamped: false, pushed: [] };
+  const t = s.map((x) => parseTime(x.time));
+  const cur = t[i];
+  let lo, hi;
+  if (cyclic && i === 0) lo = n > 1 ? Math.max(0, t[n - 1] + minGap - 1440) : 0;
+  else {
+    const first = cyclic ? 1 : 0;
+    lo = cyclic ? t[0] + i * minGap : i * minGap;
+    for (let j = i - 1; j >= first; j--) if (isLocked(s[j], 'time')) { lo = t[j] + (i - j) * minGap; break; }
+  }
+  if (cyclic && i === 0) hi = 1439 - (n - 1) * minGap;
+  else hi = (cyclic ? Math.min(1439, t[0] + 1440 - minGap) : 1439) - (n - 1 - i) * minGap;
+  for (let j = i + 1; j < n; j++) if (isLocked(s[j], 'time')) { hi = t[j] - (j - i) * minGap; break; }
+  if (snap > 1) { lo = Math.ceil(lo / snap) * snap; hi = Math.floor(hi / snap) * snap; }
+  const target = snapTo(toMinutes, snap);
+  const v = lo > hi ? cur : Math.min(hi, Math.max(lo, target));
+  const pushed = [];
+  const out = s.map((x, k) => {
+    let m = t[k];
+    if (k === i) m = v;
+    else if (k > i) m = Math.max(t[k], v + (k - i) * minGap);
+    else if (!(cyclic && k === 0) && !(cyclic && i === 0)) m = Math.min(t[k], v - (i - k) * minGap);
+    if (m === t[k] && k !== i) return x;
+    if (k !== i) pushed.push(x.id);
+    return { ...x, time: formatTime(m) };
+  });
+  return { slots: out, time: formatTime(v), minutes: v, clamped: v !== target, pushed };
+}
+
 /** Changes a slot's time allowing a re-order (editor time field). */
 export function retimeSlot(slots, id, time, opts = {}) {
   const { minGap = 30, cyclic = true } = opts;

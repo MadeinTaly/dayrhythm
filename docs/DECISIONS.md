@@ -11,6 +11,7 @@ Choices made while implementing `docs/API.md` (v0.3). Later entries win.
 5. A daily array under a week bar expands to seven days on the first weekly edit.
 6. Donation link: README, site and playground only. In the component, `credits: true` (default) and `"minimal"` show only "Made with dayrhythm"; the extra value `"support"` adds the donation link.
 7. Pack field ranges are illustrative.
+8. (0.2) The week is shown as seven horizontal rows by default (`week-layout="rows"`); the tab view stays as `tabs`. Resizing must be easy: an edge follows the finger (pointer mapped through the real card geometry, so minimum card sizes no longer skew it) and pushes the neighbours instead of stopping (`push`, on by default).
 
 ## Implementation choices and deviations
 

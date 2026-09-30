@@ -46,7 +46,7 @@ export interface Model {
 export interface Http { url: string; method?: string; headers?: Record<string, string>; credentials?: RequestCredentials }
 
 export type PartKey =
-  | 'root' | 'header' | 'toolbar' | 'footer' | 'weekBar' | 'weekPrev' | 'weekNext' | 'weekCopy' | 'weekTab' | 'weekTabSelected' | 'weekTabToday'
+  | 'root' | 'header' | 'toolbar' | 'footer' | 'weekBar' | 'weekPrev' | 'weekNext' | 'weekCopy' | 'weekTab' | 'weekTabSelected' | 'weekTabToday' | 'weekRows' | 'weekRow' | 'weekRowDay' | 'weekRowSelected' | 'weekRowToday' | 'weekAxis'
   | 'weekTabLinked' | 'weekTabEmpty' | 'weekTabPreview' | 'presets' | 'presetsGroup' | 'presetsLabel' | 'preset' | 'presetBusy' | 'presetDelete'
   | 'presetSave' | 'spectrum' | 'spectrumSegment' | 'track' | 'slot' | 'slotActive' | 'slotSelected' | 'slotInvalid' | 'slotLocked' | 'slotTail'
   | 'slotCarry' | 'slotTint' | 'slotContent' | 'slotTime' | 'slotLabel' | 'slotIcon' | 'slotModel' | 'slotSummary' | 'handle' | 'handleSeam'
@@ -83,12 +83,12 @@ export interface Config {
   load?: Http | null;
   storage?: { type: 'local'; key: string } | ({ type: 'http' } & Omit<Http, 'method'>) | DayStorage | null;
   minGap?: number; snap?: number; minSlots?: number | null; maxSlots?: number | null;
-  origin?: 'first' | 'midnight'; seamDrag?: boolean; orientation?: 'auto' | 'horizontal' | 'vertical'; breakpoint?: number;
+  origin?: 'first' | 'midnight'; seamDrag?: boolean; push?: boolean; orientation?: 'auto' | 'horizontal' | 'vertical'; breakpoint?: number;
   add?: boolean; remove?: boolean; rename?: boolean; timeEdit?: boolean; showPresets?: boolean; showDays?: boolean;
   spectrum?: boolean; nowLine?: boolean; clockOffset?: number; timezone?: string | null; timeFormat?: '24h' | '12h';
   editor?: 'auto' | 'quick' | 'full'; randomize?: boolean; readonly?: boolean; disabled?: boolean; labelMax?: number;
   week?: 'auto' | 'top' | 'bottom' | 'off'; day?: Weekday | null; firstDay?: 'auto' | Weekday;
-  weekPreview?: boolean; weekCopy?: boolean; linkDays?: boolean;
+  weekPreview?: boolean; weekCopy?: boolean; linkDays?: boolean; weekLayout?: 'rows' | 'tabs';
   theme?: 'organic' | 'neutral' | 'flat' | 'none'; colorScheme?: 'auto' | 'light' | 'dark'; locale?: string | null;
   /** Flat `{ key: string }` and/or per-locale `{ it: { key: string } }`. */
   messages?: Record<string, string | Record<string, string>>;
