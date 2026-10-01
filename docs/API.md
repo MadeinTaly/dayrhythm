@@ -257,8 +257,8 @@ Types in `config` and as attributes (where it makes sense). **Toggle convention*
 
 | Attribute / config key | Type | Default | Notes |
 |---|---|---|---|
-| `week` | `auto` \| `top` \| `bottom` \| `off` | `auto` | Week bar position. `auto` = `top` iff `value` is weekly, else no bar (daily mode). `off` = daily only (a weekly value then logs an error and renders empty). The bar can always be disabled with `off`. |
-| `week-layout` | `rows` \| `tabs` | `rows` | Weekly view. `rows`: the seven days stacked as horizontal 24 h rows (hour axis on top), every row editable in place (drag edges, tap a band to edit, tap the day to select it for Add / Copy); no tab bar and no spectrum. `tabs`: one day at a time under the week bar (`week` picks its position). |
+| `week` | `auto` \| `top` \| `bottom` \| `off` | `auto` | Week bar position. `auto` = `top` iff `value` is weekly, else no bar (daily mode). `off` = daily only: a weekly value is reduced to one day (the `day` option, else the selected day, else today) with a console warning. The week can always be disabled with `off`. |
+| `week-layout` | `tabs` \| `rows` | `tabs` | Weekly view. `tabs`: the week bar (seven days with a colour preview) and, under it, only the selected day in focus; tap a day to switch (`week` picks the bar position). `rows`: the seven days stacked as horizontal 24 h rows (hour axis on top), every row editable in place (drag edges, tap a band to edit, tap the day to select it for Add / Copy); no tab bar and no spectrum. |
 | `day` | `mon`..`sun` | today (device clock) | Selected weekday. Reflected. Also settable via `selectDay()`. |
 | `first-day` | `auto` \| `mon`..`sun` | `auto` | Order of the 7 tabs. `auto`: `Intl.Locale(locale).getWeekInfo().firstDay` (fallback `weekInfo`, then `mon`). |
 | `week-preview` | toggle | on | Tiny colour strip inside each day tab. |

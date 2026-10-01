@@ -38,7 +38,7 @@
     "day": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/weekday" }] },
     "firstDay": { "oneOf": [{ "const": "auto" }, { "$ref": "#/$defs/weekday" }] },
     "weekPreview": { "type": "boolean" }, "weekCopy": { "type": "boolean" }, "linkDays": { "type": "boolean" },
-    "weekLayout": { "enum": ["rows", "tabs"] },
+    "weekLayout": { "enum": ["tabs", "rows"], "default": "tabs" },
     "theme": { "enum": ["organic", "neutral", "flat", "none"] },
     "colorScheme": { "enum": ["auto", "light", "dark"] },
     "locale": { "type": ["string", "null"] },

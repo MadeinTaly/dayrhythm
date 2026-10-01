@@ -12,6 +12,7 @@ Choices made while implementing `docs/API.md` (v0.3). Later entries win.
 6. Donation link: README, site and playground only. In the component, `credits: true` (default) and `"minimal"` show only "Made with dayrhythm"; the extra value `"support"` adds the donation link.
 7. Pack field ranges are illustrative.
 8. (0.2) The week is shown as seven horizontal rows by default (`week-layout="rows"`); the tab view stays as `tabs`. Resizing must be easy: an edge follows the finger (pointer mapped through the real card geometry, so minimum card sizes no longer skew it) and pushes the neighbours instead of stopping (`push`, on by default).
+9. (0.3) The default weekly view is again the week bar with one day in focus (`week-layout="tabs"`): tap a day on the bar to see and edit only that day. The seven rows stay available as `week-layout="rows"`. `week="off"` reduces a weekly value to one day instead of rendering empty.
 
 ## Implementation choices and deviations
 

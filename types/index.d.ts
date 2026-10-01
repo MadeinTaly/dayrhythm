@@ -88,7 +88,7 @@ export interface Config {
   spectrum?: boolean; nowLine?: boolean; clockOffset?: number; timezone?: string | null; timeFormat?: '24h' | '12h';
   editor?: 'auto' | 'quick' | 'full'; randomize?: boolean; readonly?: boolean; disabled?: boolean; labelMax?: number;
   week?: 'auto' | 'top' | 'bottom' | 'off'; day?: Weekday | null; firstDay?: 'auto' | Weekday;
-  weekPreview?: boolean; weekCopy?: boolean; linkDays?: boolean; weekLayout?: 'rows' | 'tabs';
+  weekPreview?: boolean; weekCopy?: boolean; linkDays?: boolean; weekLayout?: 'tabs' | 'rows';
   theme?: 'organic' | 'neutral' | 'flat' | 'none'; colorScheme?: 'auto' | 'light' | 'dark'; locale?: string | null;
   /** Flat `{ key: string }` and/or per-locale `{ it: { key: string } }`. */
   messages?: Record<string, string | Record<string, string>>;

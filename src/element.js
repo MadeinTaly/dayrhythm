@@ -7,7 +7,7 @@ import {
   normalizeDay, sortSlots, slotRanges, resolveValues, addSlotAt, removeSlotById, moveBoundary, genId, clone, isLocked, retimeSlot,
 } from './core/slots.js';
 import {
-  isWeek, isRef, resolveWeek, withDay, copyDay as copyDayCore, firstDayOfWeek, orderedWeekdays, expandTargets,
+  isWeek, isRef, resolveWeek, withDay, copyDay as copyDayCore, carrySlotFor, firstDayOfWeek, orderedWeekdays, expandTargets,
 } from './core/week.js';
 import { validateDay, validateWeek } from './core/validate.js';
 import { activeSlotAt } from './core/index.js';
@@ -64,10 +64,13 @@ export class DayRhythmElement extends Base {
       this._readConfigAttr();
       this._readAttrs();
       this._cfg = null;
-      const v = this._propValue !== undefined ? this._propValue : this.cfg.value !== undefined ? this.cfg.value : this._defaultValue();
+      let attrValue;
+      const rawValue = this.getAttribute('value');
+      if (rawValue !== null) { try { attrValue = JSON.parse(rawValue); } catch (e) { this._configError(e); } }
+      const v = this._propValue !== undefined ? this._propValue : attrValue !== undefined ? attrValue : this.cfg.value !== undefined ? this.cfg.value : this._defaultValue();
       this._value = this._norm(v);
       this._days = (this.cfg.days || []).map(clone);
-      this._sel = this._validDay(this.cfg.day) || this.nowDay;
+      this._sel = this._validDay(this.getAttribute('day')) || this._validDay(this.cfg.day) || this.nowDay;
     }
     this._connected = true;
     if (typeof this.setAttribute === 'function') this.setAttribute('data-dr-host', '');
@@ -95,7 +98,7 @@ export class DayRhythmElement extends Base {
     if (name === 'config') this._readConfigAttr();
     else if (name === 'day') { const d = this._validDay(newV); if (d) this.selectDay(d, true); return; }
     else if (name === 'value') {
-      if (newV !== null) { try { this._value = this._norm(JSON.parse(newV)); this._schedule('data'); } catch (e) { this._configError(e); } }
+      if (newV !== null) { try { this.setValue(JSON.parse(newV)); } catch (e) { this._configError(e); } }
       return;
     } else this._readAttrs();
     this._invalidate();
@@ -202,8 +205,8 @@ export class DayRhythmElement extends Base {
   set locale(v) { this._L.props.locale = v; this._invalidate(); }
   get t() { return this._t; }
   fmt(min) { return formatTime(min, { format: this.cfg.timeFormat }); }
-  /** Weekly value shown as seven editable rows (default) instead of one day under a tab bar. */
-  get weekRows() { return this.weekMode && this.cfg.weekLayout !== 'tabs'; }
+  /** Weekly value shown as seven editable rows (opt-in) instead of one focused day under the week bar (default). */
+  get weekRows() { return this.weekMode && this.cfg.weekLayout === 'rows'; }
   get weekMode() { const w = this.cfg.week; return w === 'off' ? false : w === 'top' || w === 'bottom' ? true : isWeek(this._value); }
   get _badWeek() { return this.cfg.week === 'off' && isWeek(this._value); }
   get _minSlots() { const m = this.cfg.minSlots; return m != null ? m : this.weekMode ? 0 : 1; }
@@ -298,6 +301,7 @@ export class DayRhythmElement extends Base {
 
   setValue(v) {
     this._value = this._norm(v);
+    this._flattenIfOff();
     this._syncForm();
     if (this.weekMode && !this._validDay(this._sel)) this._sel = this.nowDay;
     if (this._editing && !this._locate(this._editing)) closeDialog(this, true);
@@ -332,6 +336,21 @@ export class DayRhythmElement extends Base {
       return { ...v, week };
     }
     return strip(v);
+  }
+
+  /** week="off" with a weekly value: keep one day (the `day` option, else the selected day, else today) as the daily value. */
+  _flattenIfOff() {
+    if (!this._badWeek) return;
+    const d = this._validDay(this.cfg.day) || this._validDay(this._sel) || this.nowDay;
+    console.warn(`[dayrhythm] week="off": weekly value reduced to ${d}`);
+    let slots = resolveWeek(this._value, this._days)[d];
+    if (!slots.length) {
+      // empty day: it carries on the previous day's last slot all day
+      const c = carrySlotFor(this._value, d, this._days);
+      slots = c ? [{ ...c.slot, id: undefined, time: '00:00' }] : this._defaultValue();
+    }
+    this._value = this._norm(slots);
+    this._syncForm();
   }
 
   _resolved() { return isWeek(this._value) ? resolveWeek(this._value, this._days) : clone(this._value); }
@@ -787,6 +806,7 @@ export class DayRhythmElement extends Base {
     this._adapter = undefined;
     if (this._sel == null) this._sel = this._validDay(this.cfg.day) || this.nowDay;
     if (this.cfg.day !== this._cfgDay) { this._cfgDay = this.cfg.day; const d = this._validDay(this.cfg.day); if (d) this._sel = d; }
+    this._flattenIfOff();
     buildRoot(this);
     if (this._storageRef !== this.cfg.storage) { this._storageRef = this.cfg.storage; this._loadStorage(); }
   }

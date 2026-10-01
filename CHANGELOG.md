@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0
+
+- The weekly view defaults to the **week bar with the selected day in focus** (`week-layout="tabs"`): tap a day on the bar to see and edit only that day. The seven-row view is still available with `week-layout="rows"`.
+- `week="off"` with a weekly value now shows one day (the `day` option, else the selected day, else today) as a daily schedule, instead of an empty, locked timeline.
+- Fix: the `value` and `day` attributes present in the HTML at first connection were ignored.
+
 ## 0.2.0
 
 - Weekly schedules are shown as **seven horizontal rows** (one 24 h row per day, hour axis on top), each editable in place: drag the edges, tap a band to edit it, tap the day to select it for Add / Copy. New option `week-layout` (`rows` default, `tabs` = previous one-day-at-a-time view).

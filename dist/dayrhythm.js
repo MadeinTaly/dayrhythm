@@ -1,4 +1,4 @@
-/*! dayrhythm v0.2.0 | MIT | https://github.com/MadeinTaly/dayrhythm */
+/*! dayrhythm v0.3.0 | MIT | https://github.com/MadeinTaly/dayrhythm */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -6,7 +6,7 @@ var __export = (target, all) => {
 };
 
 // src/version.js
-var VERSION = "0.2.0";
+var VERSION = "0.3.0";
 
 // src/core/time.js
 var WEEKDAYS = Object.freeze(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
@@ -513,7 +513,7 @@ var defaults = {
   weekPreview: true,
   weekCopy: true,
   linkDays: false,
-  weekLayout: "rows",
+  weekLayout: "tabs",
   theme: "organic",
   colorScheme: "auto",
   locale: null,
@@ -2701,10 +2701,19 @@ var DayRhythmElement = class extends Base {
       this._readConfigAttr();
       this._readAttrs();
       this._cfg = null;
-      const v = this._propValue !== void 0 ? this._propValue : this.cfg.value !== void 0 ? this.cfg.value : this._defaultValue();
+      let attrValue;
+      const rawValue = this.getAttribute("value");
+      if (rawValue !== null) {
+        try {
+          attrValue = JSON.parse(rawValue);
+        } catch (e) {
+          this._configError(e);
+        }
+      }
+      const v = this._propValue !== void 0 ? this._propValue : attrValue !== void 0 ? attrValue : this.cfg.value !== void 0 ? this.cfg.value : this._defaultValue();
       this._value = this._norm(v);
       this._days = (this.cfg.days || []).map(clone);
-      this._sel = this._validDay(this.cfg.day) || this.nowDay;
+      this._sel = this._validDay(this.getAttribute("day")) || this._validDay(this.cfg.day) || this.nowDay;
     }
     this._connected = true;
     if (typeof this.setAttribute === "function") this.setAttribute("data-dr-host", "");
@@ -2735,8 +2744,7 @@ var DayRhythmElement = class extends Base {
     } else if (name === "value") {
       if (newV !== null) {
         try {
-          this._value = this._norm(JSON.parse(newV));
-          this._schedule("data");
+          this.setValue(JSON.parse(newV));
         } catch (e) {
           this._configError(e);
         }
@@ -2870,9 +2878,9 @@ var DayRhythmElement = class extends Base {
   fmt(min) {
     return formatTime(min, { format: this.cfg.timeFormat });
   }
-  /** Weekly value shown as seven editable rows (default) instead of one day under a tab bar. */
+  /** Weekly value shown as seven editable rows (opt-in) instead of one focused day under the week bar (default). */
   get weekRows() {
-    return this.weekMode && this.cfg.weekLayout !== "tabs";
+    return this.weekMode && this.cfg.weekLayout === "rows";
   }
   get weekMode() {
     const w = this.cfg.week;
@@ -3017,6 +3025,7 @@ var DayRhythmElement = class extends Base {
   }
   setValue(v) {
     this._value = this._norm(v);
+    this._flattenIfOff();
     this._syncForm();
     if (this.weekMode && !this._validDay(this._sel)) this._sel = this.nowDay;
     if (this._editing && !this._locate(this._editing)) closeDialog(this, true);
@@ -3048,6 +3057,19 @@ var DayRhythmElement = class extends Base {
       return { ...v, week };
     }
     return strip(v);
+  }
+  /** week="off" with a weekly value: keep one day (the `day` option, else the selected day, else today) as the daily value. */
+  _flattenIfOff() {
+    if (!this._badWeek) return;
+    const d = this._validDay(this.cfg.day) || this._validDay(this._sel) || this.nowDay;
+    console.warn(`[dayrhythm] week="off": weekly value reduced to ${d}`);
+    let slots = resolveWeek(this._value, this._days)[d];
+    if (!slots.length) {
+      const c = carrySlotFor(this._value, d, this._days);
+      slots = c ? [{ ...c.slot, id: void 0, time: "00:00" }] : this._defaultValue();
+    }
+    this._value = this._norm(slots);
+    this._syncForm();
   }
   _resolved() {
     return isWeek(this._value) ? resolveWeek(this._value, this._days) : clone(this._value);
@@ -3543,6 +3565,7 @@ var DayRhythmElement = class extends Base {
       const d = this._validDay(this.cfg.day);
       if (d) this._sel = d;
     }
+    this._flattenIfOff();
     buildRoot(this);
     if (this._storageRef !== this.cfg.storage) {
       this._storageRef = this.cfg.storage;

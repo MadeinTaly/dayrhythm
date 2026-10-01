@@ -1,4 +1,4 @@
-/*! dayrhythm v0.2.0 | MIT | https://github.com/MadeinTaly/dayrhythm */
+/*! dayrhythm v0.3.0 | MIT | https://github.com/MadeinTaly/dayrhythm */
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
