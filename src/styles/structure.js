@@ -29,6 +29,7 @@ display:flex;flex-direction:column;gap:calc(var(--x-gap)*2.5);position:relative;
 .dr-track[data-orient=horizontal] .dr-slot{min-width:var(--x-card-min)}
 .dr-track[data-orient=vertical] .dr-slot{min-height:var(--x-card-min)}
 .dr-slot[data-zero]{min-width:0!important;min-height:0!important;visibility:hidden;overflow:hidden}
+.dr-slot[data-dragmin]{min-width:0!important;min-height:0!important}
 .dr-slot-tint{position:absolute;inset:0;border-radius:inherit;pointer-events:none;overflow:hidden}
 .dr-slot-content{position:relative;display:flex;min-width:0;min-height:0;flex:1;overflow:hidden}
 .dr-track[data-orient=horizontal] .dr-slot-content{flex-direction:column;align-items:center;justify-content:flex-start;text-align:center}

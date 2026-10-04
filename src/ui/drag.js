@@ -52,8 +52,16 @@ function onDown(el, e) {
   }
   const horiz = track.dataset.orient === 'horizontal';
   const carry = ctx.layout.pieces.find((p) => p.kind === 'carry');
+  // The two cards next to the dragged edge (and, at the seam, the wrap-around pieces) lose their minimum size
+  // while dragging, so they follow their real duration and the edge can follow the finger down to `minGap`.
+  const keys = ctx.layout.pieces.map((p) => p.key);
+  const loose = new Set(['main:' + id]);
+  const before = keys[keys.indexOf('main:' + id) - 1];
+  if (before) loose.add(before);
+  if (frozen) { loose.add('tail'); loose.add('tail-end'); const k = keys[keys.indexOf('tail-end') - 1]; if (k) loose.add(k); }
+  for (const k of loose) { const n = ctx.pieceEls.get(k); if (n) n.dataset.dragmin = ''; }
   const st = {
-    id, weekly, day: ctx.day, ctx, slots0: slots, base: el._value, frozen, handle, horiz,
+    id, weekly, day: ctx.day, ctx, slots0: slots, base: el._value, frozen, handle, horiz, keys, loose,
     opts: weekly ? { cyclic: false, carry: carry && carry.slot } : { cyclic: true, origin: el.cfg.origin === 'midnight' ? 'midnight' : 'first' },
     origin: ctx.layout.origin, pos: horiz ? e.clientX : e.clientY,
     startMin: parseTime(slots[idx].time), cur: parseTime(slots[idx].time), raf: 0,
@@ -61,6 +69,8 @@ function onDown(el, e) {
     alias: frozen ? track.querySelector('[data-handle][data-alias]') : null,
     last: null,
   };
+  measure(st);
+  st.grab = st.pos - edgePixel(st, st.durs, 'main:' + id);
   el._drag = st;
   el._liveBase = el._value;
   el._$.root.dataset.dragging = '';
@@ -85,26 +95,98 @@ function onDown(el, e) {
   handle.addEventListener('lostpointercapture', lost);
 }
 
-/** Axis minutes (0..1440 from the layout origin) under screen position `pos`, read from the live pieces. */
-function offsetAt(st, pos) {
-  // before the first piece / after the last one the axis continues at the track's average scale
-  const tr = st.ctx.track.getBoundingClientRect();
-  const len = st.horiz ? tr.width : tr.height;
-  const ppm = Math.max(0.05, len / 1440);
-  let acc = 0, first = true, end = null;
-  for (const p of st.ctx.layout.pieces) {
-    const dur = st.durs.get(p.key);
-    const node = st.ctx.pieceEls.get(p.key);
-    if (!node || dur <= 0) continue;
-    const r = node.getBoundingClientRect();
-    const a0 = st.horiz ? r.left : r.top, a1 = st.horiz ? r.right : r.bottom;
-    if (pos < a0) return first ? (pos - a0) / ppm : acc;
-    if (pos <= a1) return acc + (a1 > a0 ? ((pos - a0) / (a1 - a0)) * dur : 0);
-    acc += dur;
-    first = false;
-    end = a1;
+const sizeOf = (st, r) => (st.horiz ? r.width : r.height);
+const startOf = (st, r) => (st.horiz ? r.left : r.top);
+
+/**
+ * Snapshot of the track at drag start: total length of the cards, minimum size of each card and, for each edge,
+ * the distance between the handle centre and the cards before it (handles and gaps, constant while dragging).
+ */
+function measure(st) {
+  const { pieceEls, track } = st.ctx;
+  void track.offsetHeight; // apply data-dragmin before measuring
+  let avail = 0, normalMin = 0;
+  st.mins = new Map();
+  st.pads = new Map(); // padding + border along the axis: a flex item with basis 0 still takes that much
+  for (const k of st.keys) {
+    const n = pieceEls.get(k);
+    if (!n) continue;
+    avail += sizeOf(st, n.getBoundingClientRect());
+    const c = getComputedStyle(n);
+    const px = (a, b, c2, d) => (parseFloat(a) || 0) + (parseFloat(b) || 0) + (parseFloat(c2) || 0) + (parseFloat(d) || 0);
+    st.pads.set(k, st.horiz ? px(c.paddingLeft, c.paddingRight, c.borderLeftWidth, c.borderRightWidth)
+      : px(c.paddingTop, c.paddingBottom, c.borderTopWidth, c.borderBottomWidth));
+    if (!st.loose.has(k) && !('zero' in n.dataset)) {
+      const cs = getComputedStyle(n);
+      normalMin = Math.max(normalMin, parseFloat(st.horiz ? cs.minWidth : cs.minHeight) || 0);
+    }
   }
-  return end == null ? acc : acc + (pos - end) / ppm;
+  for (const k of st.keys) st.mins.set(k, st.loose.has(k) ? 0 : normalMin);
+  st.avail = avail;
+  st.delta = new Map();
+  for (const k of ['main:' + st.id, 'tail-end']) {
+    const card = pieceEls.get(k);
+    const h = card && card.previousElementSibling;
+    if (!card || !h || !h.matches('[data-handle]')) continue;
+    const hr = h.getBoundingClientRect();
+    const centre = startOf(st, hr) + sizeOf(st, hr) / 2;
+    st.delta.set(k, centre - cardsBefore(st, st.durs, k));
+  }
+}
+
+/** Card sizes as the browser lays them out: flex-grow = duration, basis 0, with minimum sizes (CSS flexbox). */
+function flexSizes(st, durs) {
+  const items = st.keys.map((k) => {
+    const g = Math.max(0, durs.get(k) || 0), base = st.pads.get(k) || 0;
+    return { g, base, min: Math.max(base, g > 0 ? st.mins.get(k) : 0), size: base, frozen: g <= 0 };
+  });
+  for (let pass = 0; pass <= items.length; pass++) {
+    let free = st.avail, grow = 0;
+    for (const it of items) { if (it.frozen) free -= it.size; else { grow += it.g; free -= it.base; } }
+    if (grow <= 0) break;
+    let violation = 0;
+    for (const it of items) if (!it.frozen) { it.t = it.base + (Math.max(0, free) * it.g) / grow; violation += Math.max(0, it.min - it.t); }
+    if (violation <= 0) { for (const it of items) if (!it.frozen) it.size = it.t; break; }
+    for (const it of items) if (!it.frozen && it.t < it.min) { it.frozen = true; it.size = it.min; }
+  }
+  return items.map((it) => it.size);
+}
+
+/** Total size of the cards before card `key` (the dragged edge sits right after them). */
+function cardsBefore(st, durs, key) {
+  const sizes = flexSizes(st, durs);
+  let acc = 0;
+  for (let i = 0; i < st.keys.length && st.keys[i] !== key; i++) acc += sizes[i];
+  return acc;
+}
+
+/** Screen position of the handle in front of card `key` for these durations. */
+function edgePixel(st, durs, key) {
+  return cardsBefore(st, durs, key) + (st.delta.get(key) || 0);
+}
+
+/** Result of dragging to axis minute `a` (0..1440 from the origin): slots, minutes, durations, edge pixel. */
+function candidate(el, st, a) {
+  let target = st.origin + a;
+  if (st.frozen && target >= 1440) target -= 1440;
+  const r = shift(el, st.slots0, st.id, target, !st.weekly);
+  const durs = st.frozen ? frozenDurs(st, r.slots, r.minutes) : new Map(buildLayout(r.slots, st.opts).pieces.map((p) => [p.key, p.dur]));
+  const key = st.frozen && r.minutes < st.origin ? 'tail-end' : 'main:' + st.id;
+  return { r, durs, px: edgePixel(st, durs, key) };
+}
+
+/** The time whose edge lands under the finger (the edge pixel grows with the time: binary search). */
+function solve(el, st) {
+  const goal = st.pos - st.grab;
+  let lo = 0, hi = 1440, best = candidate(el, st, lo), bestErr = Math.abs(best.px - goal);
+  for (let i = 0; i < 16 && hi - lo > 0.5; i++) {
+    const mid = (lo + hi) / 2, c = candidate(el, st, mid), err = Math.abs(c.px - goal);
+    if (err < bestErr) { best = c; bestErr = err; }
+    if (c.px < goal) lo = mid; else hi = mid;
+  }
+  const end = candidate(el, st, hi);
+  if (Math.abs(end.px - goal) < bestErr) best = end;
+  return best;
 }
 
 /** Piece durations with the dragged slot at `v` (frozen: fixed axis origin, see layout.js). */
@@ -118,16 +200,12 @@ function frozenDurs(st, slots, v) {
 function frame(el, st) {
   st.raf = 0;
   if (el._drag !== st) return;
-  const a = offsetAt(st, st.pos);
-  let target = st.origin + a;
-  if (st.frozen && Math.abs(target - 1440 - st.cur) < Math.abs(target - st.cur)) target -= 1440;
   const cyclic = !st.weekly;
-  const r = shift(el, st.slots0, st.id, target, cyclic);
+  const { r, durs } = solve(el, st);
   if (r.minutes === st.cur && st.last) return;
   st.cur = r.minutes;
   st.last = r.slots;
   const time = el.fmt(r.minutes);
-  const durs = st.frozen ? frozenDurs(st, r.slots, r.minutes) : new Map(buildLayout(r.slots, st.opts).pieces.map((p) => [p.key, p.dur]));
   st.durs = durs;
   for (const [k, v] of durs) { setFlex(st.ctx.pieceEls.get(k), v); setFlex(st.ctx.segEls && st.ctx.segEls.get(k), v); }
   const ranges = slotRanges(r.slots, { cyclic });
@@ -157,6 +235,7 @@ function finish(el, st, cancel) {
   if (el._drag !== st) return;
   if (st.raf) { cancelAnimationFrame(st.raf); st.raf = 0; }
   delete el._$.root.dataset.dragging;
+  for (const k of st.loose) { const n = st.ctx.pieceEls.get(k); if (n) delete n.dataset.dragmin; }
   el._drag = null;
   el._frozen = false;
   el._liveBase = null;

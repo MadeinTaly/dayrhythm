@@ -1,4 +1,4 @@
-/*! dayrhythm v0.3.0 | MIT | https://github.com/MadeinTaly/dayrhythm */
+/*! dayrhythm v0.4.0 | MIT | https://github.com/MadeinTaly/dayrhythm */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -6,7 +6,7 @@ var __export = (target, all) => {
 };
 
 // src/version.js
-var VERSION = "0.3.0";
+var VERSION = "0.4.0";
 
 // src/core/time.js
 var WEEKDAYS = Object.freeze(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
@@ -482,7 +482,7 @@ var defaults = {
   days: [],
   load: null,
   storage: null,
-  minGap: 30,
+  minGap: 5,
   snap: 5,
   minSlots: null,
   maxSlots: null,
@@ -1044,6 +1044,7 @@ display:flex;flex-direction:column;gap:calc(var(--x-gap)*2.5);position:relative;
 .dr-track[data-orient=horizontal] .dr-slot{min-width:var(--x-card-min)}
 .dr-track[data-orient=vertical] .dr-slot{min-height:var(--x-card-min)}
 .dr-slot[data-zero]{min-width:0!important;min-height:0!important;visibility:hidden;overflow:hidden}
+.dr-slot[data-dragmin]{min-width:0!important;min-height:0!important}
 .dr-slot-tint{position:absolute;inset:0;border-radius:inherit;pointer-events:none;overflow:hidden}
 .dr-slot-content{position:relative;display:flex;min-width:0;min-height:0;flex:1;overflow:hidden}
 .dr-track[data-orient=horizontal] .dr-slot-content{flex-direction:column;align-items:center;justify-content:flex-start;text-align:center}
@@ -1335,6 +1336,20 @@ function onDown(el, e) {
   }
   const horiz = track.dataset.orient === "horizontal";
   const carry = ctx.layout.pieces.find((p) => p.kind === "carry");
+  const keys = ctx.layout.pieces.map((p) => p.key);
+  const loose = /* @__PURE__ */ new Set(["main:" + id]);
+  const before = keys[keys.indexOf("main:" + id) - 1];
+  if (before) loose.add(before);
+  if (frozen) {
+    loose.add("tail");
+    loose.add("tail-end");
+    const k = keys[keys.indexOf("tail-end") - 1];
+    if (k) loose.add(k);
+  }
+  for (const k of loose) {
+    const n = ctx.pieceEls.get(k);
+    if (n) n.dataset.dragmin = "";
+  }
   const st = {
     id,
     weekly,
@@ -1345,6 +1360,8 @@ function onDown(el, e) {
     frozen,
     handle,
     horiz,
+    keys,
+    loose,
     opts: weekly ? { cyclic: false, carry: carry && carry.slot } : { cyclic: true, origin: el.cfg.origin === "midnight" ? "midnight" : "first" },
     origin: ctx.layout.origin,
     pos: horiz ? e.clientX : e.clientY,
@@ -1355,6 +1372,8 @@ function onDown(el, e) {
     alias: frozen ? track.querySelector("[data-handle][data-alias]") : null,
     last: null
   };
+  measure(st);
+  st.grab = st.pos - edgePixel(st, st.durs, "main:" + id);
   el._drag = st;
   el._liveBase = el._value;
   el._$.root.dataset.dragging = "";
@@ -1383,24 +1402,101 @@ function onDown(el, e) {
   handle.addEventListener("pointercancel", up);
   handle.addEventListener("lostpointercapture", lost);
 }
-function offsetAt(st, pos) {
-  const tr = st.ctx.track.getBoundingClientRect();
-  const len = st.horiz ? tr.width : tr.height;
-  const ppm = Math.max(0.05, len / 1440);
-  let acc = 0, first = true, end = null;
-  for (const p of st.ctx.layout.pieces) {
-    const dur = st.durs.get(p.key);
-    const node = st.ctx.pieceEls.get(p.key);
-    if (!node || dur <= 0) continue;
-    const r = node.getBoundingClientRect();
-    const a0 = st.horiz ? r.left : r.top, a1 = st.horiz ? r.right : r.bottom;
-    if (pos < a0) return first ? (pos - a0) / ppm : acc;
-    if (pos <= a1) return acc + (a1 > a0 ? (pos - a0) / (a1 - a0) * dur : 0);
-    acc += dur;
-    first = false;
-    end = a1;
+var sizeOf = (st, r) => st.horiz ? r.width : r.height;
+var startOf = (st, r) => st.horiz ? r.left : r.top;
+function measure(st) {
+  const { pieceEls, track } = st.ctx;
+  void track.offsetHeight;
+  let avail = 0, normalMin = 0;
+  st.mins = /* @__PURE__ */ new Map();
+  st.pads = /* @__PURE__ */ new Map();
+  for (const k of st.keys) {
+    const n = pieceEls.get(k);
+    if (!n) continue;
+    avail += sizeOf(st, n.getBoundingClientRect());
+    const c = getComputedStyle(n);
+    const px = (a, b, c2, d) => (parseFloat(a) || 0) + (parseFloat(b) || 0) + (parseFloat(c2) || 0) + (parseFloat(d) || 0);
+    st.pads.set(k, st.horiz ? px(c.paddingLeft, c.paddingRight, c.borderLeftWidth, c.borderRightWidth) : px(c.paddingTop, c.paddingBottom, c.borderTopWidth, c.borderBottomWidth));
+    if (!st.loose.has(k) && !("zero" in n.dataset)) {
+      const cs = getComputedStyle(n);
+      normalMin = Math.max(normalMin, parseFloat(st.horiz ? cs.minWidth : cs.minHeight) || 0);
+    }
   }
-  return end == null ? acc : acc + (pos - end) / ppm;
+  for (const k of st.keys) st.mins.set(k, st.loose.has(k) ? 0 : normalMin);
+  st.avail = avail;
+  st.delta = /* @__PURE__ */ new Map();
+  for (const k of ["main:" + st.id, "tail-end"]) {
+    const card = pieceEls.get(k);
+    const h = card && card.previousElementSibling;
+    if (!card || !h || !h.matches("[data-handle]")) continue;
+    const hr = h.getBoundingClientRect();
+    const centre = startOf(st, hr) + sizeOf(st, hr) / 2;
+    st.delta.set(k, centre - cardsBefore(st, st.durs, k));
+  }
+}
+function flexSizes(st, durs) {
+  const items = st.keys.map((k) => {
+    const g = Math.max(0, durs.get(k) || 0), base = st.pads.get(k) || 0;
+    return { g, base, min: Math.max(base, g > 0 ? st.mins.get(k) : 0), size: base, frozen: g <= 0 };
+  });
+  for (let pass = 0; pass <= items.length; pass++) {
+    let free = st.avail, grow = 0;
+    for (const it of items) {
+      if (it.frozen) free -= it.size;
+      else {
+        grow += it.g;
+        free -= it.base;
+      }
+    }
+    if (grow <= 0) break;
+    let violation = 0;
+    for (const it of items) if (!it.frozen) {
+      it.t = it.base + Math.max(0, free) * it.g / grow;
+      violation += Math.max(0, it.min - it.t);
+    }
+    if (violation <= 0) {
+      for (const it of items) if (!it.frozen) it.size = it.t;
+      break;
+    }
+    for (const it of items) if (!it.frozen && it.t < it.min) {
+      it.frozen = true;
+      it.size = it.min;
+    }
+  }
+  return items.map((it) => it.size);
+}
+function cardsBefore(st, durs, key) {
+  const sizes = flexSizes(st, durs);
+  let acc = 0;
+  for (let i = 0; i < st.keys.length && st.keys[i] !== key; i++) acc += sizes[i];
+  return acc;
+}
+function edgePixel(st, durs, key) {
+  return cardsBefore(st, durs, key) + (st.delta.get(key) || 0);
+}
+function candidate(el, st, a) {
+  let target = st.origin + a;
+  if (st.frozen && target >= 1440) target -= 1440;
+  const r = shift(el, st.slots0, st.id, target, !st.weekly);
+  const durs = st.frozen ? frozenDurs(st, r.slots, r.minutes) : new Map(buildLayout(r.slots, st.opts).pieces.map((p) => [p.key, p.dur]));
+  const key = st.frozen && r.minutes < st.origin ? "tail-end" : "main:" + st.id;
+  return { r, durs, px: edgePixel(st, durs, key) };
+}
+function solve(el, st) {
+  const goal = st.pos - st.grab;
+  let lo = 0, hi = 1440, best = candidate(el, st, lo), bestErr = Math.abs(best.px - goal);
+  for (let i = 0; i < 16 && hi - lo > 0.5; i++) {
+    const mid = (lo + hi) / 2, c = candidate(el, st, mid), err = Math.abs(c.px - goal);
+    if (err < bestErr) {
+      best = c;
+      bestErr = err;
+    }
+    if (c.px < goal) lo = mid;
+    else hi = mid;
+  }
+  const end = candidate(el, st, hi);
+  if (Math.abs(end.px - goal) < bestErr) best = end;
+  return best;
 }
 function frozenDurs(st, slots, v) {
   const O = st.origin;
@@ -1411,16 +1507,12 @@ function frozenDurs(st, slots, v) {
 function frame(el, st) {
   st.raf = 0;
   if (el._drag !== st) return;
-  const a = offsetAt(st, st.pos);
-  let target = st.origin + a;
-  if (st.frozen && Math.abs(target - 1440 - st.cur) < Math.abs(target - st.cur)) target -= 1440;
   const cyclic = !st.weekly;
-  const r = shift(el, st.slots0, st.id, target, cyclic);
+  const { r, durs } = solve(el, st);
   if (r.minutes === st.cur && st.last) return;
   st.cur = r.minutes;
   st.last = r.slots;
   const time = el.fmt(r.minutes);
-  const durs = st.frozen ? frozenDurs(st, r.slots, r.minutes) : new Map(buildLayout(r.slots, st.opts).pieces.map((p) => [p.key, p.dur]));
   st.durs = durs;
   for (const [k, v] of durs) {
     setFlex(st.ctx.pieceEls.get(k), v);
@@ -1462,6 +1554,10 @@ function finish(el, st, cancel) {
     st.raf = 0;
   }
   delete el._$.root.dataset.dragging;
+  for (const k of st.loose) {
+    const n = st.ctx.pieceEls.get(k);
+    if (n) delete n.dataset.dragmin;
+  }
   el._drag = null;
   el._frozen = false;
   el._liveBase = null;
@@ -2894,7 +2990,7 @@ var DayRhythmElement = class extends Base {
     return m != null ? m : this.weekMode ? 0 : 1;
   }
   get _minGap() {
-    return Math.max(1, +this.cfg.minGap || 30);
+    return Math.max(1, +this.cfg.minGap || 5);
   }
   get _snap() {
     const s = +this.cfg.snap || 5;

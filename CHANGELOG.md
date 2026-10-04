@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0
+
+- **Smoother dragging**: the edge stays under the finger (within a few pixels) for the whole drag. The position is computed from an exact model of the track layout instead of from the cards being resized, and the two cards next to the dragged edge drop their minimum size while dragging, so a slot can be squeezed down to `min-gap`.
+- `min-gap` defaults to **5 minutes** (was 30): slots can be very short.
+
 ## 0.3.0
 
 - The weekly view defaults to the **week bar with the selected day in focus** (`week-layout="tabs"`): tap a day on the bar to see and edit only that day. The seven-row view is still available with `week-layout="rows"`.

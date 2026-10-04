@@ -210,7 +210,7 @@ export class DayRhythmElement extends Base {
   get weekMode() { const w = this.cfg.week; return w === 'off' ? false : w === 'top' || w === 'bottom' ? true : isWeek(this._value); }
   get _badWeek() { return this.cfg.week === 'off' && isWeek(this._value); }
   get _minSlots() { const m = this.cfg.minSlots; return m != null ? m : this.weekMode ? 0 : 1; }
-  get _minGap() { return Math.max(1, +this.cfg.minGap || 30); }
+  get _minGap() { return Math.max(1, +this.cfg.minGap || 5); }
   get _snap() { const s = +this.cfg.snap || 5; return 60 % s === 0 ? s : 5; }
   get creditsMode() { return normalizeCredits(this.cfg.credits); }
   get models() { return this.cfg.models && this.cfg.models.length ? this.cfg.models : defaults.models; }

@@ -7,7 +7,7 @@ export const defaults = {
     { id: 'off', label: 'Off', off: true },
   ],
   presets: [], days: [], load: null, storage: null,
-  minGap: 30, snap: 5, minSlots: null, maxSlots: null,
+  minGap: 5, snap: 5, minSlots: null, maxSlots: null,
   origin: 'first', seamDrag: true, push: true, orientation: 'auto', breakpoint: 640,
   add: true, remove: true, rename: true, timeEdit: true, showPresets: true, showDays: true,
   spectrum: true, nowLine: true, clockOffset: 0, timezone: null, timeFormat: '24h',

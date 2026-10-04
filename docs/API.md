@@ -230,7 +230,7 @@ Types in `config` and as attributes (where it makes sense). **Toggle convention*
 
 | Attribute / config key | Type | Default | Notes |
 |---|---|---|---|
-| `min-gap` | minutes | `30` | Minimum slot duration. |
+| `min-gap` | minutes | `5` | Minimum slot duration. |
 | `snap` | minutes | `5` | Drag/keyboard granularity. Must divide 60. |
 | `min-slots` | int | `1` daily, `0` weekly (per day) | Remove disabled at the bound. |
 | `max-slots` | int \| `null` | `null` (**unlimited**) | Optional cap (per day in weekly). The track grows (min card size) instead of clipping when many slots exist. |
@@ -1174,7 +1174,7 @@ declare global { interface HTMLElementTagNameMap { 'day-rhythm': DayRhythmElemen
   "models": [ { "id": "on", "label": "On", "preview": "#f5c542" }, { "id": "off", "label": "Off", "off": true } ],
   "presets": [], "days": [],
   "load": null, "storage": null,
-  "minGap": 30, "snap": 5, "minSlots": 1, "maxSlots": null,
+  "minGap": 5, "snap": 5, "minSlots": 1, "maxSlots": null,
   "origin": "first", "seamDrag": true, "orientation": "auto", "breakpoint": 640,
   "add": true, "remove": true, "rename": true, "timeEdit": true,
   "showPresets": true, "showDays": true, "spectrum": true, "nowLine": true,
