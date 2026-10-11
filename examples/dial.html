@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>dayrhythm - dial</title>
+<link rel="stylesheet" href="examples.css"></head>
+<body>
+  <h1>Dial layout</h1>
+  <p>The day as a 24-hour ring: drag the knobs, tap an arc to edit it.</p>
+  <day-rhythm id="d" layout="dial" value='[{"time":"06:30","model":"on"},{"time":"08:00","model":"off"},{"time":"18:00","model":"on"},{"time":"23:00","model":"off"}]'></day-rhythm>
+  <pre id="out"></pre>
+  <script type="module">
+    import '../src/index.js';
+    d.addEventListener('change', (e) => { out.textContent = JSON.stringify(e.detail.value, null, 1); });
+  </script>
+</body>
+</html>

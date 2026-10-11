@@ -83,7 +83,7 @@ export interface Config {
   load?: Http | null;
   storage?: { type: 'local'; key: string } | ({ type: 'http' } & Omit<Http, 'method'>) | DayStorage | null;
   minGap?: number; snap?: number; minSlots?: number | null; maxSlots?: number | null;
-  origin?: 'first' | 'midnight'; seamDrag?: boolean; push?: boolean; orientation?: 'auto' | 'horizontal' | 'vertical'; breakpoint?: number;
+  layout?: 'strip' | 'dial'; origin?: 'first' | 'midnight'; seamDrag?: boolean; push?: boolean; orientation?: 'auto' | 'horizontal' | 'vertical'; breakpoint?: number;
   add?: boolean; remove?: boolean; rename?: boolean; timeEdit?: boolean; showPresets?: boolean; showDays?: boolean;
   spectrum?: boolean; nowLine?: boolean; clockOffset?: number; timezone?: string | null; timeFormat?: '24h' | '12h';
   editor?: 'auto' | 'quick' | 'full'; randomize?: boolean; readonly?: boolean; disabled?: boolean; labelMax?: number;
@@ -157,6 +157,7 @@ export class DayRhythmElement extends HTMLElement {
   timeFormat: NonNullable<Config['timeFormat']>;
   minGap: number; snap: number; minSlots: number | null; maxSlots: number | null;
   origin: NonNullable<Config['origin']>; editor: NonNullable<Config['editor']>;
+  layout: NonNullable<Config['layout']>;
   credits: NonNullable<Config['credits']>;
   render: NonNullable<Config['render']>;
   styles: string | null;

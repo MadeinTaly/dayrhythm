@@ -1,6 +1,5 @@
 // Pure layout of a day into track pieces. A "piece" is one visual segment; a slot may have two
 // (start piece + continuation across midnight / the axis seam). DOM-free.
-import { parseTime } from '../core/time.js';
 import { sortSlots, slotRanges } from '../core/slots.js';
 
 /**
@@ -62,5 +61,3 @@ export function gradientStops(pieces, colorOf) {
   }
   return stops.join(',');
 }
-
-export { parseTime };

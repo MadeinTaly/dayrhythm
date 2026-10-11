@@ -1,4 +1,4 @@
-/*! dayrhythm v0.4.0 | MIT | https://github.com/MadeinTaly/dayrhythm */
+/*! dayrhythm v0.5.0 | MIT | https://github.com/MadeinTaly/dayrhythm */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -6,7 +6,7 @@ var __export = (target, all) => {
 };
 
 // src/version.js
-var VERSION = "0.4.0";
+var VERSION = "0.5.0";
 
 // src/core/time.js
 var WEEKDAYS = Object.freeze(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
@@ -486,6 +486,7 @@ var defaults = {
   snap: 5,
   minSlots: null,
   maxSlots: null,
+  layout: "strip",
   origin: "first",
   seamDrag: true,
   push: true,
@@ -534,6 +535,7 @@ var ATTRS = {
   snap: ["snap", "int"],
   "min-slots": ["minSlots", "int"],
   "max-slots": ["maxSlots", "int"],
+  layout: ["layout", "str"],
   origin: ["origin", "str"],
   "seam-drag": ["seamDrag", "toggle"],
   push: ["push", "toggle"],
@@ -1239,6 +1241,27 @@ var themeCSS = ["organic", "neutral", "flat"].map((t) => `
 .dr-root[data-theme=flat] :focus-visible{outline:3px solid var(--x-focus);outline-offset:2px}
 `;
 
+// src/styles/dial.js
+var dialCSS = `
+.dr-dial{width:min(100%,360px);aspect-ratio:1;margin-inline:auto;position:relative;display:grid;place-items:center;border-radius:var(--dr-radius-panel,1.5rem);color:var(--x-ink,var(--dr-ink,currentColor));}
+.dr-dial-svg{display:block;width:100%;height:100%;overflow:visible;touch-action:none;}
+.dr-dial-ring{fill:var(--x-surface-soft,var(--dr-surface-soft,transparent));stroke:var(--x-border,var(--dr-border,currentColor));stroke-width:1;}
+.dr-dial-arc{fill-rule:evenodd;cursor:pointer;stroke:var(--x-surface,var(--dr-surface,transparent));stroke-width:1.5;vector-effect:non-scaling-stroke;opacity:.94;transition:opacity var(--x-dur,.12s),transform var(--x-dur,.12s);transform-origin:100px 100px;}
+.dr-dial-arc-active{filter:drop-shadow(0 0 2px var(--x-accent,var(--dr-accent,currentColor)));opacity:1;}
+.dr-dial-tick{stroke:var(--x-muted,var(--dr-muted,currentColor));stroke-width:1;opacity:.65;vector-effect:non-scaling-stroke;}
+.dr-dial-tick-label{fill:var(--x-muted,var(--dr-muted,currentColor));font:600 5px var(--x-font,system-ui,sans-serif);text-anchor:middle;dominant-baseline:middle;}
+.dr-dial-now{stroke:var(--x-now,var(--dr-now,#d97761));stroke-width:2;stroke-linecap:round;vector-effect:non-scaling-stroke;pointer-events:none;}
+.dr-dial-handle{fill:var(--x-accent,var(--dr-accent,currentColor));stroke:var(--x-surface,var(--dr-surface,Canvas));stroke-width:2;vector-effect:non-scaling-stroke;cursor:grab;outline:none;transition:transform var(--x-dur,.12s),opacity var(--x-dur,.12s);}
+.dr-dial-handle:focus-visible{stroke:var(--x-focus,var(--dr-focus,currentColor));stroke-width:3;}
+.dr-dial-handle[data-dragging]{cursor:grabbing;}
+.dr-dial-center{pointer-events:none;text-anchor:middle;}
+.dr-dial-center-time{fill:var(--x-ink,var(--dr-ink,currentColor));font:700 13px var(--x-font,system-ui,sans-serif);font-variant-numeric:tabular-nums;}
+.dr-dial-center-label{fill:var(--x-ink,var(--dr-ink,currentColor));font:650 6px var(--x-font,system-ui,sans-serif);}
+.dr-dial-center-summary{fill:var(--x-muted,var(--dr-muted,currentColor));font:5px var(--x-font,system-ui,sans-serif);}
+.dr-dial-center-remaining{fill:var(--x-muted,var(--dr-muted,currentColor));font:4px var(--x-font,system-ui,sans-serif);}
+@media (prefers-reduced-motion:reduce){.dr-dial-arc,.dr-dial-handle{transition:none;}}
+`;
+
 // src/ui/layout.js
 function buildLayout(slotsIn, opts = {}) {
   const cyclic = opts.cyclic !== false;
@@ -1315,7 +1338,7 @@ function shift(el, slots, id, minutes, cyclic) {
 }
 function onDown(el, e) {
   const h = handleOf(e);
-  if (!h || h.hasAttribute("data-alias") || e.button && e.button > 0 || el._drag) return;
+  if (!h || h.hasAttribute("data-alias") || "dial" in h.dataset || e.button && e.button > 0 || el._drag) return;
   const id = h.dataset.slotId;
   const weekly = el.weekMode;
   const ctx = trackCtx(el, h);
@@ -1630,6 +1653,134 @@ function onKey(el, e) {
       el._say(el.t("moved", { name: s.label || el.t("slotDefault", { n: slots.indexOf(s) + 1 }), time: formatTime(r.minutes, { format: el.cfg.timeFormat }) }));
     }
   }
+}
+
+// src/ui/render/credits.js
+var REPO = "https://github.com/MadeinTaly/dayrhythm";
+var DONATE = "https://gt.1471995.xyz";
+function creditsEl(el) {
+  const mode = el.creditsMode;
+  if (mode === "off") return null;
+  const c = el._mk("div", "credits");
+  const a = el._mk("a", "credits-link", { text: el.t("credits"), attrs: { href: REPO, target: "_blank", rel: "noopener" } });
+  c.append(a);
+  if (mode === "support") c.append(el._mk("a", "credits-donate", { text: el.t("donate"), attrs: { href: DONATE, target: "_blank", rel: "noopener" } }));
+  return c;
+}
+
+// src/ui/render/root.js
+var CSS2 = structureCSS + baseCSS + themeCSS + dialCSS;
+var sheet = null;
+var uidCounter = 0;
+function docStyle() {
+  if (document.head.querySelector("style[data-dayrhythm]")) return;
+  const s = document.createElement("style");
+  s.setAttribute("data-dayrhythm", "");
+  s.textContent = `@layer theme, base, dayrhythm, components, utilities;
+@layer dayrhythm{${CSS2}}`;
+  document.head.prepend(s);
+}
+function adoptDocSheets(el, sr) {
+  const build = () => {
+    const out = [];
+    for (const ss of document.styleSheets) {
+      try {
+        const css = [...ss.cssRules].map((r) => r.cssText).join("\n");
+        const cs = new CSSStyleSheet();
+        cs.replaceSync(css);
+        out.push(cs);
+      } catch (e) {
+        if (!el._warned.has("xs")) {
+          el._warned.add("xs");
+          console.warn("[dayrhythm] inherit-styles: skipped a cross-origin or unreadable stylesheet");
+        }
+      }
+    }
+    sr.adoptedStyleSheets = [sheet, ...out];
+  };
+  build();
+  if (el._mo) el._mo.disconnect();
+  el._mo = new MutationObserver(build);
+  el._mo.observe(document.head, { childList: true, subtree: true, characterData: true });
+}
+function attachStyles(el) {
+  const cfg = el.cfg;
+  if (!el._renderMode) el._renderMode = cfg.render === "light" ? "light" : "shadow";
+  if (!el._uid) el._uid = "dr" + ++uidCounter;
+  if (el._renderMode === "light") {
+    docStyle();
+    el.setAttribute("data-dr-uid", el._uid);
+    return el;
+  }
+  const sr = el.shadowRoot || el.attachShadow({ mode: "open" });
+  if (!el._sheetDone) {
+    el._sheetDone = true;
+    if (typeof CSSStyleSheet !== "undefined" && "adoptedStyleSheets" in sr) {
+      if (!sheet) {
+        sheet = new CSSStyleSheet();
+        sheet.replaceSync(CSS2);
+      }
+      sr.adoptedStyleSheets = [sheet];
+    } else {
+      const s = document.createElement("style");
+      s.textContent = CSS2;
+      sr.append(s);
+    }
+  }
+  if (cfg.inheritStyles && "adoptedStyleSheets" in sr) adoptDocSheets(el, sr);
+  return sr;
+}
+function region(el, name, main) {
+  const r = el._mk(el._renderMode === "light" ? "div" : "slot", main);
+  if (el._renderMode === "light") {
+    r.classList.add("dr-region");
+    for (const n of el._slotted[name] || []) r.append(n);
+  } else r.setAttribute("name", name);
+  return r;
+}
+function userStyles(el, root) {
+  const css = el.cfg.styles;
+  if (!css) return;
+  const s = document.createElement("style");
+  s.textContent = el._renderMode === "light" ? `@layer components{[data-dr-uid="${el._uid}"] .dr-root{${css}}}` : css;
+  root.append(s);
+}
+function buildRoot(el) {
+  const cfg = el.cfg;
+  const host = attachStyles(el);
+  const $ = el._$ = {};
+  const root = el._mk("div", "root");
+  $.root = root;
+  root.setAttribute("role", "group");
+  root.setAttribute("aria-label", el.t(el.weekMode ? "titleWeek" : "title"));
+  root.dataset.theme = ["organic", "neutral", "flat", "none"].includes(cfg.theme) ? cfg.theme : "organic";
+  root.dataset.scheme = ["light", "dark"].includes(cfg.colorScheme) ? cfg.colorScheme : "auto";
+  if (cfg.disabled) {
+    root.dataset.disabled = "";
+    root.inert = true;
+  }
+  if (cfg.readonly) root.dataset.readonly = "";
+  for (const ev of ["input", "change"]) root.addEventListener(ev, (e) => {
+    if (!(e instanceof CustomEvent)) e.stopPropagation();
+  });
+  $.header = region(el, "header", "header");
+  $.weekTop = el._mk("div", "week-bar-slot");
+  $.presets = el._mk("div", "presets");
+  $.toolbar = el._mk("div", "toolbar");
+  $.spectrum = el._mk("div", "spectrum", { attrs: { role: "img", "aria-label": el.t("spectrumAria") } });
+  $.trackwrap = el._mk("div", "track-wrap");
+  $.track = el._mk("div", "track", { attrs: { role: "list" } });
+  $.footer = region(el, "footer", "footer");
+  $.weekBottom = el._mk("div", "week-bar-slot");
+  $.live = el._mk("div", "sr", { attrs: { role: "status", "aria-live": "polite" } });
+  $.dialog = el._mk("dialog", "dialog");
+  attachDrag(el);
+  const credits = creditsEl(el);
+  root.append($.header, $.weekTop, $.presets, $.toolbar, $.spectrum, $.trackwrap, $.footer, $.weekBottom, ...credits ? [credits] : [], $.live, $.dialog);
+  userStyles(el, root);
+  if (el._root && el._root.parentNode) el._root.remove();
+  el._root = root;
+  host.append(root);
 }
 
 // src/ui/fields.js
@@ -2028,174 +2179,10 @@ function openCopy(el) {
   show(d);
 }
 
-// src/ui/render.js
-var CSS2 = structureCSS + baseCSS + themeCSS;
-var REPO = "https://github.com/MadeinTaly/dayrhythm";
-var DONATE = "https://gt.1471995.xyz";
-var uidCounter = 0;
-var sheet = null;
-function docStyle() {
-  if (document.head.querySelector("style[data-dayrhythm]")) return;
-  const s = document.createElement("style");
-  s.setAttribute("data-dayrhythm", "");
-  s.textContent = `@layer theme, base, dayrhythm, components, utilities;
-@layer dayrhythm{${CSS2}}`;
-  document.head.prepend(s);
-}
-function adoptDocSheets(el, sr) {
-  const build = () => {
-    const out = [];
-    for (const ss of document.styleSheets) {
-      try {
-        const css = [...ss.cssRules].map((r) => r.cssText).join("\n");
-        const cs = new CSSStyleSheet();
-        cs.replaceSync(css);
-        out.push(cs);
-      } catch (e) {
-        if (!el._warned.has("xs")) {
-          el._warned.add("xs");
-          console.warn("[dayrhythm] inherit-styles: skipped a cross-origin or unreadable stylesheet");
-        }
-      }
-    }
-    sr.adoptedStyleSheets = [sheet, ...out];
-  };
-  build();
-  if (el._mo) el._mo.disconnect();
-  el._mo = new MutationObserver(build);
-  el._mo.observe(document.head, { childList: true, subtree: true, characterData: true });
-}
-function attachStyles(el) {
-  const cfg = el.cfg;
-  if (!el._renderMode) el._renderMode = cfg.render === "light" ? "light" : "shadow";
-  if (!el._uid) el._uid = "dr" + ++uidCounter;
-  if (el._renderMode === "light") {
-    docStyle();
-    el.setAttribute("data-dr-uid", el._uid);
-    return el;
-  }
-  const sr = el.shadowRoot || el.attachShadow({ mode: "open" });
-  if (!el._sheetDone) {
-    el._sheetDone = true;
-    if (typeof CSSStyleSheet !== "undefined" && "adoptedStyleSheets" in sr) {
-      if (!sheet) {
-        sheet = new CSSStyleSheet();
-        sheet.replaceSync(CSS2);
-      }
-      sr.adoptedStyleSheets = [sheet];
-    } else {
-      const s = document.createElement("style");
-      s.textContent = CSS2;
-      sr.append(s);
-    }
-  }
-  if (cfg.inheritStyles && "adoptedStyleSheets" in sr) adoptDocSheets(el, sr);
-  return sr;
-}
-function userStyles(el, root) {
-  const css = el.cfg.styles;
-  if (!css) return;
-  const s = document.createElement("style");
-  s.textContent = el._renderMode === "light" ? `@layer components{[data-dr-uid="${el._uid}"] .dr-root{${css}}}` : css;
-  root.append(s);
-}
-function region(el, name, main) {
-  const r = el._mk(el._renderMode === "light" ? "div" : "slot", main);
-  if (el._renderMode === "light") {
-    r.classList.add("dr-region");
-    for (const n of el._slotted[name] || []) r.append(n);
-  } else r.setAttribute("name", name);
-  return r;
-}
-function setState(el, node, token, on, dataKey) {
-  if (node.part) node.part.toggle(token, !!on);
-  node.classList.toggle("dr-" + token, !!on);
-  for (const c of classList((el.cfg.classes || {})[camel(token)])) node.classList.toggle(c, !!on);
-  if (dataKey) {
-    if (on) node.dataset[dataKey] = "";
-    else delete node.dataset[dataKey];
-  }
-}
-function nameOf(el, slot, index) {
-  return slot.label || el.t("slotDefault", { n: index + 1 });
-}
-function buildRoot(el) {
-  const cfg = el.cfg;
-  const host = attachStyles(el);
-  const $ = el._$ = {};
-  const root = el._mk("div", "root");
-  $.root = root;
-  root.setAttribute("role", "group");
-  root.setAttribute("aria-label", el.t(el.weekMode ? "titleWeek" : "title"));
-  root.dataset.theme = ["organic", "neutral", "flat", "none"].includes(cfg.theme) ? cfg.theme : "organic";
-  root.dataset.scheme = ["light", "dark"].includes(cfg.colorScheme) ? cfg.colorScheme : "auto";
-  if (cfg.disabled) {
-    root.dataset.disabled = "";
-    root.inert = true;
-  }
-  if (cfg.readonly) root.dataset.readonly = "";
-  for (const ev of ["input", "change"]) root.addEventListener(ev, (e) => {
-    if (!(e instanceof CustomEvent)) e.stopPropagation();
-  });
-  $.header = region(el, "header", "header");
-  $.weekTop = el._mk("div", "week-bar-slot");
-  $.presets = el._mk("div", "presets");
-  $.toolbar = el._mk("div", "toolbar");
-  $.spectrum = el._mk("div", "spectrum", { attrs: { role: "img", "aria-label": el.t("spectrumAria") } });
-  $.trackwrap = el._mk("div", "track-wrap");
-  $.track = el._mk("div", "track", { attrs: { role: "list" } });
-  $.footer = region(el, "footer", "footer");
-  $.weekBottom = el._mk("div", "week-bar-slot");
-  $.live = el._mk("div", "sr", { attrs: { role: "status", "aria-live": "polite" } });
-  $.dialog = el._mk("dialog", "dialog");
-  attachDrag(el);
-  const credits = creditsEl(el);
-  root.append($.header, $.weekTop, $.presets, $.toolbar, $.spectrum, $.trackwrap, $.footer, $.weekBottom, ...credits ? [credits] : [], $.live, $.dialog);
-  userStyles(el, root);
-  if (el._root && el._root.parentNode) el._root.remove();
-  el._root = root;
-  host.append(root);
-  renderData(el);
-}
-function creditsEl(el) {
-  const mode = el.creditsMode;
-  if (mode === "off") return null;
-  const c = el._mk("div", "credits");
-  const a = el._mk("a", "credits-link", { text: el.t("credits"), attrs: { href: REPO, target: "_blank", rel: "noopener" } });
-  c.append(a);
-  if (mode === "support") c.append(el._mk("a", "credits-donate", { text: el.t("donate"), attrs: { href: DONATE, target: "_blank", rel: "noopener" } }));
-  return c;
-}
-function renderData(el) {
-  const $ = el._$;
-  if (!$.root) return;
-  $.root.dataset.orient = el.resolvedOrientation;
-  $.root.setAttribute("aria-busy", el._state.status === "loading" ? "true" : "false");
-  $.root.setAttribute("aria-label", el.t(el.weekMode ? "titleWeek" : "title"));
-  renderWeekBar(el);
-  renderPresets(el);
-  renderToolbar(el);
-  renderTrack(el);
-  updateNow(el, true);
-  if (el._focusHandle) {
-    const h = $.trackwrap.querySelector(`[data-handle][data-slot-id="${CSS2.escape(el._focusHandle)}"]:not([data-alias])`);
-    if (h) h.focus();
-    el._focusHandle = null;
-  }
-  if (el._focusTab) {
-    const t = $.root.querySelector(`[data-day="${el._focusTab}"]`);
-    if (t) t.focus();
-    el._focusTab = null;
-  }
-}
-function dayCarry(el, day) {
-  const view = el._weekView();
-  const c = carrySlotFor(view, day, el._days);
-  return c;
-}
+// src/ui/render/weekbar.js
 function dayPieces(el, day) {
   const slots = el._slotsOf(day);
-  const c = dayCarry(el, day);
+  const c = carrySlotFor(el._weekView(), day, el._days);
   return buildLayout(slots, { cyclic: false, carry: c && c.slot }).pieces;
 }
 function slotColor(el, slot) {
@@ -2289,6 +2276,8 @@ function weekBar(el) {
   bar.append(region(el, "week-extra", "week-extra"));
   return bar;
 }
+
+// src/ui/render/days.js
 function renderPresets(el) {
   const box = el._$.presets;
   box.replaceChildren();
@@ -2407,6 +2396,8 @@ function applySlots(el, kind, id, slots) {
   });
   el._edit(weekly ? el._sel : null, () => ({ slots: normalizeDay(fresh) }), { source: kind });
 }
+
+// src/ui/render/toolbar.js
 function renderToolbar(el) {
   const box = el._$.toolbar;
   box.replaceChildren();
@@ -2442,6 +2433,214 @@ function renderToolbar(el) {
   box.append(main, region(el, "toolbar", "toolbar-extra"));
   box.hidden = !cfg.add && !cfg.randomize && !el.hasDaysArea && !(el.weekRows && cfg.weekCopy) && !(el._slotted.toolbar || []).length;
   if (cfg.readonly && !(el._slotted.toolbar || []).length) box.hidden = true;
+}
+
+// src/ui/dial-geometry.js
+var TAU = Math.PI * 2;
+var xy = (p) => `${p.x.toFixed(2)} ${p.y.toFixed(2)}`;
+var angleOf = (min) => mod(min, 1440) / 1440 * TAU;
+function pointAt(min, r, cx = 100, cy = 100) {
+  const a = angleOf(min);
+  return { x: cx + Math.sin(a) * r, y: cy - Math.cos(a) * r };
+}
+var minutesAt = (x, y, cx = 100, cy = 100) => mod(Math.atan2(x - cx, cy - y) * 1440 / TAU, 1440);
+function arcPath(start, end, ri, ro, cx = 100, cy = 100) {
+  const span = end - start;
+  if (span >= 1440) {
+    const [o0, o1, i0, i1] = [pointAt(start, ro, cx, cy), pointAt(start + 720, ro, cx, cy), pointAt(start, ri, cx, cy), pointAt(start + 720, ri, cx, cy)];
+    return `M${xy(o0)}A${ro} ${ro} 0 0 1 ${xy(o1)}A${ro} ${ro} 0 0 1 ${xy(o0)}ZM${xy(i0)}A${ri} ${ri} 0 0 0 ${xy(i1)}A${ri} ${ri} 0 0 0 ${xy(i0)}Z`;
+  }
+  const large = span > 720 ? 1 : 0;
+  return `M${xy(pointAt(start, ro, cx, cy))}A${ro} ${ro} 0 ${large} 1 ${xy(pointAt(end, ro, cx, cy))}L${xy(pointAt(end, ri, cx, cy))}A${ri} ${ri} 0 ${large} 0 ${xy(pointAt(start, ri, cx, cy))}Z`;
+}
+
+// src/ui/dial.js
+var RI = 62;
+var RO = 88;
+var RK = 75;
+var NS = "http://www.w3.org/2000/svg";
+function svg(tag, part, attrs = {}) {
+  const n = document.createElementNS(NS, tag);
+  if (part) {
+    n.setAttribute("class", part.split(" ").map((p) => "dr-" + p).join(" "));
+    n.setAttribute("part", part);
+  }
+  for (const [k, v] of Object.entries(attrs)) if (v != null) n.setAttribute(k, v);
+  return n;
+}
+function rangesOf(el, slots, weekly) {
+  const ranges = slotRanges(slots, { cyclic: !weekly });
+  const c = weekly && carrySlotFor(el._weekView(), el._sel, el._days);
+  const first = ranges.length ? ranges[0].start : 1440;
+  if (c && first > 0) ranges.unshift({ slot: c.slot, start: 0, end: first, carry: true });
+  return ranges;
+}
+function renderDial(el) {
+  const $ = el._$;
+  const weekly = el.weekMode;
+  const slots = el._displaySlots();
+  const ranges = rangesOf(el, slots, weekly);
+  $.spectrum.hidden = true;
+  const box = el._mk("div", "dial");
+  const root = svg("svg", "dial-svg", { viewBox: "0 0 200 200", role: "group", "aria-label": el.t(weekly ? "titleWeek" : "title") });
+  root.append(svg("circle", "dial-ring", { cx: 100, cy: 100, r: (RI + RO) / 2, fill: "none", "stroke-width": RO - RI }));
+  const arcs = svg("g"), knobs = svg("g");
+  for (let h = 0; h < 24; h++) {
+    const a = pointAt(h * 60, RO + 3), b = pointAt(h * 60, RO + (h % 6 ? 5 : 8));
+    root.append(svg("line", "dial-tick", { x1: a.x, y1: a.y, x2: b.x, y2: b.y }));
+    if (h % 6 === 0) {
+      const p = pointAt(h * 60, RO + 14);
+      const t = svg("text", "dial-tick-label", { x: p.x, y: p.y, "aria-hidden": "true" });
+      t.textContent = el.fmt(h * 60);
+      root.append(t);
+    }
+  }
+  const now = svg("line", "dial-now", { x1: 100, y1: 100, x2: 100, y2: 100 });
+  const center = svg("g", "dial-center");
+  const lines = ["dial-center-time", "dial-center-label", "dial-center-summary", "dial-center-remaining"].map((p, i) => {
+    const t = svg("text", p, { x: 100, y: [94, 106, 114, 121][i] });
+    center.append(t);
+    return t;
+  });
+  root.append(arcs, now, knobs, center);
+  box.append(root);
+  $.trackwrap.replaceChildren(box);
+  $.dial = { root, arcs, knobs, now, lines, ranges };
+  el._dial = $.dial;
+  drawArcs(el, ranges);
+  if (!el.cfg.readonly && !el._badWeek) {
+    const bounds = (s) => boundaryBounds(slots, s.id, { minGap: el._minGap, cyclic: !weekly });
+    sortSlots(slots).forEach((s, i) => {
+      if (isLocked(s, "time") || !weekly && i === 0 && el.cfg.seamDrag === false) return;
+      const b = bounds(s), m = parseTime(s.time), p = pointAt(m, RK), time = el.fmt(m);
+      const k = svg("circle", "dial-handle", {
+        cx: p.x,
+        cy: p.y,
+        r: 6,
+        tabindex: 0,
+        role: "slider",
+        "aria-valuemin": b.lo,
+        "aria-valuemax": b.hi,
+        "aria-valuenow": m,
+        "aria-valuetext": time,
+        "aria-label": el.t("slotStartOf", { name: nameOf(el, s, i) }),
+        "aria-description": el.t("slotHandleHint", { snap: el._snap }),
+        "data-handle": "",
+        "data-dial": "",
+        "data-slot-id": s.id
+      });
+      knobs.append(k);
+    });
+  }
+  root.addEventListener("pointerdown", (e) => onDown2(el, e));
+  root.addEventListener("click", (e) => {
+    const a = e.target.closest("[data-open]");
+    if (a && !el.cfg.readonly) openEditor(el, a.dataset.open);
+  });
+  if (el._lastNow) updateDial(el, el._lastNow.n, el._lastNow.info);
+}
+function drawArcs(el, ranges) {
+  const d = el._dial;
+  d.arcs.replaceChildren();
+  for (const r of ranges) {
+    const active = el._active === r.slot.id;
+    const p = svg("path", active ? "dial-arc dial-arc-active" : "dial-arc", {
+      d: arcPath(r.start, r.end, RI, active ? RO + 4 : RO),
+      "data-slot-id": r.slot.id,
+      "data-open": r.carry ? null : r.slot.id
+    });
+    p.style.fill = slotColor(el, r.slot);
+    if (!p.style.fill) p.style.fill = "color-mix(in srgb, currentColor 30%, transparent)";
+    d.arcs.append(p);
+  }
+}
+function updateDial(el, n, info) {
+  const d = el._dial;
+  if (!d) return;
+  el._lastNow = { n, info };
+  drawArcs(el, d.ranges);
+  const showNow = el.cfg.nowLine && !el._drag && (!el.weekMode || el._sel === n.day);
+  const tip = pointAt(n.minutes, RO + 2);
+  d.now.setAttribute("x2", showNow ? tip.x : 100);
+  d.now.setAttribute("y2", showNow ? tip.y : 100);
+  d.now.style.display = showNow ? "" : "none";
+  if (el._drag) return;
+  const [time, label, summary, left] = d.lines;
+  time.textContent = el.fmt(n.minutes);
+  const slot = info && info.slot;
+  const model = slot && el.modelOf(slot.model);
+  label.textContent = slot ? slot.label || el.label(model, slot.model) : "";
+  summary.textContent = slot ? modelSummary(model, slot.values, slot, el.t) : "";
+  const rem = info && info.remaining;
+  left.textContent = rem ? `-${Math.floor(rem / 60)}:${String(Math.round(rem % 60)).padStart(2, "0")}` : "";
+}
+function onDown2(el, e) {
+  const k = e.target.closest && e.target.closest("[data-dial]");
+  if (!k || el._drag || e.button && e.button > 0) return;
+  e.preventDefault();
+  const id = k.dataset.slotId;
+  const weekly = el.weekMode, day = weekly ? el._sel : null;
+  const slots0 = sortSlots(el._slotsOf(day));
+  const d = el._dial;
+  const st = { id, cur: parseTime(slots0.find((s) => s.id === id).time) };
+  const start = st.cur;
+  el._drag = st;
+  el._liveBase = el._value;
+  const base = el._value;
+  k.dataset.dragging = "";
+  try {
+    k.setPointerCapture(e.pointerId);
+  } catch (err) {
+  }
+  const pt = d.root.createSVGPoint();
+  const move = (ev) => {
+    pt.x = ev.clientX;
+    pt.y = ev.clientY;
+    const p = pt.matrixTransform(d.root.getScreenCTM().inverse());
+    const r = shift(el, slots0, id, minutesAt(p.x, p.y), !weekly);
+    if (r.minutes === st.cur) return;
+    st.cur = r.minutes;
+    d.ranges = rangesOf(el, r.slots, weekly);
+    drawArcs(el, d.ranges);
+    for (const s of r.slots) {
+      const n = d.knobs.querySelector(`[data-slot-id="${CSS.escape(s.id)}"]`);
+      if (!n) continue;
+      const m = parseTime(s.time), q = pointAt(m, RK);
+      n.setAttribute("cx", q.x);
+      n.setAttribute("cy", q.y);
+      n.setAttribute("aria-valuenow", m);
+      n.setAttribute("aria-valuetext", el.fmt(m));
+    }
+    d.lines[0].textContent = el.fmt(r.minutes);
+    el._live(el._withDay(day, r.slots), { source: "drag", id, ...day ? { day } : {} });
+  };
+  const end = () => {
+    k.removeEventListener("pointermove", move);
+    k.removeEventListener("pointerup", end);
+    k.removeEventListener("pointercancel", end);
+    el._drag = null;
+    el._liveBase = null;
+    el._value = base;
+    el._syncForm();
+    if (st.cur === start || !el._edit(day, (list) => ({ slots: shift(el, list, id, st.cur, !weekly).slots }), { source: "drag", id })) el._schedule("data");
+  };
+  k.addEventListener("pointermove", move);
+  k.addEventListener("pointerup", end);
+  k.addEventListener("pointercancel", end);
+}
+
+// src/ui/render/track.js
+function setState(el, node, token, on, dataKey) {
+  if (node.part) node.part.toggle(token, !!on);
+  node.classList.toggle("dr-" + token, !!on);
+  for (const c of classList((el.cfg.classes || {})[camel(token)])) node.classList.toggle(c, !!on);
+  if (dataKey) {
+    if (on) node.dataset[dataKey] = "";
+    else delete node.dataset[dataKey];
+  }
+}
+function nameOf(el, slot, index) {
+  return slot.label || el.t("slotDefault", { n: index + 1 });
 }
 function handleFor(el, slot, index, seam, bounds, orient) {
   const time = el.fmt(parseTime(slot.time));
@@ -2610,8 +2809,16 @@ function renderTrack(el, o = {}) {
   if (el._state.status !== "idle") {
     $.spectrum.hidden = true;
     $.trackwrap.replaceChildren(stateBox(el, el._state.status));
+    el._dial = null;
+    $.dial = null;
     return;
   }
+  if (cfg.layout === "dial") {
+    renderDial(el);
+    return;
+  }
+  el._dial = null;
+  $.dial = null;
   if (el.weekRows) {
     renderRows(el);
     return;
@@ -2644,8 +2851,7 @@ function renderTrack(el, o = {}) {
     seg.dataset.piece = p.key;
     return seg;
   }));
-  const spectrum = $.spectrum;
-  el._segEls = new Map([...spectrum.children].map((s) => [s.dataset.piece, s]));
+  el._segEls = new Map([...$.spectrum.children].map((s) => [s.dataset.piece, s]));
   track.onclick = (e) => {
     const b = e.target.closest && e.target.closest("[data-open]");
     if (b) openEditor(el, b.dataset.open);
@@ -2709,7 +2915,7 @@ function updateNow(el, force) {
   const n = nowOf(cfg);
   if (!force && el._nowDay && el._nowDay !== n.day) {
     el._nowDay = n.day;
-    renderData(el);
+    el._schedule("data");
     return;
   }
   el._nowDay = n.day;
@@ -2717,6 +2923,10 @@ function updateNow(el, force) {
   if (isWeek(el._value)) info = activeSlotAtWeek(el._value, { day: n.day, time: n.minutes }, { days: el._days });
   else info = activeSlotAtDay(el._value, n.minutes);
   el._active = info ? info.slot.id : null;
+  if ($.dial) {
+    updateDial(el, n, info);
+    return;
+  }
   for (const card2 of $.trackwrap.querySelectorAll(".dr-slot")) {
     const on = card2.dataset.slotId === el._active;
     setState(el, card2, "slot-active", on, "active");
@@ -2746,11 +2956,259 @@ function updateNow(el, force) {
   $.nowLine = line;
 }
 
+// src/ui/render.js
+function buildRoot2(el) {
+  buildRoot(el);
+  renderData(el);
+}
+function renderData(el) {
+  const $ = el._$;
+  if (!$.root) return;
+  $.root.dataset.orient = el.resolvedOrientation;
+  $.root.setAttribute("aria-busy", el._state.status === "loading" ? "true" : "false");
+  $.root.setAttribute("aria-label", el.t(el.weekMode ? "titleWeek" : "title"));
+  renderWeekBar(el);
+  renderPresets(el);
+  renderToolbar(el);
+  renderTrack(el);
+  updateNow(el, true);
+  if (el._focusHandle) {
+    const h = $.trackwrap.querySelector(`[data-handle][data-slot-id="${CSS.escape(el._focusHandle)}"]:not([data-alias])`);
+    if (h) h.focus();
+    el._focusHandle = null;
+  }
+  if (el._focusTab) {
+    const t = $.root.querySelector(`[data-day="${el._focusTab}"]`);
+    if (t) t.focus();
+    el._focusTab = null;
+  }
+}
+
+// src/ui/commands.js
+var ERR_KEY = {
+  "min-gap": "err.minGap",
+  "max-slots": "err.maxSlots",
+  "min-slots": "err.minSlots",
+  "duplicate-time": "err.duplicateTime",
+  locked: "err.locked",
+  "time-format": "err.timeFormat"
+};
+function detail(el, previous, meta) {
+  const d = { value: clone(el._value), resolved: el._resolved(), previous: clone(previous), ...meta };
+  if (d.day === void 0 || d.day === null) delete d.day;
+  return d;
+}
+function _commit(el, next, meta) {
+  const previous = el._value;
+  el._value = next;
+  el._syncForm();
+  el._fire("change", detail(el, previous, meta));
+  el._schedule("data");
+}
+function _live(el, next, meta) {
+  const previous = el._liveBase || el._value;
+  el._value = next;
+  el._syncForm();
+  el._fire("input", detail(el, previous, meta));
+}
+function _withDay(el, day, slots) {
+  return !el.weekMode ? slots : withDay(el._expandWeek(), day, slots);
+}
+function _refuse(el, reason, id, extra = {}) {
+  const limit = reason === "max-slots" ? el.cfg.maxSlots : reason === "min-slots" ? el._minSlots : reason === "min-gap" ? el._minGap : void 0;
+  const d = { reason };
+  if (id) d.id = id;
+  if (limit !== void 0) d.limit = limit;
+  el._fire("slotinvalid", d);
+  el._say(el.t(ERR_KEY[reason] || "err.locked", {
+    minutes: el._minGap,
+    max: el.cfg.maxSlots,
+    min: el._minSlots,
+    time: extra.time || ""
+  }));
+}
+function _edit(el, day, fn, meta) {
+  const d = el.weekMode ? day || el._sel : null;
+  let slots = clone(el._slotsOf(d));
+  let detachedFrom = null;
+  if (d && isWeek(el._value) && isRef(el._value.week[d])) {
+    detachedFrom = el._days.find((x) => x.id === el._value.week[d].ref) || { name: el._value.week[d].ref };
+    const used = /* @__PURE__ */ new Set();
+    for (const k of WEEKDAYS) if (Array.isArray(el._value.week[k])) el._value.week[k].forEach((s) => used.add(s.id));
+    slots = slots.map((s) => used.has(s.id) ? { ...s, id: genId() } : s);
+  }
+  const r = fn(slots);
+  if (!r) return false;
+  if (r.error) {
+    _refuse(el, r.error, meta && meta.id, r);
+    return false;
+  }
+  const out = normalizeDay(r.slots || r);
+  const m = { ...meta };
+  if (d) m.day = d;
+  if (detachedFrom) {
+    m.detached = true;
+    el._say(el.t("detached", { day: el.dayName(d), name: detachedFrom.name }));
+  }
+  _commit(el, _withDay(el, d, out), m);
+  return r;
+}
+function _carryOf(el, day) {
+  const view = el._weekView();
+  const r = resolveWeek(view, el._days);
+  const i = WEEKDAYS.indexOf(day);
+  for (let k = 1; k <= 7; k++) {
+    const d = WEEKDAYS[mod(i - k, 7)];
+    if (r[d].length) return r[d][r[d].length - 1];
+  }
+  return null;
+}
+function addSlot(el, partial = {}, opts = {}) {
+  const day = opts.day || el._sel;
+  if (el._badWeek) return null;
+  let added = null;
+  const ok = _edit(el, day, (slots) => {
+    let template = null;
+    if (el.weekMode && !slots.length) {
+      const carried = _carryOf(el, day);
+      template = carried ? { model: carried.model, values: carried.values } : null;
+    }
+    const model = partial.model ? el.modelOf(partial.model) : null;
+    const r = addSlotAt(slots, {
+      time: partial.time,
+      minGap: el._minGap,
+      snap: el._snap,
+      maxSlots: el.cfg.maxSlots,
+      cyclic: !el.weekMode,
+      template,
+      model: partial.model,
+      label: partial.label
+    });
+    if (r.error) return r;
+    added = { ...r.added, ...clone(partial), id: r.added.id, time: r.added.time };
+    if (partial.model && !partial.values) {
+      const dv = defaultValues(model);
+      if (dv) added.values = dv;
+      else delete added.values;
+    }
+    const rv = resolveValues(added, el.models);
+    if (rv) added.values = rv;
+    return { slots: r.slots.map((s) => s.id === added.id ? added : s) };
+  }, { source: "add" });
+  if (!ok || !added) return null;
+  el._say(el.t("added"));
+  if (opts.edit) queueMicrotask(() => openEditor(el, added.id));
+  return clone(added);
+}
+function removeSlot(el, id) {
+  const loc = el._locate(id);
+  if (!loc) return false;
+  return !!_edit(el, loc.day, (slots) => {
+    const r = removeSlotById(slots, id, { minSlots: el._minSlots });
+    return Array.isArray(r) ? { slots: r } : r;
+  }, { source: "remove", id }) && (el._say(el.t("removed")), true);
+}
+function updateSlot(el, id, patch) {
+  const loc = el._locate(id);
+  if (!loc) return null;
+  let out = null;
+  const ok = _edit(el, loc.day, (slots) => {
+    const i = slots.findIndex((s2) => s2.id === id);
+    let s = { ...slots[i], ...clone(patch), id };
+    if (s.label === "") delete s.label;
+    if (patch.model && patch.model !== slots[i].model && !patch.values) {
+      const dv = defaultValues(el.modelOf(patch.model));
+      if (dv) s.values = dv;
+      else delete s.values;
+    }
+    if (patch.time !== void 0) {
+      const r = retimeSlot(slots.map((x, k) => k === i ? s : x), id, s.time, { minGap: el._minGap, cyclic: !el.weekMode });
+      if (r.error) return r;
+      out = r.slots.find((x) => x.id === id);
+      return { slots: r.slots };
+    }
+    const rv = resolveValues(s, el.models);
+    if (rv) s.values = rv;
+    out = s;
+    return { slots: slots.map((x, k) => k === i ? s : x) };
+  }, {
+    source: patch.model ? "model" : patch.values ? "values" : patch.label !== void 0 ? "label" : patch.time !== void 0 ? "time" : "api",
+    id
+  });
+  return ok ? clone(out) : null;
+}
+function moveSlot(el, id, time) {
+  const loc = el._locate(id);
+  const m = tryParseTime(time);
+  if (!loc || m == null) return false;
+  if (isLocked(loc.slot, "time")) {
+    _refuse(el, "locked", id);
+    return false;
+  }
+  return !!_edit(el, loc.day, (slots) => {
+    const r = moveBoundary(slots, id, m, { snap: el._snap, minGap: el._minGap, cyclic: !el.weekMode });
+    return { slots: r.slots };
+  }, { source: "time", id });
+}
+function _retime(el, id, time) {
+  const loc = el._locate(id);
+  if (!loc) return "time-format";
+  let err = null;
+  _edit(el, loc.day, (slots) => {
+    const r = retimeSlot(slots, id, time, { minGap: el._minGap, cyclic: !el.weekMode });
+    if (r.error) {
+      err = r.error;
+      return { error: r.error, time };
+    }
+    return { slots: r.slots };
+  }, { source: "time", id });
+  return err;
+}
+function randomize(el, filter) {
+  if (el._badWeek) return;
+  const pool = el.models.filter((m) => !m.off);
+  if (!pool.length) return;
+  _edit(el, el._sel, (slots) => ({
+    slots: slots.map((s) => {
+      const cur = el.modelOf(s.model);
+      if (typeof filter === "function" && !filter(cur, s)) return s;
+      const opts = pool.filter((m2) => m2.id !== s.model);
+      const m = (opts.length ? opts : pool)[Math.floor(Math.random() * (opts.length || pool.length))];
+      const dv = defaultValues(m);
+      const n = { ...s, model: m.id };
+      if (dv) n.values = dv;
+      else delete n.values;
+      return n;
+    })
+  }), { source: "randomize" });
+}
+function copyDay2(el, from, to, opts = {}) {
+  if (!el.weekMode || el._badWeek) return false;
+  const targets = expandTargets(to, from);
+  if (!targets.length) return false;
+  const previous = el._value;
+  const next = copyDay(el._expandWeek(), from, targets, { newIds: opts.newIds !== false });
+  el._value = el._norm(next);
+  el._syncForm();
+  el._fire("change", detail(el, previous, { source: "copy", day: from }));
+  el._say(el.t("copyDone", { days: targets.map((d) => el.dayName(d)).join(", ") }));
+  el._schedule("data");
+  return true;
+}
+function assignDay(el, day, slotsOrRef) {
+  if (!el.weekMode || !el._validDay(day)) return false;
+  const previous = el._value;
+  el._value = el._norm(withDay(el._expandWeek(), day, slotsOrRef));
+  el._syncForm();
+  el._fire("change", detail(el, previous, { source: "day", day }));
+  el._schedule("data");
+  return true;
+}
+
 // src/element.js
 var Base = typeof HTMLElement !== "undefined" ? HTMLElement : class {
 };
 var NO_PROP = /* @__PURE__ */ new Set(["add", "remove", "randomize", "value", "day"]);
-var ERR_KEY = { "min-gap": "err.minGap", "max-slots": "err.maxSlots", "min-slots": "err.minSlots", "duplicate-time": "err.duplicateTime", locked: "err.locked", "time-format": "err.timeFormat" };
 var DayRhythmElement = class extends Base {
   static get version() {
     return VERSION;
@@ -3233,198 +3691,52 @@ var DayRhythmElement = class extends Base {
     return { day: n.day, time: n.minutes };
   }
   // ---------------------------------------------------------------- edits
-  _fire(name, detail, cancelable) {
-    const e = new CustomEvent(name, { detail, bubbles: true, composed: true, cancelable: !!cancelable });
+  _fire(name, detail2, cancelable) {
+    const e = new CustomEvent(name, { detail: detail2, bubbles: true, composed: true, cancelable: !!cancelable });
     this.dispatchEvent(e);
     return e;
   }
-  _detail(previous, meta) {
-    const d = { value: clone(this._value), resolved: this._resolved(), previous: clone(previous), ...meta };
-    if (d.day === void 0 || d.day === null) delete d.day;
-    return d;
-  }
-  _commit(next, meta) {
-    const previous = this._value;
-    this._value = next;
-    this._syncForm();
-    this._fire("change", this._detail(previous, meta));
-    this._schedule("data");
+  _commit(...args) {
+    return _commit(this, ...args);
   }
   /** Update the draft and fire a coalesced `input` (no re-render; caller updates the DOM). */
-  _live(next, meta) {
-    const previous = this._liveBase || this._value;
-    this._value = next;
-    this._syncForm();
-    this._fire("input", this._detail(previous, meta));
+  _live(...args) {
+    return _live(this, ...args);
   }
-  _withDay(day, slots) {
-    if (!this.weekMode) return slots;
-    return withDay(this._expandWeek(), day, slots);
+  _withDay(...args) {
+    return _withDay(this, ...args);
   }
-  _refuse(reason, id, extra = {}) {
-    const limit = reason === "max-slots" ? this.cfg.maxSlots : reason === "min-slots" ? this._minSlots : reason === "min-gap" ? this._minGap : void 0;
-    const detail = { reason };
-    if (id) detail.id = id;
-    if (limit !== void 0) detail.limit = limit;
-    this._fire("slotinvalid", detail);
-    this._say(this.t(ERR_KEY[reason] || "err.locked", { minutes: this._minGap, max: this.cfg.maxSlots, min: this._minSlots, time: extra.time || "" }));
+  _refuse(...args) {
+    return _refuse(this, ...args);
   }
   /**
    * Runs fn(slotsCopy) -> new slots | {slots,...} | {error} | null on the day, then commits.
    * Editing a day linked to a saved day detaches it (copy-on-write).
    */
-  _edit(day, fn, meta) {
-    const d = this.weekMode ? day || this._sel : null;
-    let slots = clone(this._slotsOf(d));
-    let detachedFrom = null;
-    if (d && isWeek(this._value) && isRef(this._value.week[d])) {
-      detachedFrom = this._days.find((x) => x.id === this._value.week[d].ref) || { name: this._value.week[d].ref };
-      const used = /* @__PURE__ */ new Set();
-      for (const k of WEEKDAYS) if (Array.isArray(this._value.week[k])) this._value.week[k].forEach((s) => used.add(s.id));
-      slots = slots.map((s) => used.has(s.id) ? { ...s, id: genId() } : s);
-    }
-    const r = fn(slots);
-    if (!r) return false;
-    if (r.error) {
-      this._refuse(r.error, meta && meta.id, r);
-      return false;
-    }
-    const out = normalizeDay(r.slots || r);
-    const m = { ...meta };
-    if (d) m.day = d;
-    if (detachedFrom) {
-      m.detached = true;
-      this._say(this.t("detached", { day: this.dayName(d), name: detachedFrom.name }));
-    }
-    this._commit(this._withDay(d, out), m);
-    return r;
+  _edit(...args) {
+    return _edit(this, ...args);
   }
-  addSlot(partial = {}, opts = {}) {
-    const day = opts.day || this._sel;
-    if (this._badWeek) return null;
-    let added = null;
-    const ok = this._edit(day, (slots) => {
-      let template = null;
-      if (this.weekMode && !slots.length) {
-        const carried = this._carryOf(day);
-        template = carried ? { model: carried.model, values: carried.values } : null;
-      }
-      const model = partial.model ? this.modelOf(partial.model) : null;
-      const r = addSlotAt(slots, {
-        time: partial.time,
-        minGap: this._minGap,
-        snap: this._snap,
-        maxSlots: this.cfg.maxSlots,
-        cyclic: !this.weekMode,
-        template,
-        model: partial.model,
-        label: partial.label
-      });
-      if (r.error) return r;
-      added = { ...r.added, ...clone(partial), id: r.added.id, time: r.added.time };
-      if (partial.model && !partial.values) {
-        const dv = defaultValues(model);
-        if (dv) added.values = dv;
-        else delete added.values;
-      }
-      const rv = resolveValues(added, this.models);
-      if (rv) added.values = rv;
-      return { slots: r.slots.map((s) => s.id === added.id ? added : s) };
-    }, { source: "add" });
-    if (!ok || !added) return null;
-    this._say(this.t("added"));
-    if (opts.edit) queueMicrotask(() => openEditor(this, added.id));
-    return clone(added);
+  addSlot(...args) {
+    return addSlot(this, ...args);
   }
-  _carryOf(day) {
-    const view = this._weekView();
-    const r = resolveWeek(view, this._days);
-    const i = WEEKDAYS.indexOf(day);
-    for (let k = 1; k <= 7; k++) {
-      const d = WEEKDAYS[mod(i - k, 7)];
-      if (r[d].length) return r[d][r[d].length - 1];
-    }
-    return null;
+  _carryOf(...args) {
+    return _carryOf(this, ...args);
   }
-  removeSlot(id) {
-    const loc = this._locate(id);
-    if (!loc) return false;
-    return !!this._edit(loc.day, (slots) => {
-      const r = removeSlotById(slots, id, { minSlots: this._minSlots });
-      return Array.isArray(r) ? { slots: r } : r;
-    }, { source: "remove", id }) && (this._say(this.t("removed")), true);
+  removeSlot(...args) {
+    return removeSlot(this, ...args);
   }
-  updateSlot(id, patch) {
-    const loc = this._locate(id);
-    if (!loc) return null;
-    let out = null;
-    const ok = this._edit(loc.day, (slots) => {
-      const i = slots.findIndex((s2) => s2.id === id);
-      let s = { ...slots[i], ...clone(patch), id };
-      if (s.label === "") delete s.label;
-      if (patch.model && patch.model !== slots[i].model && !patch.values) {
-        const dv = defaultValues(this.modelOf(patch.model));
-        if (dv) s.values = dv;
-        else delete s.values;
-      }
-      if (patch.time !== void 0) {
-        const r = retimeSlot(slots.map((x, k) => k === i ? s : x), id, s.time, { minGap: this._minGap, cyclic: !this.weekMode });
-        if (r.error) return r;
-        out = r.slots.find((x) => x.id === id);
-        return { slots: r.slots };
-      }
-      const rv = resolveValues(s, this.models);
-      if (rv) s.values = rv;
-      out = s;
-      return { slots: slots.map((x, k) => k === i ? s : x) };
-    }, { source: patch.model ? "model" : patch.values ? "values" : patch.label !== void 0 ? "label" : patch.time !== void 0 ? "time" : "api", id });
-    return ok ? clone(out) : null;
+  updateSlot(...args) {
+    return updateSlot(this, ...args);
   }
-  moveSlot(id, time) {
-    const loc = this._locate(id);
-    const m = tryParseTime(time);
-    if (!loc || m == null) return false;
-    if (isLocked(loc.slot, "time")) {
-      this._refuse("locked", id);
-      return false;
-    }
-    return !!this._edit(loc.day, (slots) => {
-      const r = moveBoundary(slots, id, m, { snap: this._snap, minGap: this._minGap, cyclic: !this.weekMode });
-      return { slots: r.slots };
-    }, { source: "time", id });
+  moveSlot(...args) {
+    return moveSlot(this, ...args);
   }
   /** Editor time field: may reorder slots. Returns null | error reason. */
-  _retime(id, time) {
-    const loc = this._locate(id);
-    if (!loc) return "time-format";
-    let err = null;
-    this._edit(loc.day, (slots) => {
-      const r = retimeSlot(slots, id, time, { minGap: this._minGap, cyclic: !this.weekMode });
-      if (r.error) {
-        err = r.error;
-        return { error: r.error, time };
-      }
-      return { slots: r.slots };
-    }, { source: "time", id });
-    return err;
+  _retime(...args) {
+    return _retime(this, ...args);
   }
-  randomize(filter) {
-    if (this._badWeek) return;
-    const pool = this.models.filter((m) => !m.off);
-    if (!pool.length) return;
-    this._edit(this._sel, (slots) => ({
-      slots: slots.map((s) => {
-        const cur = this.modelOf(s.model);
-        if (typeof filter === "function" && !filter(cur, s)) return s;
-        const opts = pool.filter((m2) => m2.id !== s.model);
-        const m = (opts.length ? opts : pool)[Math.floor(Math.random() * (opts.length || pool.length))];
-        const dv = defaultValues(m);
-        const n = { ...s, model: m.id };
-        if (dv) n.values = dv;
-        else delete n.values;
-        return n;
-      })
-    }), { source: "randomize" });
+  randomize(...args) {
+    return randomize(this, ...args);
   }
   // ---------------------------------------------------------------- week
   selectDay(d, fromAttr) {
@@ -3452,27 +3764,11 @@ var DayRhythmElement = class extends Base {
   nextDay() {
     this._stepDay(1);
   }
-  copyDay(from, to, opts = {}) {
-    if (!this.weekMode || this._badWeek) return false;
-    const targets = expandTargets(to, from);
-    if (!targets.length) return false;
-    const previous = this._value;
-    const next = copyDay(this._expandWeek(), from, targets, { newIds: opts.newIds !== false });
-    this._value = this._norm(next);
-    this._syncForm();
-    this._fire("change", this._detail(previous, { source: "copy", day: from }));
-    this._say(this.t("copyDone", { days: targets.map((d) => this.dayName(d)).join(", ") }));
-    this._schedule("data");
-    return true;
+  copyDay(...args) {
+    return copyDay2(this, ...args);
   }
-  assignDay(day, slotsOrRef) {
-    if (!this.weekMode || !this._validDay(day)) return false;
-    const previous = this._value;
-    this._value = this._norm(withDay(this._expandWeek(), day, slotsOrRef));
-    this._syncForm();
-    this._fire("change", this._detail(previous, { source: "day", day }));
-    this._schedule("data");
-    return true;
+  assignDay(...args) {
+    return assignDay(this, ...args);
   }
   // ---------------------------------------------------------------- editor / focus
   openEditor(id) {
@@ -3662,7 +3958,7 @@ var DayRhythmElement = class extends Base {
       if (d) this._sel = d;
     }
     this._flattenIfOff();
-    buildRoot(this);
+    buildRoot2(this);
     if (this._storageRef !== this.cfg.storage) {
       this._storageRef = this.cfg.storage;
       this._loadStorage();

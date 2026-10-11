@@ -8,7 +8,7 @@ export const defaults = {
   ],
   presets: [], days: [], load: null, storage: null,
   minGap: 5, snap: 5, minSlots: null, maxSlots: null,
-  origin: 'first', seamDrag: true, push: true, orientation: 'auto', breakpoint: 640,
+  layout: 'strip', origin: 'first', seamDrag: true, push: true, orientation: 'auto', breakpoint: 640,
   add: true, remove: true, rename: true, timeEdit: true, showPresets: true, showDays: true,
   spectrum: true, nowLine: true, clockOffset: 0, timezone: null, timeFormat: '24h',
   editor: 'auto', randomize: false, readonly: false, disabled: false, labelMax: 40,
@@ -21,6 +21,7 @@ export const defaults = {
 export const ATTRS = {
   name: ['name', 'str'], value: ['value', 'json'], models: ['models', 'json'], load: ['load', 'json'], storage: ['storage', 'json'],
   'min-gap': ['minGap', 'int'], snap: ['snap', 'int'], 'min-slots': ['minSlots', 'int'], 'max-slots': ['maxSlots', 'int'],
+  layout: ['layout', 'str'],
   origin: ['origin', 'str'], 'seam-drag': ['seamDrag', 'toggle'], push: ['push', 'toggle'], orientation: ['orientation', 'str'], breakpoint: ['breakpoint', 'int'],
   add: ['add', 'toggle'], remove: ['remove', 'toggle'], rename: ['rename', 'toggle'], 'time-edit': ['timeEdit', 'toggle'],
   'show-presets': ['showPresets', 'toggle'], 'show-days': ['showDays', 'toggle'], spectrum: ['spectrum', 'toggle'],

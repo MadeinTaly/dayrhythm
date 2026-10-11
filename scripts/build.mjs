@@ -8,11 +8,14 @@ import { dirname, join } from 'node:path';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const ESBUILD = 'esbuild@0.25.10';
 const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+// npx is npx.cmd on Windows (execFile cannot run it, a shell would mangle the banner): call npm's npx-cli with node
+const WIN_NPX = join(dirname(process.execPath), 'node_modules/npm/bin/npx-cli.js');
+const [NPX, NPX_ARGS] = process.platform === 'win32' ? [process.execPath, [WIN_NPX]] : ['npx', []];
 const banner = `/*! dayrhythm v${pkg.version} | MIT | https://github.com/MadeinTaly/dayrhythm */`;
 
 function esb(entry, out, opts = []) {
   const args = ['--yes', ESBUILD, join(root, entry), '--bundle', '--target=es2020', `--outfile=${join(root, out)}`, `--banner:js=${banner}`, '--legal-comments=none', '--log-level=warning', ...opts];
-  execFileSync('npx', args, { stdio: 'inherit', cwd: root });
+  execFileSync(NPX, [...NPX_ARGS, ...args], { stdio: 'inherit', cwd: root });
   console.log('built', out);
 }
 

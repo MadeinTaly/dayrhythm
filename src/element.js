@@ -1,13 +1,13 @@
 // <day-rhythm> custom element: state, configuration, public API. Rendering lives in ui/*.
 import { VERSION } from './version.js';
 import {
-  parseTime, tryParseTime, formatTime, minutesOf, WEEKDAYS, mod,
+  tryParseTime, formatTime, minutesOf, WEEKDAYS, mod,
 } from './core/time.js';
 import {
-  normalizeDay, sortSlots, slotRanges, resolveValues, addSlotAt, removeSlotById, moveBoundary, genId, clone, isLocked, retimeSlot,
+  normalizeDay, sortSlots, resolveValues, genId, clone,
 } from './core/slots.js';
 import {
-  isWeek, isRef, resolveWeek, withDay, copyDay as copyDayCore, carrySlotFor, firstDayOfWeek, orderedWeekdays, expandTargets,
+  isWeek, isRef, resolveWeek, withDay, carrySlotFor, firstDayOfWeek, orderedWeekdays,
 } from './core/week.js';
 import { validateDay, validateWeek } from './core/validate.js';
 import { activeSlotAt } from './core/index.js';
@@ -15,17 +15,16 @@ import {
   defaults, ATTRS, KNOWN, parseAttr, mergeConfig, jsonSafe, isPlain, normalizeCredits,
 } from './ui/config.js';
 import { makeT } from './i18n/index.js';
-import { defaultValues, modelLabel } from './ui/model.js';
+import { modelLabel } from './ui/model.js';
 import { nowOf, offsetFor, msToNextMinute } from './ui/clock.js';
 import { camel, classList, deepEqual } from './ui/dom.js';
 import { adapterFrom } from './storage.js';
 import { buildRoot, renderData, renderTrack, updateNow } from './ui/render.js';
 import { openEditor, closeDialog } from './ui/dialog.js';
+import * as commands from './ui/commands.js';
 
 const Base = typeof HTMLElement !== 'undefined' ? HTMLElement : class {};
 const NO_PROP = new Set(['add', 'remove', 'randomize', 'value', 'day']); // clash with DOM methods / special accessors
-const ERR_KEY = { 'min-gap': 'err.minGap', 'max-slots': 'err.maxSlots', 'min-slots': 'err.minSlots', 'duplicate-time': 'err.duplicateTime', locked: 'err.locked', 'time-format': 'err.timeFormat' };
-
 export class DayRhythmElement extends Base {
   static get version() { return VERSION; }
   static get formAssociated() { return true; }
@@ -420,188 +419,35 @@ export class DayRhythmElement extends Base {
     return e;
   }
 
-  _detail(previous, meta) {
-    const d = { value: clone(this._value), resolved: this._resolved(), previous: clone(previous), ...meta };
-    if (d.day === undefined || d.day === null) delete d.day;
-    return d;
-  }
-
-  _commit(next, meta) {
-    const previous = this._value;
-    this._value = next;
-    this._syncForm();
-    this._fire('change', this._detail(previous, meta));
-    this._schedule('data');
-  }
+  _commit(...args) { return commands._commit(this, ...args); }
 
   /** Update the draft and fire a coalesced `input` (no re-render; caller updates the DOM). */
-  _live(next, meta) {
-    const previous = this._liveBase || this._value;
-    this._value = next;
-    this._syncForm();
-    this._fire('input', this._detail(previous, meta));
-  }
+  _live(...args) { return commands._live(this, ...args); }
 
-  _withDay(day, slots) {
-    if (!this.weekMode) return slots;
-    return withDay(this._expandWeek(), day, slots);
-  }
+  _withDay(...args) { return commands._withDay(this, ...args); }
 
-  _refuse(reason, id, extra = {}) {
-    const limit = reason === 'max-slots' ? this.cfg.maxSlots : reason === 'min-slots' ? this._minSlots : reason === 'min-gap' ? this._minGap : undefined;
-    const detail = { reason };
-    if (id) detail.id = id;
-    if (limit !== undefined) detail.limit = limit;
-    this._fire('slotinvalid', detail);
-    this._say(this.t(ERR_KEY[reason] || 'err.locked', { minutes: this._minGap, max: this.cfg.maxSlots, min: this._minSlots, time: extra.time || '' }));
-  }
+  _refuse(...args) { return commands._refuse(this, ...args); }
 
   /**
    * Runs fn(slotsCopy) -> new slots | {slots,...} | {error} | null on the day, then commits.
    * Editing a day linked to a saved day detaches it (copy-on-write).
    */
-  _edit(day, fn, meta) {
-    const d = this.weekMode ? day || this._sel : null;
-    let slots = clone(this._slotsOf(d));
-    let detachedFrom = null;
-    if (d && isWeek(this._value) && isRef(this._value.week[d])) {
-      detachedFrom = this._days.find((x) => x.id === this._value.week[d].ref) || { name: this._value.week[d].ref };
-      const used = new Set();
-      for (const k of WEEKDAYS) if (Array.isArray(this._value.week[k])) this._value.week[k].forEach((s) => used.add(s.id));
-      slots = slots.map((s) => (used.has(s.id) ? { ...s, id: genId() } : s));
-    }
-    const r = fn(slots);
-    if (!r) return false;
-    if (r.error) { this._refuse(r.error, meta && meta.id, r); return false; }
-    const out = normalizeDay(r.slots || r);
-    const m = { ...meta };
-    if (d) m.day = d;
-    if (detachedFrom) {
-      m.detached = true;
-      this._say(this.t('detached', { day: this.dayName(d), name: detachedFrom.name }));
-    }
-    this._commit(this._withDay(d, out), m);
-    return r;
-  }
+  _edit(...args) { return commands._edit(this, ...args); }
 
-  addSlot(partial = {}, opts = {}) {
-    const day = opts.day || this._sel;
-    if (this._badWeek) return null;
-    let added = null;
-    const ok = this._edit(day, (slots) => {
-      let template = null;
-      if (this.weekMode && !slots.length) {
-        const carried = this._carryOf(day);
-        template = carried ? { model: carried.model, values: carried.values } : null;
-      }
-      const model = partial.model ? this.modelOf(partial.model) : null;
-      const r = addSlotAt(slots, {
-        time: partial.time, minGap: this._minGap, snap: this._snap, maxSlots: this.cfg.maxSlots, cyclic: !this.weekMode,
-        template, model: partial.model, label: partial.label,
-      });
-      if (r.error) return r;
-      added = { ...r.added, ...clone(partial), id: r.added.id, time: r.added.time };
-      if (partial.model && !partial.values) {
-        const dv = defaultValues(model);
-        if (dv) added.values = dv; else delete added.values;
-      }
-      const rv = resolveValues(added, this.models);
-      if (rv) added.values = rv;
-      return { slots: r.slots.map((s) => (s.id === added.id ? added : s)) };
-    }, { source: 'add' });
-    if (!ok || !added) return null;
-    this._say(this.t('added'));
-    if (opts.edit) queueMicrotask(() => openEditor(this, added.id));
-    return clone(added);
-  }
+  addSlot(...args) { return commands.addSlot(this, ...args); }
 
-  _carryOf(day) {
-    const view = this._weekView();
-    const r = resolveWeek(view, this._days);
-    const i = WEEKDAYS.indexOf(day);
-    for (let k = 1; k <= 7; k++) {
-      const d = WEEKDAYS[mod(i - k, 7)];
-      if (r[d].length) return r[d][r[d].length - 1];
-    }
-    return null;
-  }
+  _carryOf(...args) { return commands._carryOf(this, ...args); }
 
-  removeSlot(id) {
-    const loc = this._locate(id);
-    if (!loc) return false;
-    return !!this._edit(loc.day, (slots) => {
-      const r = removeSlotById(slots, id, { minSlots: this._minSlots });
-      return Array.isArray(r) ? { slots: r } : r;
-    }, { source: 'remove', id }) && (this._say(this.t('removed')), true);
-  }
+  removeSlot(...args) { return commands.removeSlot(this, ...args); }
 
-  updateSlot(id, patch) {
-    const loc = this._locate(id);
-    if (!loc) return null;
-    let out = null;
-    const ok = this._edit(loc.day, (slots) => {
-      const i = slots.findIndex((s) => s.id === id);
-      let s = { ...slots[i], ...clone(patch), id };
-      if (s.label === '') delete s.label;
-      if (patch.model && patch.model !== slots[i].model && !patch.values) {
-        const dv = defaultValues(this.modelOf(patch.model));
-        if (dv) s.values = dv; else delete s.values;
-      }
-      if (patch.time !== undefined) {
-        const r = retimeSlot(slots.map((x, k) => (k === i ? s : x)), id, s.time, { minGap: this._minGap, cyclic: !this.weekMode });
-        if (r.error) return r;
-        out = r.slots.find((x) => x.id === id);
-        return { slots: r.slots };
-      }
-      const rv = resolveValues(s, this.models);
-      if (rv) s.values = rv;
-      out = s;
-      return { slots: slots.map((x, k) => (k === i ? s : x)) };
-    }, { source: patch.model ? 'model' : patch.values ? 'values' : patch.label !== undefined ? 'label' : patch.time !== undefined ? 'time' : 'api', id });
-    return ok ? clone(out) : null;
-  }
+  updateSlot(...args) { return commands.updateSlot(this, ...args); }
 
-  moveSlot(id, time) {
-    const loc = this._locate(id);
-    const m = tryParseTime(time);
-    if (!loc || m == null) return false;
-    if (isLocked(loc.slot, 'time')) { this._refuse('locked', id); return false; }
-    return !!this._edit(loc.day, (slots) => {
-      const r = moveBoundary(slots, id, m, { snap: this._snap, minGap: this._minGap, cyclic: !this.weekMode });
-      return { slots: r.slots };
-    }, { source: 'time', id });
-  }
+  moveSlot(...args) { return commands.moveSlot(this, ...args); }
 
   /** Editor time field: may reorder slots. Returns null | error reason. */
-  _retime(id, time) {
-    const loc = this._locate(id);
-    if (!loc) return 'time-format';
-    let err = null;
-    this._edit(loc.day, (slots) => {
-      const r = retimeSlot(slots, id, time, { minGap: this._minGap, cyclic: !this.weekMode });
-      if (r.error) { err = r.error; return { error: r.error, time }; }
-      return { slots: r.slots };
-    }, { source: 'time', id });
-    return err;
-  }
+  _retime(...args) { return commands._retime(this, ...args); }
 
-  randomize(filter) {
-    if (this._badWeek) return;
-    const pool = this.models.filter((m) => !m.off);
-    if (!pool.length) return;
-    this._edit(this._sel, (slots) => ({
-      slots: slots.map((s) => {
-        const cur = this.modelOf(s.model);
-        if (typeof filter === 'function' && !filter(cur, s)) return s;
-        const opts = pool.filter((m) => m.id !== s.model);
-        const m = (opts.length ? opts : pool)[Math.floor(Math.random() * (opts.length || pool.length))];
-        const dv = defaultValues(m);
-        const n = { ...s, model: m.id };
-        if (dv) n.values = dv; else delete n.values;
-        return n;
-      }),
-    }), { source: 'randomize' });
-  }
+  randomize(...args) { return commands.randomize(this, ...args); }
 
   // ---------------------------------------------------------------- week
   selectDay(d, fromAttr) {
@@ -627,29 +473,9 @@ export class DayRhythmElement extends Base {
   prevDay() { this._stepDay(-1); }
   nextDay() { this._stepDay(1); }
 
-  copyDay(from, to, opts = {}) {
-    if (!this.weekMode || this._badWeek) return false;
-    const targets = expandTargets(to, from);
-    if (!targets.length) return false;
-    const previous = this._value;
-    const next = copyDayCore(this._expandWeek(), from, targets, { newIds: opts.newIds !== false });
-    this._value = this._norm(next);
-    this._syncForm();
-    this._fire('change', this._detail(previous, { source: 'copy', day: from }));
-    this._say(this.t('copyDone', { days: targets.map((d) => this.dayName(d)).join(', ') }));
-    this._schedule('data');
-    return true;
-  }
+  copyDay(...args) { return commands.copyDay(this, ...args); }
 
-  assignDay(day, slotsOrRef) {
-    if (!this.weekMode || !this._validDay(day)) return false;
-    const previous = this._value;
-    this._value = this._norm(withDay(this._expandWeek(), day, slotsOrRef));
-    this._syncForm();
-    this._fire('change', this._detail(previous, { source: 'day', day }));
-    this._schedule('data');
-    return true;
-  }
+  assignDay(...args) { return commands.assignDay(this, ...args); }
 
   // ---------------------------------------------------------------- editor / focus
   openEditor(id) { openEditor(this, id); }

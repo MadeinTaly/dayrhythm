@@ -1,5 +1,5 @@
 // Weekly helpers: week = seven days, slots carry over between days.
-import { WEEKDAYS, minutesOf, weekdayOf, mod, parseTime } from './time.js';
+import { WEEKDAYS, minutesOf, weekdayOf, mod } from './time.js';
 import { sortSlots, slotRanges, genId, clone } from './slots.js';
 
 export function isWeek(v) {
@@ -128,5 +128,3 @@ export function carrySlotFor(value, day, days) {
   }
   return null;
 }
-
-export { parseTime };

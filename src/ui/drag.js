@@ -33,7 +33,7 @@ export function shift(el, slots, id, minutes, cyclic) {
 
 function onDown(el, e) {
   const h = handleOf(e);
-  if (!h || h.hasAttribute('data-alias') || (e.button && e.button > 0) || el._drag) return;
+  if (!h || h.hasAttribute('data-alias') || 'dial' in h.dataset || (e.button && e.button > 0) || el._drag) return;
   const id = h.dataset.slotId;
   const weekly = el.weekMode;
   const ctx = trackCtx(el, h);

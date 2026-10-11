@@ -234,6 +234,7 @@ Types in `config` and as attributes (where it makes sense). **Toggle convention*
 | `snap` | minutes | `5` | Drag/keyboard granularity. Must divide 60. |
 | `min-slots` | int | `1` daily, `0` weekly (per day) | Remove disabled at the bound. |
 | `max-slots` | int \| `null` | `null` (**unlimited**) | Optional cap (per day in weekly). The track grows (min card size) instead of clipping when many slots exist. |
+| `layout` | `strip` \| `dial` | `strip` | `dial` draws the day as a 24 h ring: arcs are slots, knobs on the ring move slot starts (pointer and keyboard, same rules as the strip), the centre shows the time, the active slot and the time left. Weekly: the selected day. Parts: `dial`, `dial-arc`, `dial-arc-active`, `dial-handle`, `dial-now`, `dial-center`. |
 | `origin` | `first` \| `midnight` | `first` (daily); forced `midnight` in weekly | See 4.3. |
 | `seam-drag` | toggle | on | The seam edge is draggable (4.3). |
 | `push` | toggle | on | Dragging an edge into a neighbour pushes it along (kept `min-gap` apart) instead of stopping; see `pushBoundary` (7.2). Off = edges stop at `min-gap`. |

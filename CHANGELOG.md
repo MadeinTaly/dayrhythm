@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0
+
+- **Dial layout** (`layout="dial"`): the day as a 24-hour ring. Slots are arcs, knobs on the ring move slot starts (drag or keyboard, with the same push/min-gap/lock rules as the strip), tap an arc to edit it; the centre shows the time, the active slot and the time left. Example: `examples/dial.html`.
+- Internals: the renderer is split into `src/ui/render/` modules and the slot editing commands moved to `src/ui/commands.js`; public API unchanged.
+- Build scripts run on Windows (`npx` through npm's CLI).
+
 ## 0.4.0
 
 - **Smoother dragging**: the edge stays under the finger (within a few pixels) for the whole drag. The position is computed from an exact model of the track layout instead of from the cards being resized, and the two cards next to the dragged edge drop their minimum size while dragging, so a slot can be squeezed down to `min-gap`.

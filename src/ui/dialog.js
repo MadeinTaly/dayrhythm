@@ -254,5 +254,3 @@ export function openCopy(el) {
   actions.append(no, ok);
   show(d);
 }
-
-export { parseTime };

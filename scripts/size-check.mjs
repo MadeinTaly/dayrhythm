@@ -1,6 +1,9 @@
 // Prints min+gzip sizes against the targets of docs/API.md section 13.1. Exit code 1 above the hard limit only with --strict.
 import { readFileSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+// npx is npx.cmd on Windows: run npm's npx-cli with node there
+const [NPX, NPX_ARGS] = process.platform === 'win32'
+  ? [process.execPath, [join(dirname(process.execPath), 'node_modules/npm/bin/npx-cli.js')]] : ['npx', []];
 import { gzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -22,7 +25,7 @@ row('dist/dayrhythm.min.js (IIFE)', gz(file('dist/dayrhythm.min.js')), 20, 26);
 row('dist/dayrhythm-core.min.js', gz(file('dist/dayrhythm-core.min.js')), 3);
 row('dist/react.min.js', gz(file('dist/react.min.js')), 1.5);
 for (const f of readdirSync(join(root, 'packs')).filter((x) => x.endsWith('.js') && !['index.js', '_util.js'].includes(x))) {
-  const out = execFileSync('npx', ['--yes', 'esbuild@0.25.10', join(root, 'packs', f), '--bundle', '--minify', '--format=esm', '--target=es2020', '--log-level=error'], { cwd: root });
+  const out = execFileSync(NPX, [...NPX_ARGS, '--yes', 'esbuild@0.25.10', join(root, 'packs', f), '--bundle', '--minify', '--format=esm', '--target=es2020', '--log-level=error'], { cwd: root });
   row(`packs/${f} (with shared builder)`, gz(out), 2);
 }
 const w = Math.max(...rows.map((r) => r[0].length));
