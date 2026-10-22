@@ -34,6 +34,7 @@
     "editor": { "enum": ["auto", "quick", "full"] },
     "randomize": { "type": "boolean" }, "readonly": { "type": "boolean" }, "disabled": { "type": "boolean" },
     "labelMax": { "type": "integer", "minimum": 1, "maximum": 200 },
+    "touchHold": { "type": "integer", "minimum": 0 },
     "week": { "enum": ["auto", "top", "bottom", "off"] },
     "day": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/weekday" }] },
     "firstDay": { "oneOf": [{ "const": "auto" }, { "$ref": "#/$defs/weekday" }] },

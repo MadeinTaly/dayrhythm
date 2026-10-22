@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.0
+
+- **Touch: hold to drag** (`touch-hold`, default 300 ms). On touch screens an edge moves only after a short still press; a tap or a swipe that lands on an edge no longer drags it. `touch-hold="0"` restores the immediate drag.
+- Fix: setting `clockOffset` (e.g. a periodic clock sync with the device) rebuilt the whole component and closed an open editor dialog. It now only moves the now line. Setting any other option to the value it already has no longer rebuilds either.
+
 ## 0.5.0
 
 - **Dial layout** (`layout="dial"`): the day as a 24-hour ring. Slots are arcs, knobs on the ring move slot starts (drag or keyboard, with the same push/min-gap/lock rules as the strip), tap an arc to edit it; the centre shows the time, the active slot and the time left. Example: `examples/dial.html`.

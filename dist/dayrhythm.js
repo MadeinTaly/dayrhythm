@@ -1,4 +1,4 @@
-/*! dayrhythm v0.5.0 | MIT | https://github.com/MadeinTaly/dayrhythm */
+/*! dayrhythm v0.6.0 | MIT | https://github.com/MadeinTaly/dayrhythm */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -6,7 +6,7 @@ var __export = (target, all) => {
 };
 
 // src/version.js
-var VERSION = "0.5.0";
+var VERSION = "0.6.0";
 
 // src/core/time.js
 var WEEKDAYS = Object.freeze(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
@@ -508,6 +508,7 @@ var defaults = {
   readonly: false,
   disabled: false,
   labelMax: 40,
+  touchHold: 300,
   week: "auto",
   day: null,
   firstDay: "auto",
@@ -557,6 +558,7 @@ var ATTRS = {
   readonly: ["readonly", "bool"],
   disabled: ["disabled", "bool"],
   "label-max": ["labelMax", "int"],
+  "touch-hold": ["touchHold", "int"],
   week: ["week", "str"],
   day: ["day", "str"],
   "first-day": ["firstDay", "str"],
@@ -1338,7 +1340,38 @@ function shift(el, slots, id, minutes, cyclic) {
 }
 function onDown(el, e) {
   const h = handleOf(e);
-  if (!h || h.hasAttribute("data-alias") || "dial" in h.dataset || e.button && e.button > 0 || el._drag) return;
+  if (!h || h.hasAttribute("data-alias") || "dial" in h.dataset || e.button && e.button > 0 || el._drag || el._hold) return;
+  const hold = +el.cfg.touchHold;
+  if (e.pointerType !== "touch" || !(hold > 0)) {
+    startDrag(el, e, h);
+    return;
+  }
+  const at = { pointerId: e.pointerId, clientX: e.clientX, clientY: e.clientY, preventDefault() {
+  } };
+  const stop = () => {
+    clearTimeout(timer);
+    h.removeEventListener("pointermove", move);
+    h.removeEventListener("pointerup", stop);
+    h.removeEventListener("pointercancel", stop);
+    el._hold = null;
+  };
+  const move = (ev) => {
+    if (Math.hypot(ev.clientX - e.clientX, ev.clientY - e.clientY) > 10) stop();
+    else {
+      at.clientX = ev.clientX;
+      at.clientY = ev.clientY;
+    }
+  };
+  const timer = setTimeout(() => {
+    stop();
+    if (h.isConnected && !el._drag) startDrag(el, at, h);
+  }, hold);
+  el._hold = stop;
+  h.addEventListener("pointermove", move);
+  h.addEventListener("pointerup", stop);
+  h.addEventListener("pointercancel", stop);
+}
+function startDrag(el, e, h) {
   const id = h.dataset.slotId;
   const weekly = el.weekMode;
   const ctx = trackCtx(el, h);
@@ -3426,6 +3459,15 @@ var DayRhythmElement = class extends Base {
     this._L.props.locale = v;
     this._invalidate();
   }
+  get clockOffset() {
+    return this.cfg.clockOffset;
+  }
+  /** Moves only the now line: no rebuild, so periodic clock syncs keep an open dialog or a drag. */
+  set clockOffset(v) {
+    this._L.props.clockOffset = v;
+    this._cfg = null;
+    this._updateNow();
+  }
   get t() {
     return this._t;
   }
@@ -3973,6 +4015,7 @@ for (const k of PROP_KEYS) {
       return this.cfg[k];
     },
     set(v) {
+      if (Object.is(this._L.props[k], v)) return;
       this._L.props[k] = v;
       this._invalidate();
     }

@@ -86,7 +86,7 @@ export interface Config {
   layout?: 'strip' | 'dial'; origin?: 'first' | 'midnight'; seamDrag?: boolean; push?: boolean; orientation?: 'auto' | 'horizontal' | 'vertical'; breakpoint?: number;
   add?: boolean; remove?: boolean; rename?: boolean; timeEdit?: boolean; showPresets?: boolean; showDays?: boolean;
   spectrum?: boolean; nowLine?: boolean; clockOffset?: number; timezone?: string | null; timeFormat?: '24h' | '12h';
-  editor?: 'auto' | 'quick' | 'full'; randomize?: boolean; readonly?: boolean; disabled?: boolean; labelMax?: number;
+  editor?: 'auto' | 'quick' | 'full'; randomize?: boolean; readonly?: boolean; disabled?: boolean; labelMax?: number; touchHold?: number;
   week?: 'auto' | 'top' | 'bottom' | 'off'; day?: Weekday | null; firstDay?: 'auto' | Weekday;
   weekPreview?: boolean; weekCopy?: boolean; linkDays?: boolean; weekLayout?: 'tabs' | 'rows';
   theme?: 'organic' | 'neutral' | 'flat' | 'none'; colorScheme?: 'auto' | 'light' | 'dark'; locale?: string | null;

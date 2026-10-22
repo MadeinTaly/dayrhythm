@@ -202,6 +202,9 @@ export class DayRhythmElement extends Base {
   // ---------------------------------------------------------------- derived config
   get locale() { return this.cfg.locale || (typeof document !== 'undefined' && document.documentElement.lang) || 'en'; }
   set locale(v) { this._L.props.locale = v; this._invalidate(); }
+  get clockOffset() { return this.cfg.clockOffset; }
+  /** Moves only the now line: no rebuild, so periodic clock syncs keep an open dialog or a drag. */
+  set clockOffset(v) { this._L.props.clockOffset = v; this._cfg = null; this._updateNow(); }
   get t() { return this._t; }
   fmt(min) { return formatTime(min, { format: this.cfg.timeFormat }); }
   /** Weekly value shown as seven editable rows (opt-in) instead of one focused day under the week bar (default). */
@@ -644,7 +647,7 @@ for (const k of PROP_KEYS) {
   Object.defineProperty(DayRhythmElement.prototype, k, {
     configurable: true,
     get() { return this.cfg[k]; },
-    set(v) { this._L.props[k] = v; this._invalidate(); },
+    set(v) { if (Object.is(this._L.props[k], v)) return; this._L.props[k] = v; this._invalidate(); },
   });
 }
 

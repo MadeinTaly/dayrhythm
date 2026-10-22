@@ -1,6 +1,6 @@
 {
   "name": "dayrhythm",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Zero-dependency web component for editing a 24-hour cyclic schedule of time slots, daily or weekly.",
   "keywords": ["web-component", "custom-element", "schedule", "timeline", "scheduler", "24-hour", "weekly", "smart-home", "thermostat", "react"],
   "license": "MIT",

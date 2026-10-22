@@ -237,6 +237,7 @@ Types in `config` and as attributes (where it makes sense). **Toggle convention*
 | `layout` | `strip` \| `dial` | `strip` | `dial` draws the day as a 24 h ring: arcs are slots, knobs on the ring move slot starts (pointer and keyboard, same rules as the strip), the centre shows the time, the active slot and the time left. Weekly: the selected day. Parts: `dial`, `dial-arc`, `dial-arc-active`, `dial-handle`, `dial-now`, `dial-center`. |
 | `origin` | `first` \| `midnight` | `first` (daily); forced `midnight` in weekly | See 4.3. |
 | `seam-drag` | toggle | on | The seam edge is draggable (4.3). |
+| `touch-hold` | int (ms) | 300 | On touch screens an edge starts moving only after being held still this long, so taps and swipes that land on it do not drag it. `0`: drag at once (pre-0.6 behaviour). |
 | `push` | toggle | on | Dragging an edge into a neighbour pushes it along (kept `min-gap` apart) instead of stopping; see `pushBoundary` (7.2). Off = edges stop at `min-gap`. |
 | `orientation` | `auto` \| `horizontal` \| `vertical` | `auto` | `auto` uses the **component's own width** (`ResizeObserver`): horizontal when >= `breakpoint`. |
 | `breakpoint` | px | `640` | For `auto`. |
@@ -1109,7 +1110,7 @@ export interface Config {
   origin?: 'first' | 'midnight'; seamDrag?: boolean; orientation?: 'auto' | 'horizontal' | 'vertical'; breakpoint?: number;
   add?: boolean; remove?: boolean; rename?: boolean; timeEdit?: boolean; showPresets?: boolean; showDays?: boolean;
   spectrum?: boolean; nowLine?: boolean; clockOffset?: number; timezone?: string; timeFormat?: '24h' | '12h';
-  editor?: 'auto' | 'quick' | 'full'; randomize?: boolean; readonly?: boolean; disabled?: boolean; labelMax?: number;
+  editor?: 'auto' | 'quick' | 'full'; randomize?: boolean; readonly?: boolean; disabled?: boolean; labelMax?: number; touchHold?: number;
   week?: 'auto' | 'top' | 'bottom' | 'off'; day?: Weekday; firstDay?: 'auto' | Weekday;
   weekPreview?: boolean; weekCopy?: boolean; linkDays?: boolean;
   theme?: 'organic' | 'neutral' | 'flat' | 'none'; colorScheme?: 'auto' | 'light' | 'dark'; locale?: string;
@@ -1180,7 +1181,7 @@ declare global { interface HTMLElementTagNameMap { 'day-rhythm': DayRhythmElemen
   "add": true, "remove": true, "rename": true, "timeEdit": true,
   "showPresets": true, "showDays": true, "spectrum": true, "nowLine": true,
   "clockOffset": 0, "timezone": null, "timeFormat": "24h",
-  "editor": "auto", "randomize": false, "readonly": false, "disabled": false, "labelMax": 40,
+  "editor": "auto", "randomize": false, "readonly": false, "disabled": false, "labelMax": 40, "touchHold": 300,
   "week": "auto", "day": null, "firstDay": "auto", "weekPreview": true, "weekCopy": true, "linkDays": false,
   "theme": "organic", "colorScheme": "auto", "locale": null,
   "messages": {}, "classes": {}, "render": "shadow", "inheritStyles": false, "styles": null,

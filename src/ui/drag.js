@@ -33,7 +33,30 @@ export function shift(el, slots, id, minutes, cyclic) {
 
 function onDown(el, e) {
   const h = handleOf(e);
-  if (!h || h.hasAttribute('data-alias') || 'dial' in h.dataset || (e.button && e.button > 0) || el._drag) return;
+  if (!h || h.hasAttribute('data-alias') || 'dial' in h.dataset || (e.button && e.button > 0) || el._drag || el._hold) return;
+  const hold = +el.cfg.touchHold;
+  if (e.pointerType !== 'touch' || !(hold > 0)) { startDrag(el, e, h); return; }
+  // Touch: the edge moves only after a still press, so a tap or a swipe that lands on it leaves it alone.
+  const at = { pointerId: e.pointerId, clientX: e.clientX, clientY: e.clientY, preventDefault() {} };
+  const stop = () => {
+    clearTimeout(timer);
+    h.removeEventListener('pointermove', move);
+    h.removeEventListener('pointerup', stop);
+    h.removeEventListener('pointercancel', stop);
+    el._hold = null;
+  };
+  const move = (ev) => {
+    if (Math.hypot(ev.clientX - e.clientX, ev.clientY - e.clientY) > 10) stop();
+    else { at.clientX = ev.clientX; at.clientY = ev.clientY; }
+  };
+  const timer = setTimeout(() => { stop(); if (h.isConnected && !el._drag) startDrag(el, at, h); }, hold);
+  el._hold = stop;
+  h.addEventListener('pointermove', move);
+  h.addEventListener('pointerup', stop);
+  h.addEventListener('pointercancel', stop);
+}
+
+function startDrag(el, e, h) {
   const id = h.dataset.slotId;
   const weekly = el.weekMode;
   const ctx = trackCtx(el, h);
