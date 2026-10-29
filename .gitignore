@@ -5,3 +5,4 @@ node_modules/
 coverage/
 examples/react/node_modules/
 examples/react/dist/
+.hallmark/

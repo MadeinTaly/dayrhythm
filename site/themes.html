@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dayrhythm themes</title>
+<meta name="description" content="Eight themes for the day-rhythm schedule editor, each a plain JSON object.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@700&family=Instrument+Sans:wght@400;500&family=DM+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&family=Chakra+Petch:wght@600&family=Host+Grotesk:wght@400;500&family=Atkinson+Hyperlegible+Mono&family=Martian+Mono:wght@400;500&family=Onest:wght@400;500&family=Outfit:wght@500&family=JetBrains+Mono&family=Libre+Franklin:wght@400;500;900&family=Hanken+Grotesk:wght@400;500&family=Vollkorn:wght@600&family=Sofia+Sans:wght@400;500&family=Bowlby+One+SC&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav container">
+  <a class="brand" href="./index.html"><span class="mark" aria-hidden="true"></span>dayrhythm</a>
+  <nav aria-label="Main">
+    <a href="./index.html">Home</a>
+    <a href="./playground.html">Playground</a>
+    <a href="./packs.html">Packs</a>
+    <a href="./themes.html" aria-current="page">Themes</a>
+    <a href="https://github.com/MadeinTaly/dayrhythm">GitHub</a>
+    <button class="btn btn--quiet btn--small" id="scheme-toggle" type="button">Dark mode</button>
+  </nav>
+</header>
+<main id="main" class="container gallery">
+  <div class="gallery__head">
+    <h1>Eight themes, all JSON.</h1>
+    <p class="lead">Pass one as <code>config.theme</code>, or register the set and call them by name.</p>
+  </div>
+  <div class="gallery__list" id="list"></div>
+</main>
+<footer class="foot container">
+  <span>dayrhythm is MIT licensed.</span>
+  <a href="https://github.com/MadeinTaly/dayrhythm">Source on GitHub</a>
+</footer>
+<script type="module">
+import './site.js';
+import { packs } from './vendor/packs.js';
+import { themes as registry } from './vendor/dayrhythm.js';
+import set from './vendor/themes.js';
+Object.values(set).forEach((t) => registry.register(t));
+const list = document.getElementById('list');
+for (const t of Object.values(set)) {
+  const item = document.createElement('article');
+  item.className = 'gallery__item';
+  item.innerHTML = `<div class="gallery__meta"><h2></h2><p></p><code></code></div>`;
+  item.querySelector('h2').textContent = t.title;
+  item.querySelector('p').textContent = t.description;
+  item.querySelector('code').textContent = `theme="${t.id}"`;
+  const el = document.createElement('day-rhythm');
+  el.setAttribute('orientation', 'horizontal');
+  el.config = { ...JSON.parse(JSON.stringify(packs['light-scenes'])), locale: 'en', theme: t.id, credits: false };
+  item.append(el);
+  list.append(item);
+}
+</script>
+</body>
+</html>

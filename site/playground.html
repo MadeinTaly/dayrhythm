@@ -6,80 +6,108 @@
 <title>dayrhythm playground</title>
 <meta name="description" content="Edit a dayrhythm JSON config and see the component update live.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23a6dfc5'/%3E%3Cpath d='M6 20h6v-8h6v6h8' fill='none' stroke='%23174d3e' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@700&family=Instrument+Sans:wght@400;500&family=DM+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&family=Chakra+Petch:wght@600&family=Host+Grotesk:wght@400;500&family=Atkinson+Hyperlegible+Mono&family=Martian+Mono:wght@400;500&family=Onest:wght@400;500&family=Outfit:wght@500&family=JetBrains+Mono&family=Libre+Franklin:wght@400;500;900&family=Hanken+Grotesk:wght@400;500&family=Vollkorn:wght@600&family=Sofia+Sans:wght@400;500&family=Bowlby+One+SC&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./site.css">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="wrap">
-<header class="site">
-  <a class="brand" href="./index.html"><span class="mark" aria-hidden="true">&#9719;</span>dayrhythm</a>
-  <nav class="main" aria-label="Main">
+<header class="nav container">
+  <a class="brand" href="./index.html"><span class="mark" aria-hidden="true"></span>dayrhythm</a>
+  <nav aria-label="Main">
     <a href="./index.html">Home</a>
     <a href="./playground.html" aria-current="page">Playground</a>
     <a href="./packs.html">Packs</a>
+    <a href="./themes.html">Themes</a>
     <a href="https://github.com/MadeinTaly/dayrhythm">GitHub</a>
     <a href="https://gt.1471995.xyz" rel="noopener">Support</a>
-    <button class="btn" id="scheme-toggle" type="button">Dark mode</button>
+    <button class="btn btn--quiet btn--small" id="scheme-toggle" type="button">Dark mode</button>
   </nav>
 </header>
-<main id="main">
-<h1 style="margin:.5rem 0 1rem;letter-spacing:-.04em">Playground</h1>
-<p class="muted">Edit the JSON config on the left, the component on the right updates as you type. Everything is one JSON object.</p>
-<div class="pg">
-  <section class="card" aria-labelledby="cfg-h">
-    <h2 id="cfg-h" style="margin-top:0">Config</h2>
-    <div class="controls">
-      <label class="field">Pack<select id="c-pack"></select></label>
-      <label class="field">Theme<select id="c-theme"><option>organic</option><option>neutral</option><option>flat</option><option>none</option></select></label>
-      <label class="field">Colour scheme<select id="c-scheme"><option value="auto">auto (system)</option><option>light</option><option>dark</option></select></label>
-      <label class="field">Orientation<select id="c-orient"><option>auto</option><option>horizontal</option><option>vertical</option></select></label>
-      <label class="field">Week bar<select id="c-week"><option>auto</option><option>top</option><option>bottom</option><option>off</option></select></label>
-      <label class="field">Language<select id="c-lang"><option value="en">English</option><option value="it">Italiano</option></select></label>
-      <label class="field">Time format<select id="c-fmt"><option>24h</option><option>12h</option></select></label>
-    </div>
-    <div class="row" style="margin:0 0 .8rem">
-      <label class="check"><input type="checkbox" id="c-readonly"> Read-only</label>
-      <label class="check"><input type="checkbox" id="c-credits"> Show support link in credits</label>
-    </div>
-    <div class="editor">
-      <pre class="gutter" id="gutter" aria-hidden="true"></pre>
-      <textarea id="editor" spellcheck="false" aria-label="JSON config" aria-describedby="errors" autocomplete="off" autocapitalize="off"></textarea>
-    </div>
-    <ul class="errors ok" id="errors" aria-live="polite"></ul>
-    <div class="row">
-      <button class="btn primary" id="copy-config" type="button">Copy config</button>
-      <button class="btn" id="copy-html" type="button">Copy HTML snippet</button>
-      <button class="btn" id="reset" type="button">Reset</button>
-      <label class="check"><input type="checkbox" id="c-include" checked> Include current value</label>
-    </div>
-    <p class="status" id="copy-status" role="status"></p>
-  </section>
 
-  <div class="grid sticky">
-    <section class="card" aria-labelledby="live-h">
-      <h2 id="live-h" style="margin-top:0">Live component</h2>
-      <day-rhythm id="dr"></day-rhythm>
-      <div class="host-bar">
-        <button class="btn primary" id="host-apply" type="button" disabled>Apply</button>
-        <small>Demo host app: this button is part of the page, not of the library. The component only emits <code>input</code> and <code>change</code>; the app decides when and how to save.</small>
-        <span class="status" id="host-status" role="status"></span>
-      </div>
-    </section>
-    <section class="card" aria-labelledby="out-h">
-      <h2 id="out-h" style="margin-top:0">Value</h2>
-      <div class="tabs"><button type="button" data-out="value" aria-pressed="true">value</button><button type="button" data-out="resolved" aria-pressed="false">resolved (weekly)</button></div>
-      <pre class="out" id="out" tabindex="0"></pre>
-      <p class="status" id="active" aria-live="polite"></p>
-    </section>
+<main id="main" class="container pg">
+  <div class="pg__head">
+    <h1>Playground</h1>
+    <p class="lead">Edit the JSON config and the component updates as you type. Everything is one JSON object.</p>
   </div>
-</div>
+
+  <div class="pg__bench">
+    <div class="pg__left">
+      <section class="panel" aria-labelledby="cfg-h">
+        <h2 id="cfg-h" class="panel__title">Options</h2>
+        <div class="controls">
+          <label class="field">Pack<select id="c-pack"></select></label>
+          <label class="field">Theme<select id="c-theme">
+            <option>dose</option><option>blueprint</option><option>console</option><option>terminal</option><option>ultraviolet</option><option>brutal</option><option>garden</option><option>sticker</option>
+            <option>organic</option><option>neutral</option><option>flat</option><option>none</option>
+          </select></label>
+          <label class="field">Colour scheme<select id="c-scheme"><option value="auto">auto (system)</option><option>light</option><option>dark</option></select></label>
+          <label class="field">Orientation<select id="c-orient"><option>auto</option><option>horizontal</option><option>vertical</option></select></label>
+          <label class="field">Week bar<select id="c-week"><option>auto</option><option>top</option><option>bottom</option><option>off</option></select></label>
+          <label class="field">Language<select id="c-lang"><option value="en">English</option><option value="it">Italiano</option></select></label>
+          <label class="field">Time format<select id="c-fmt"><option>24h</option><option>12h</option></select></label>
+        </div>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="c-readonly"> Read-only</label>
+          <label class="check"><input type="checkbox" id="c-credits"> Show support link in credits</label>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="json-h">
+        <h2 id="json-h" class="panel__title">JSON config</h2>
+        <div class="editor">
+          <pre class="gutter" id="gutter" aria-hidden="true"></pre>
+          <textarea id="editor" spellcheck="false" aria-label="JSON config" aria-describedby="errors" autocomplete="off" autocapitalize="off"></textarea>
+        </div>
+        <ul class="errors ok" id="errors" aria-live="polite"></ul>
+        <div class="actions">
+          <button class="btn btn--primary btn--small" id="copy-config" type="button">Copy config</button>
+          <button class="btn btn--small" id="copy-html" type="button">Copy HTML snippet</button>
+          <button class="btn btn--quiet btn--small" id="reset" type="button">Reset</button>
+          <label class="check"><input type="checkbox" id="c-include" checked> Include current value</label>
+        </div>
+        <p class="status" id="copy-status" role="status"></p>
+      </section>
+    </div>
+
+    <div class="pg__right">
+      <section class="tray" aria-labelledby="live-h">
+        <div class="tray__bar"><h2 id="live-h" class="tray__title">Live component</h2></div>
+        <day-rhythm id="dr"></day-rhythm>
+        <div class="host-bar">
+          <button class="btn btn--primary btn--small" id="host-apply" type="button" disabled>Apply</button>
+          <p class="host-bar__note">Demo host app: this button is part of the page, not of the library. The component only emits <code>input</code> and <code>change</code>; the app decides when and how to save.</p>
+          <span class="status" id="host-status" role="status"></span>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="out-h">
+        <h2 id="out-h" class="panel__title">Value</h2>
+        <div class="skins" role="group" aria-label="Output">
+          <button class="key" type="button" data-out="value" aria-pressed="true">value</button>
+          <button class="key" type="button" data-out="resolved" aria-pressed="false">resolved (weekly)</button>
+        </div>
+        <pre class="out" id="out" tabindex="0"></pre>
+        <p class="status" id="active" aria-live="polite"></p>
+      </section>
+    </div>
+  </div>
 </main>
-<script>window.DR_PATHS = { lib: './vendor/dayrhythm.js', packs: './vendor/packs.js', validate: './vendor/schema-validate.js', schema: './vendor/config.schema.json' };</script>
-<script type="module" src="./playground.js"></script>
-<footer class="site">
+
+<footer class="foot container">
   <span>dayrhythm is MIT licensed.</span>
   <a href="https://github.com/MadeinTaly/dayrhythm">Source on GitHub</a>
   <a href="https://gt.1471995.xyz" rel="noopener">Support the project (optional)</a>
 </footer>
-</div>
-</body></html>
+
+<script>window.DR_PATHS = { lib: './vendor/dayrhythm.js', packs: './vendor/packs.js', validate: './vendor/schema-validate.js', schema: './vendor/config.schema.json' };</script>
+<script type="module">
+// Register the named themes first, then load the playground so config.theme resolves.
+import { themes } from './vendor/dayrhythm.js';
+import set from './vendor/themes.js';
+Object.values(set).forEach((t) => themes.register(t));
+await import('./playground.js');
+</script>
+</body>
+</html>

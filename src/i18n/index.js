@@ -42,7 +42,8 @@ export function makeT(code, messages) {
     if (vars && typeof vars.count === 'number' && pr) s = lookup(`${key}_${pr.select(vars.count)}`);
     if (s == null) s = lookup(key);
     if (s == null) return key;
-    return vars ? String(s).replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? vars[k] : m)) : String(s);
+    // a variable passed but empty shows '?', not '{k}'
+    return vars ? String(s).replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? vars[k] : k in vars ? '?' : m)) : String(s);
   };
   t.has = (key) => lookup(key) !== undefined;
   return t;
