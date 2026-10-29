@@ -6,6 +6,7 @@ import { locales } from './i18n/index.js';
 import { localStorageAdapter, httpStorageAdapter } from './storage.js';
 import { VERSION } from './version.js';
 import { themes } from './styles/themes.js';
+import { icons } from './ui/icons.js';
 
 /** Registry of packs; the `dayrhythm/packs` entry (or dist/dayrhythm-packs.js) fills it. */
 export const packs = {
@@ -14,5 +15,5 @@ export const packs = {
 
 DayRhythmElement.define('day-rhythm');
 
-export { DayRhythmElement, themes, core, defaults, mergeConfig, locales, localStorageAdapter, httpStorageAdapter, VERSION as version };
+export { DayRhythmElement, themes, icons, core, defaults, mergeConfig, locales, localStorageAdapter, httpStorageAdapter, VERSION as version };
 export default DayRhythmElement;

@@ -74,6 +74,7 @@ function cardFor(el, p, info) {
   if (invalid || !model) card.dataset.invalid = '';
   if (model && model.off) card.dataset.off = '';
   card.style.flex = `${p.dur} 1 0`;
+  card.style.setProperty('--dr-slot-color', preview);
   if (p.dur <= 0) card.dataset.zero = '';
 
   const tint = el._mk('span', 'slot-tint');
@@ -208,11 +209,16 @@ export function renderTrack(el, o = {}) {
   track.setAttribute('aria-label', el.t(weekly ? 'titleWeek' : 'title'));
   el._pieceEls = fillTrack(el, track, slots, layout, { weekly, day, carry, orient });
   $.trackwrap.replaceChildren(track);
-  $.spectrum.replaceChildren(...layout.pieces.map((p) => {
+  $.spectrum.replaceChildren(...layout.pieces.map((p, i, all) => {
     const seg = el._mk('span', 'spectrum-segment');
+    const color = slotColor(el, p.slot);
     seg.style.flex = `${p.dur} 1 0`;
-    seg.style.background = slotColor(el, p.slot);
+    seg.style.background = color;
+    seg.style.setProperty('--dr-slot-color', color);
+    seg.style.setProperty('--dr-next-color', slotColor(el, all[(i + 1) % all.length].slot));
     seg.dataset.piece = p.key;
+    seg.dataset.slotId = p.slot.id;
+    if ((el.modelOf(p.slot.model) || {}).off) seg.dataset.off = '';
     return seg;
   }));
   el._segEls = new Map([...$.spectrum.children].map((s) => [s.dataset.piece, s]));
@@ -289,6 +295,7 @@ export function updateNow(el, force) {
     if (on && card.dataset.piece && card.dataset.piece.startsWith('main:')) card.setAttribute('aria-current', 'true');
     else card.removeAttribute('aria-current');
   }
+  if (el._segEls) for (const seg of el._segEls.values()) setState(el, seg, 'spectrum-segment-active', seg.dataset.slotId === el._active, 'active');
   if ($.nowLine) { $.nowLine.remove(); $.nowLine = null; }
   if (!cfg.nowLine || !el._layout || el._frozen) return;
   let layout = el._layout, pieceEls = el._pieceEls;
@@ -303,7 +310,8 @@ export function updateNow(el, force) {
   const line = el._mk('div', 'now-line', { attrs: { role: 'img', 'aria-label': el.t('nowAria', { time: el.fmt(n.minutes) }) } });
   const pct = `${(at.frac * 100).toFixed(3)}%`;
   if (el._rows || el.resolvedOrientation === 'horizontal') line.style.left = pct; else line.style.top = pct;
-  line.append(el._mk('span', 'now-badge', { text: el.t('nowLabel') }));
+  if (at.frac > 0.5) line.dataset.flip = '';
+  line.append(el._mk('span', 'now-dot'), el._mk('span', 'now-badge', { text: el.t('nowLabel') }));
   card.append(line);
   $.nowLine = line;
 }

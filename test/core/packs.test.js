@@ -77,3 +77,54 @@ test('mergeConfig: deep for objects, arrays replace, undefined skipped', () => {
   assert.deepEqual(m.models, [{ id: 'a' }]);
   assert.notEqual(m.presets, packs.thermostat.presets, 'copied, not shared');
 });
+
+test('withLineIcons: every model of every pack gets a safe inline SVG line icon', async () => {
+  const { withLineIcons } = await import('../../packs/index.js');
+  const { icons } = await import('../../icons/index.js');
+  for (const [name, svg] of Object.entries(icons)) {
+    assert.ok(svg.startsWith('<svg'), name);
+    assert.ok(!/<script|\son[a-z]+=|href=|url\(/i.test(svg), `${name} has no script/handler/ref`);
+    assert.ok(svg.length < 1000, `${name} is compact`);
+  }
+  for (const id of EXPECTED) {
+    const copy = withLineIcons(packs[id]);
+    assert.deepEqual(JSON.parse(JSON.stringify(copy)), copy);
+    for (const m of copy.models) assert.ok(m.icon.startsWith('<svg'), `${id}/${m.id}`);
+    assert.ok(!packs[id].models.some((m) => m.icon.startsWith('<svg')), 'original untouched');
+  }
+});
+
+test('icon catalog: every entry has a safe icon, unique names, aliases resolve, categories known', async () => {
+  const { icons } = await import('../../icons/index.js');
+  const cat = JSON.parse(readFileSync(new URL('../../icons/catalog.json', import.meta.url), 'utf8'));
+  const cats = new Set(['home', 'lighting', 'climate', 'energy', 'water', 'garden', 'weather', 'time-of-day', 'sleep', 'pets', 'health', 'kitchen', 'media', 'security', 'office', 'transport', 'power']);
+  const names = new Set();
+  assert.ok(cat.length >= 300);
+  for (const e of cat) {
+    assert.match(e.name, /^[a-z0-9-]+$/);
+    assert.ok(!names.has(e.name), `${e.name} unique`);
+    names.add(e.name);
+    assert.ok(cats.has(e.category), `${e.name}: category`);
+    assert.ok(e.keywords.length && e.it.length >= 3, `${e.name}: keywords`);
+    assert.ok(icons[e.name]?.startsWith('<svg'), `${e.name}: icon`);
+    assert.ok(!/<script|\son[a-z]+=|href=|url\(|<style|foreignObject/i.test(icons[e.name]), `${e.name}: safe`);
+    for (const a of e.aliases || []) assert.equal(icons[a], icons[e.name], `alias ${a}`);
+  }
+  for (const n of Object.keys(icons)) assert.ok(names.has(n) || cat.some((e) => e.aliases?.includes(n)), `${n} in catalog`);
+});
+
+test('every pack model maps to a registered icon', async () => {
+  const { withLineIcons } = await import('../../packs/index.js');
+  for (const id of EXPECTED) for (const m of withLineIcons(packs[id]).models) assert.ok(m.icon.startsWith('<svg'), `${id}/${m.id}`);
+});
+
+test('namedIcon: registered names and the lucide: prefix resolve; markup, emoji and unknown names do not', async () => {
+  const { icons, namedIcon } = await import('../../src/ui/icons.js');
+  icons.register({ 'moon-star': '<svg/>', bad: 5 });
+  assert.equal(namedIcon('moon-star'), '<svg/>');
+  assert.equal(namedIcon('lucide:moon-star'), '<svg/>');
+  assert.equal(namedIcon('bad'), null);
+  assert.equal(namedIcon('register'), null);
+  assert.equal(namedIcon('<svg/>'), null);
+  assert.equal(namedIcon('🌙'), null);
+});

@@ -234,7 +234,7 @@ Types in `config` and as attributes (where it makes sense). **Toggle convention*
 | `snap` | minutes | `5` | Drag/keyboard granularity. Must divide 60. |
 | `min-slots` | int | `1` daily, `0` weekly (per day) | Remove disabled at the bound. |
 | `max-slots` | int \| `null` | `null` (**unlimited**) | Optional cap (per day in weekly). The track grows (min card size) instead of clipping when many slots exist. |
-| `layout` | `strip` \| `dial` | `strip` | `dial` draws the day as a 24 h ring: arcs are slots, knobs on the ring move slot starts (pointer and keyboard, same rules as the strip), the centre shows the time, the active slot and the time left. Weekly: the selected day. Parts: `dial`, `dial-arc`, `dial-arc-active`, `dial-handle`, `dial-now`, `dial-center`. |
+| `layout` | `strip` \| `dial` | `strip` | `dial` draws the day as a 24 h ring: arcs are slots, knobs on the ring move slot starts (pointer and keyboard, same rules as the strip), the centre shows the time, the active slot and the time left. Weekly: the selected day. Parts: `dial`, `dial-arc`, `dial-arc-active`, `dial-handle`, `dial-ticks`, `dial-tick`, `dial-tick-label`, `dial-now`/`dial-hand`, `dial-hub`, `dial-center`, `dial-center-time`, `dial-center-label`, `dial-center-summary`, `dial-center-remaining`. |
 | `origin` | `first` \| `midnight` | `first` (daily); forced `midnight` in weekly | See 4.3. |
 | `seam-drag` | toggle | on | The seam edge is draggable (4.3). |
 | `touch-hold` | int (ms) | 300 | Touch, vertical track: the page scrolls on the same axis, so an edge touched off its grip moves only after being held still this long (a swipe there scrolls the page); the grip moves at once. Horizontal tracks drag at once (a vertical swipe scrolls the page). `0`: every edge moves at once. |
@@ -498,7 +498,7 @@ Weekly, week `mon: [07:00 a, 20:00 b]`, `tue: []`, `wed: [08:00 c]`, others empt
 interface Model {
   id: string;                                   // required, unique, stable (goes on the wire)
   label?: string;                               // default: messages['model.<id>'] else id
-  icon?: string | { src: string };              // text/glyph, or an image URL. Never HTML.
+  icon?: string | { src: string };              // text/glyph, an image URL ({src}), or inline SVG markup (string starting with "<svg", sanitised). Never other HTML.
   preview?: string;                             // CSS <background>, {key} interpolation of values   (JSON form)
   previewScale?: { field: string; min: number; max: number; from: string; to: string };
   off?: boolean;                                // striped "nothing happens" rendering; excluded from randomize
@@ -670,18 +670,31 @@ Stateful parts carry an extra part token (`::part(slot-active)`), because `::par
 | `week-bar`, `week-prev`, `week-next`, `week-copy` | week bar and its buttons |
 | `week-tab` (`week-tab-selected`, `week-tab-today`, `week-tab-linked`, `week-tab-empty`), `week-tab-preview` | day tabs (`role="tab"`) |
 | `presets`, `presets-group`, `presets-label`, `preset` (`preset-busy`), `preset-delete`, `preset-save` | presets/days area |
-| `spectrum`, `spectrum-segment` | preview strip |
+| `spectrum`, `spectrum-segment` (`spectrum-segment-active`) | preview strip; segments carry `data-slot-id`, `data-active` on the current one |
 | `track` (`track-horizontal`/`track-vertical`) | card container |
 | `slot` (`slot-active`, `slot-selected`, `slot-invalid`, `slot-locked`, `slot-tail`, `slot-carry`) | a card |
 | `slot-tint`, `slot-content`, `slot-time`, `slot-label`, `slot-icon`, `slot-model`, `slot-summary` | card internals |
 | `handle` (`handle-seam`), `handle-grip`, `handle-time` | edge between cards |
-| `now-line`, `now-badge` | red line and its label |
+| `now-line`, `now-badge`, `now-dot` | red line, its label, and a dot at the line's top end (`now-dot` is `display:none` by default; a skin shows and places it) |
 | `add` | add-slot button |
 | `dialog`, `dialog-header`, `dialog-title`, `dialog-body`, `dialog-actions` | dialogs (editor, picker, save, copy-to) |
 | `field`, `field-label`, `field-value`, `field-input` | field editor |
 | `model-grid`, `model-option` (`model-option-selected`), `model-icon`, `model-label` | picker |
 | `input`, `button`, `button-primary`, `button-danger` | generic controls |
 | `credits`, `credits-link`, `credits-donate` | footer |
+
+#### Skin hooks for rich themes
+
+- **Specificity**: the built-in base rules are nested under `.dr-root:not([data-theme=none])` and are adopted after a theme's `<style>`, so a skin rule that only equals them in specificity loses (`".dr-slot"` -> `.dr-root[data-theme] .dr-slot` ties with the base `.dr-slot` and the base wins for `background`, `border`...). Make skin selectors one class more specific, e.g. `".dr-track .dr-slot"`.
+- **Root selectors**: a skin key `""` styles the root panel itself; a key starting with `&` is attached to the root, e.g. `"&:has(.dr-dial)"` styles the root only when the layout is the dial.
+- **Per-slot colour**: `--dr-slot-color` is set inline on every `slot` card, `spectrum-segment` and dial `dial-arc` (the model's resolved preview colour, as used for the tint; `off` models get their muted colour on segments/arcs). Segments also get `--dr-next-color` (the next piece's colour, wrapping) for blended gradients. Skin example (inside a theme's `skin`):
+  `".dr-track .dr-slot": "background:color-mix(in srgb,var(--dr-slot-color) 22%,transparent);border:1px solid var(--dr-slot-color);box-shadow:inset 0 0 18px color-mix(in srgb,var(--dr-slot-color) 30%,transparent)"`,
+  `".dr-spectrum-segment": "background:linear-gradient(90deg,var(--dr-slot-color) 55%,var(--dr-next-color))"`,
+  `".dr-spectrum-segment[data-active]": "filter:drop-shadow(0 0 8px var(--dr-slot-color))"`,
+  `".dr-now-dot": "display:block"`.
+- **Icons by name**: a model `icon` such as `"sunrise"` or `"lucide:moon-star"` (lowercase letters, digits, hyphens) is looked up in `DayRhythm.icons` (`icons.register({ name: '<svg…>' })`; `dayrhythm/icons` provides ~480 Lucide icons, see `icons/catalog.json`). An unregistered name is shown as text and warned once.
+- **Inline SVG icons**: a model `icon` starting with `<svg` is parsed (DOMParser, never innerHTML) and inlined in `slot-icon` / `model-icon`, so `stroke="currentColor"` follows CSS `color`. `<script>`, `<style>`, `<foreignObject>`, `<set>`/`<animate*>`, `on*` attributes, `href`/`xlink:href` other than `#id`, and `url(...)` references other than `#id` are removed. Invalid markup falls back to text.
+- **Dial**: `dial-ticks` (group of the 24 `dial-tick` lines and the four `dial-tick-label`s, visible by default), `dial-hand` (same element as `dial-now`: the line from the centre to the now position), `dial-hub` (circle at the centre, hidden by default; `display:block` in a skin shows it, it follows the hand's visibility), centre texts `dial-center-time`, `dial-center-label`, `dial-center-summary`, `dial-center-remaining` (size them with `font-size`/`fill`). `dial-arc` carries `--dr-slot-color`; the active one also has the `dial-arc-active` part. Each arc also gets `--dr-arc-gradient: url(#id)`, a radial gradient of its colour (a touch darker at the inner edge, lighter at the outer edge; one `<defs>` entry per distinct colour, ids unique per element); the default fill stays flat, a skin opts in with `".dr-dial-arc": "fill:var(--dr-arc-gradient,var(--dr-arc-fill))"`. Arcs of `off` models can keep a flat `fill:var(--dr-arc-fill)`.
 
 ### 10.3 Built-in themes
 

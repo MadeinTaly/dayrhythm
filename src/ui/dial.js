@@ -10,8 +10,9 @@ import { arcPath, pointAt, minutesAt } from './dial-geometry.js';
 import { slotColor } from './render/weekbar.js';
 import { nameOf } from './render/track.js';
 
-const RI = 62, RO = 88, RK = 75;
+let RI = 62, RO = 88, RK = 75; // ring radii; a skin may set --dr-dial-inner / --dr-dial-outer (viewBox units, read at render)
 const NS = 'http://www.w3.org/2000/svg';
+let uid = 0; // gradient ids must be unique per element instance (same document id space in light DOM)
 
 function svg(tag, part, attrs = {}) {
   const n = document.createElementNS(NS, tag);
@@ -29,6 +30,14 @@ function rangesOf(el, slots, weekly) {
   return ranges;
 }
 
+function ringRadii(box) {
+  const cs = getComputedStyle(box);
+  const num = (n, d) => { const v = parseFloat(cs.getPropertyValue(n)); return Number.isFinite(v) ? v : d; };
+  RI = num('--dr-dial-inner', 62); RO = num('--dr-dial-outer', 88);
+  if (RI < 10 || RO > 96 || RI > RO - 4) { RI = 62; RO = 88; }
+  RK = (RI + RO) / 2;
+}
+
 export function renderDial(el) {
   const $ = el._$;
   const weekly = el.weekMode;
@@ -36,30 +45,41 @@ export function renderDial(el) {
   const ranges = rangesOf(el, slots, weekly);
   $.spectrum.hidden = true;
   const box = el._mk('div', 'dial');
+  $.trackwrap.replaceChildren(box);
+  ringRadii(box);
   const root = svg('svg', 'dial-svg', { viewBox: '0 0 200 200', role: 'group', 'aria-label': el.t(weekly ? 'titleWeek' : 'title') });
   root.append(svg('circle', 'dial-ring', { cx: 100, cy: 100, r: (RI + RO) / 2, fill: 'none', 'stroke-width': RO - RI }));
-  const arcs = svg('g'), knobs = svg('g');
+  const defs = svg('defs'), arcs = svg('g'), knobs = svg('g');
+  el._dialUid = el._dialUid || ++uid;
+  root.append(defs);
+  const ticks = svg('g', 'dial-ticks');
   for (let h = 0; h < 24; h++) {
+    for (const q of [1, 2, 3]) {
+      const m = pointAt(h * 60 + q * 15, RO + 3), n = pointAt(h * 60 + q * 15, RO + 4.2);
+      ticks.append(svg('line', 'dial-tick-minor', { x1: m.x, y1: m.y, x2: n.x, y2: n.y }));
+    }
     const a = pointAt(h * 60, RO + 3), b = pointAt(h * 60, RO + (h % 6 ? 5 : 8));
-    root.append(svg('line', 'dial-tick', { x1: a.x, y1: a.y, x2: b.x, y2: b.y }));
+    ticks.append(svg('line', 'dial-tick', { x1: a.x, y1: a.y, x2: b.x, y2: b.y }));
     if (h % 6 === 0) {
       const p = pointAt(h * 60, RO + 14);
       const t = svg('text', 'dial-tick-label', { x: p.x, y: p.y, 'aria-hidden': 'true' });
       t.textContent = el.fmt(h * 60);
-      root.append(t);
+      ticks.append(t);
     }
   }
-  const now = svg('line', 'dial-now', { x1: 100, y1: 100, x2: 100, y2: 100 });
+  root.append(ticks);
+  const now = svg('line', 'dial-now dial-hand', { x1: 100, y1: 100, x2: 100, y2: 100 });
+  const guide = svg('circle', 'dial-guide', { cx: 100, cy: 100, r: (RI + RO) / 2, fill: 'none' });
+  const hub = svg('circle', 'dial-hub', { cx: 100, cy: 100, r: 2.5 });
   const center = svg('g', 'dial-center');
   const lines = ['dial-center-time', 'dial-center-label', 'dial-center-summary', 'dial-center-remaining'].map((p, i) => {
     const t = svg('text', p, { x: 100, y: [94, 106, 114, 121][i] });
     center.append(t);
     return t;
   });
-  root.append(arcs, now, knobs, center);
+  root.append(arcs, guide, now, hub, knobs, center);
   box.append(root);
-  $.trackwrap.replaceChildren(box);
-  $.dial = { root, arcs, knobs, now, lines, ranges };
+  $.dial = { root, defs, arcs, knobs, now, hub, lines, ranges };
   el._dial = $.dial;
   drawArcs(el, ranges);
   if (!el.cfg.readonly && !el._badWeek) {
@@ -86,13 +106,34 @@ export function renderDial(el) {
 function drawArcs(el, ranges) {
   const d = el._dial;
   d.arcs.replaceChildren();
+  d.defs.replaceChildren();
+  const grads = new Map(); // one radial gradient per distinct slot colour: inner a little darker, outer lighter (skins opt in with fill:var(--dr-arc-gradient))
   for (const r of ranges) {
     const active = el._active === r.slot.id;
     const p = svg('path', active ? 'dial-arc dial-arc-active' : 'dial-arc', {
       d: arcPath(r.start, r.end, RI, active ? RO + 4 : RO), 'data-slot-id': r.slot.id, 'data-open': r.carry ? null : r.slot.id,
     });
-    p.style.fill = slotColor(el, r.slot);
-    if (!p.style.fill) p.style.fill = 'color-mix(in srgb, currentColor 30%, transparent)'; // gradients are not valid fills
+    const c = slotColor(el, r.slot);
+    p.style.fill = c;
+    const ok = p.style.fill; // gradients are not valid fills
+    p.style.fill = '';
+    p.style.setProperty('--dr-slot-color', c);
+    p.style.setProperty('--dr-arc-fill', ok ? c : 'color-mix(in srgb, currentColor 30%, transparent)');
+    if (ok) {
+      if (!grads.has(c)) {
+        const id = `dr-ag-${el._dialUid}-${grads.size}`, g = svg('radialGradient', null, { id, cx: 100, cy: 100, r: RO + 4, gradientUnits: 'userSpaceOnUse' });
+        [[(RI - 2) / (RO + 4), 'black 18%'], [1, 'white 28%']].forEach(([o, mix]) => {
+          const st = svg('stop', null, { offset: o });
+          st.style.stopColor = `color-mix(in srgb, ${c}, ${mix})`;
+          g.append(st);
+        });
+        d.defs.append(g);
+        grads.set(c, id);
+      }
+      p.style.setProperty('--dr-arc-gradient', `url(#${grads.get(c)})`);
+    }
+    const m = el.modelOf(r.slot.model);
+    if (m && m.off) p.dataset.off = '';
     d.arcs.append(p);
   }
 }
@@ -106,7 +147,7 @@ export function updateDial(el, n, info) {
   const tip = pointAt(n.minutes, RO + 2);
   d.now.setAttribute('x2', showNow ? tip.x : 100);
   d.now.setAttribute('y2', showNow ? tip.y : 100);
-  d.now.style.display = showNow ? '' : 'none';
+  d.now.style.display = d.hub.style.display = showNow ? '' : 'none';
   if (el._drag) return;
   const [time, label, summary, left] = d.lines;
   time.textContent = el.fmt(n.minutes);

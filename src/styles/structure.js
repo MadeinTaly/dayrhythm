@@ -39,7 +39,8 @@ display:flex;flex-direction:column;gap:calc(var(--x-gap)*2.5);position:relative;
 .dr-slot-model::after{content:'';position:absolute;inset:0}
 .dr-track[data-orient=horizontal] .dr-slot-model{flex-direction:column;max-width:100%}
 .dr-slot-icon{display:inline-flex;align-items:center;justify-content:center;min-width:var(--x-icon);font-size:var(--x-icon);line-height:1}
-.dr-slot-icon img{width:var(--x-icon);height:var(--x-icon);object-fit:contain}
+.dr-slot-icon img,.dr-slot-icon svg{width:var(--x-icon);height:var(--x-icon);object-fit:contain}
+.dr-now-dot{display:none;position:absolute;top:0;left:50%;width:.55rem;height:.55rem;border-radius:50%;background:inherit;transform:translate(-50%,-50%)}
 .dr-slot-label,.dr-slot-model-name,.dr-slot-summary{min-width:0;overflow-wrap:anywhere}
 .dr-handle{position:relative;flex:0 0 var(--x-handle);z-index:3;touch-action:none;display:flex;align-items:center;justify-content:center;outline-offset:-2px}
 .dr-handle::before{content:'';position:absolute}
@@ -60,9 +61,12 @@ display:flex;flex-direction:column;gap:calc(var(--x-gap)*2.5);position:relative;
 .dr-now-line{position:absolute;pointer-events:none;z-index:2;background:var(--x-now)}
 .dr-track[data-orient=horizontal] .dr-now-line{top:0;bottom:0;width:var(--x-now-w);margin-left:calc(var(--x-now-w)/-2)}
 .dr-track[data-orient=vertical] .dr-now-line{left:0;right:0;height:var(--x-now-w);margin-top:calc(var(--x-now-w)/-2)}
-.dr-now-badge{position:absolute;white-space:nowrap;font-size:.7em;padding:.05rem .4rem;background:var(--x-now);color:#fff;border-radius:99px;transform:translate(-50%,0)}
-.dr-track[data-orient=horizontal] .dr-now-badge{top:.15rem;left:50%}
-.dr-track[data-orient=vertical] .dr-now-badge{left:auto;right:.3rem;top:0;transform:translate(0,-50%)}
+.dr-now-badge{position:absolute;white-space:nowrap;font-size:.7em;padding:.05rem .4rem;background:var(--x-now);color:#fff;border-radius:99px}
+/* the badge stays inside its card: it opens away from the nearer end (data-flip = line past the middle) */
+.dr-track[data-orient=horizontal] .dr-now-badge{top:.15rem;left:.3rem}
+.dr-track[data-orient=horizontal] .dr-now-line[data-flip] .dr-now-badge{left:auto;right:.3rem}
+.dr-track[data-orient=vertical] .dr-now-badge{left:auto;right:.3rem;top:.2rem}
+.dr-track[data-orient=vertical] .dr-now-line[data-flip] .dr-now-badge{top:auto;bottom:.2rem}
 .dr-track-wrap[data-rows]{overflow:visible!important}
 .dr-week-rows{display:grid;gap:var(--dr-row-gap,.4rem);padding-top:1.4rem}
 .dr-week-row,.dr-week-axis{display:grid;grid-template-columns:var(--dr-row-label,2.8rem) minmax(0,1fr);align-items:center;gap:.4rem}

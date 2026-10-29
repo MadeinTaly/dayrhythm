@@ -27,7 +27,7 @@ export type Field =
 export interface Model {
   id: string;
   label?: string;
-  icon?: string | { src: string };
+  icon?: string | { src: string }; // icon name ("sunrise", "lucide:moon-star"; see dayrhythm/icons), glyph, image {src}, or inline "<svg ..." markup (sanitised)
   /** CSS <background> with {key} interpolation, or a function (JS only). */
   preview?: string | ((values: any, model: Model, slot: Slot) => string);
   previewScale?: { field: string; min: number; max: number; from: string; to: string };
@@ -211,6 +211,8 @@ export const locales: {
   get(code: string): Record<string, string> | undefined;
   [code: string]: any;
 };
+/** Registry of named SVG icons: `icons.register(libraryIcons)` (from `dayrhythm/icons`) lets a model say `"icon": "sunrise"`. */
+export const icons: { register(map: Record<string, string>): typeof icons; [name: string]: any };
 export const packs: { register(pack: Config & { id: string }): Config; [id: string]: any };
 export { localStorageAdapter, httpStorageAdapter } from './storage.js';
 export const version: string;

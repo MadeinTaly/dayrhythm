@@ -1,4 +1,4 @@
-/*! dayrhythm v0.7.3 | MIT | https://github.com/MadeinTaly/dayrhythm */
+/*! dayrhythm v0.8.0 | MIT | https://github.com/MadeinTaly/dayrhythm */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -6,7 +6,7 @@ var __export = (target, all) => {
 };
 
 // src/version.js
-var VERSION = "0.7.3";
+var VERSION = "0.8.0";
 
 // src/core/time.js
 var WEEKDAYS = Object.freeze(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
@@ -943,6 +943,28 @@ function offsetFor(deviceTime, cfg) {
 }
 var msToNextMinute = () => 6e4 - Date.now() % 6e4 + 40;
 
+// src/ui/icons.js
+var icons = {
+  register(map) {
+    if (map && typeof map === "object") {
+      for (const [k, v] of Object.entries(map)) if (typeof v === "string") this[k] = v;
+    }
+    return this;
+  }
+};
+var NAME = /^[a-z0-9-]+(:[a-z0-9-]+)?$/;
+var warned = /* @__PURE__ */ new Set();
+function namedIcon(icon) {
+  if (typeof icon !== "string" || !NAME.test(icon)) return null;
+  const name = icon.replace(/^lucide:/, "");
+  const svg2 = Object.prototype.hasOwnProperty.call(icons, name) && typeof icons[name] === "string" ? icons[name] : null;
+  if (!svg2 && name.length > 2 && !warned.has(name)) {
+    warned.add(name);
+    console.warn(`[dayrhythm] unknown icon "${icon}" (load dayrhythm/icons?), shown as text`);
+  }
+  return svg2;
+}
+
 // src/ui/dom.js
 var camel = (s) => s.replace(/-(\w)/g, (_, c) => c.toUpperCase());
 function classList(v) {
@@ -957,6 +979,25 @@ function applyRendered(target, r) {
   else return false;
   return true;
 }
+var SVG_NS = "http://www.w3.org/2000/svg";
+var BAD_TAG = /^(script|foreignobject|style|set|animate\w*|iframe|object|embed)$/i;
+var EXT_URL = /url\(\s*['"]?\s*[^#\s'")]/i;
+function safeSvg(markup) {
+  const src = /<svg[^>]*\sxmlns\s*=/i.test(markup) ? markup : markup.replace(/<svg/i, `<svg xmlns="${SVG_NS}"`);
+  const root = new DOMParser().parseFromString(src, "image/svg+xml").documentElement;
+  if (!root || root.localName !== "svg" || root.getElementsByTagName("parsererror").length) return null;
+  for (const n of [root, ...root.querySelectorAll("*")]) {
+    if (n !== root && BAD_TAG.test(n.localName)) {
+      n.remove();
+      continue;
+    }
+    for (const a of [...n.attributes]) {
+      const ref = /^(xlink:)?href$/i.test(a.name);
+      if (/^on/i.test(a.name) || ref && !a.value.trim().startsWith("#") || EXT_URL.test(a.value) || /^\s*javascript:/i.test(a.value)) n.removeAttribute(a.name);
+    }
+  }
+  return document.importNode(root, true);
+}
 function fillIcon(target, icon) {
   target.setAttribute("aria-hidden", "true");
   if (icon && typeof icon === "object" && icon.src) {
@@ -965,7 +1006,12 @@ function fillIcon(target, icon) {
     i.src = icon.src;
     i.decoding = "async";
     target.replaceChildren(i);
-  } else target.textContent = icon ? String(icon) : "";
+    return;
+  }
+  const markup = namedIcon(icon) || icon;
+  const svg2 = typeof markup === "string" && /^\s*<svg[\s>]/i.test(markup) ? safeSvg(markup) : null;
+  if (svg2) target.replaceChildren(svg2);
+  else target.textContent = icon ? String(icon) : "";
 }
 function deepEqual(a, b) {
   if (a === b) return true;
@@ -1058,7 +1104,8 @@ display:flex;flex-direction:column;gap:calc(var(--x-gap)*2.5);position:relative;
 .dr-slot-model::after{content:'';position:absolute;inset:0}
 .dr-track[data-orient=horizontal] .dr-slot-model{flex-direction:column;max-width:100%}
 .dr-slot-icon{display:inline-flex;align-items:center;justify-content:center;min-width:var(--x-icon);font-size:var(--x-icon);line-height:1}
-.dr-slot-icon img{width:var(--x-icon);height:var(--x-icon);object-fit:contain}
+.dr-slot-icon img,.dr-slot-icon svg{width:var(--x-icon);height:var(--x-icon);object-fit:contain}
+.dr-now-dot{display:none;position:absolute;top:0;left:50%;width:.55rem;height:.55rem;border-radius:50%;background:inherit;transform:translate(-50%,-50%)}
 .dr-slot-label,.dr-slot-model-name,.dr-slot-summary{min-width:0;overflow-wrap:anywhere}
 .dr-handle{position:relative;flex:0 0 var(--x-handle);z-index:3;touch-action:none;display:flex;align-items:center;justify-content:center;outline-offset:-2px}
 .dr-handle::before{content:'';position:absolute}
@@ -1079,9 +1126,12 @@ display:flex;flex-direction:column;gap:calc(var(--x-gap)*2.5);position:relative;
 .dr-now-line{position:absolute;pointer-events:none;z-index:2;background:var(--x-now)}
 .dr-track[data-orient=horizontal] .dr-now-line{top:0;bottom:0;width:var(--x-now-w);margin-left:calc(var(--x-now-w)/-2)}
 .dr-track[data-orient=vertical] .dr-now-line{left:0;right:0;height:var(--x-now-w);margin-top:calc(var(--x-now-w)/-2)}
-.dr-now-badge{position:absolute;white-space:nowrap;font-size:.7em;padding:.05rem .4rem;background:var(--x-now);color:#fff;border-radius:99px;transform:translate(-50%,0)}
-.dr-track[data-orient=horizontal] .dr-now-badge{top:.15rem;left:50%}
-.dr-track[data-orient=vertical] .dr-now-badge{left:auto;right:.3rem;top:0;transform:translate(0,-50%)}
+.dr-now-badge{position:absolute;white-space:nowrap;font-size:.7em;padding:.05rem .4rem;background:var(--x-now);color:#fff;border-radius:99px}
+/* the badge stays inside its card: it opens away from the nearer end (data-flip = line past the middle) */
+.dr-track[data-orient=horizontal] .dr-now-badge{top:.15rem;left:.3rem}
+.dr-track[data-orient=horizontal] .dr-now-line[data-flip] .dr-now-badge{left:auto;right:.3rem}
+.dr-track[data-orient=vertical] .dr-now-badge{left:auto;right:.3rem;top:.2rem}
+.dr-track[data-orient=vertical] .dr-now-line[data-flip] .dr-now-badge{top:auto;bottom:.2rem}
 .dr-track-wrap[data-rows]{overflow:visible!important}
 .dr-week-rows{display:grid;gap:var(--dr-row-gap,.4rem);padding-top:1.4rem}
 .dr-week-row,.dr-week-axis{display:grid;grid-template-columns:var(--dr-row-label,2.8rem) minmax(0,1fr);align-items:center;gap:.4rem}
@@ -1173,6 +1223,7 @@ border:1px solid var(--x-border);border-radius:var(--x-radius-panel);padding:var
 .dr-slot-content{gap:.3rem;padding:.2rem}
 .dr-slot-time{font-variant-numeric:tabular-nums;font-size:.75em;font-weight:500;color:var(--x-muted);white-space:nowrap}
 .dr-slot-label{font-size:.85em;font-weight:600}
+.dr-track[data-orient=horizontal] :is(.dr-slot-label,.dr-slot-model-name){max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dr-track[data-orient=vertical] .dr-slot-time{min-width:3.6rem}
 .dr-track[data-orient=vertical]{container-type:inline-size}
 .dr-track[data-orient=vertical] .dr-slot-label{flex:1 1 auto;min-width:6ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1243,7 +1294,7 @@ function themeRules(id, t) {
   const r = `.dr-root[data-theme="${id}"]`;
   const dark = t.dark || t.light;
   const base = t.scheme === "dark" ? "dark" : "light";
-  const skin = Object.entries(t.skin || {}).map(([sel, decl]) => sel.split(",").map((x) => `${r} ${x.trim()}`).join(",") + `{${decl}}`).join("");
+  const skin = Object.entries(t.skin || {}).map(([sel, decl]) => sel.split(",").map((x) => (x = x.trim(), x[0] === "&" || !x ? `${r}.dr-root${x.slice(1)}` : `${r} ${x}`)).join(",") + `{${decl}}`).join("");
   return `${r}{${V({ ...t.light, ...t.shape })};color-scheme:${base}}` + (t.dark ? `${r}[data-scheme=dark]{${V(dark)};color-scheme:dark}@media (prefers-color-scheme:dark){${r}[data-scheme=auto]{${V(dark)};color-scheme:dark}}${r}[data-scheme=auto]{color-scheme:light dark}` : "") + skin;
 }
 var themes = {
@@ -1277,11 +1328,14 @@ var dialCSS = `
 .dr-dial{width:min(100%,360px);aspect-ratio:1;margin-inline:auto;position:relative;display:grid;place-items:center;border-radius:var(--dr-radius-panel,1.5rem);color:var(--x-ink,var(--dr-ink,currentColor));}
 .dr-dial-svg{display:block;width:100%;height:100%;overflow:visible;touch-action:none;}
 .dr-dial-ring{fill:var(--x-surface-soft,var(--dr-surface-soft,transparent));stroke:var(--x-border,var(--dr-border,currentColor));stroke-width:1;}
-.dr-dial-arc{fill-rule:evenodd;cursor:pointer;stroke:var(--x-surface,var(--dr-surface,transparent));stroke-width:1.5;vector-effect:non-scaling-stroke;opacity:.94;transition:opacity var(--x-dur,.12s),transform var(--x-dur,.12s);transform-origin:100px 100px;}
+.dr-dial-arc{fill:var(--dr-arc-fill);fill-rule:evenodd;cursor:pointer;stroke:var(--x-surface,var(--dr-surface,transparent));stroke-width:1.5;vector-effect:non-scaling-stroke;opacity:.94;transition:opacity var(--x-dur,.12s),transform var(--x-dur,.12s);transform-origin:100px 100px;}
 .dr-dial-arc-active{filter:drop-shadow(0 0 2px var(--x-accent,var(--dr-accent,currentColor)));opacity:1;}
 .dr-dial-tick{stroke:var(--x-muted,var(--dr-muted,currentColor));stroke-width:1;opacity:.65;vector-effect:non-scaling-stroke;}
+.dr-dial-tick-minor,.dr-dial-guide{display:none;}
+.dr-dial-guide{stroke:currentColor;stroke-width:1;opacity:.3;pointer-events:none;vector-effect:non-scaling-stroke;}
 .dr-dial-tick-label{fill:var(--x-muted,var(--dr-muted,currentColor));font:600 5px var(--x-font,system-ui,sans-serif);text-anchor:middle;dominant-baseline:middle;}
 .dr-dial-now{stroke:var(--x-now,var(--dr-now,#d97761));stroke-width:2;stroke-linecap:round;vector-effect:non-scaling-stroke;pointer-events:none;}
+.dr-dial-hub{display:none;fill:var(--x-surface,var(--dr-surface,transparent));stroke:var(--x-now,var(--dr-now,#d97761));stroke-width:2;vector-effect:non-scaling-stroke;pointer-events:none;}
 .dr-dial-handle{fill:var(--x-accent,var(--dr-accent,currentColor));stroke:var(--x-surface,var(--dr-surface,Canvas));stroke-width:2;vector-effect:non-scaling-stroke;cursor:grab;outline:none;transition:transform var(--x-dur,.12s),opacity var(--x-dur,.12s);}
 .dr-dial-handle:focus-visible{stroke:var(--x-focus,var(--dr-focus,currentColor));stroke-width:3;}
 .dr-dial-handle[data-dragging]{cursor:grabbing;}
@@ -1865,7 +1919,7 @@ function buildRoot(el) {
 // src/ui/fields.js
 function buildField(el, field, slotId, sess) {
   const wrap = el._mk("div", "field");
-  const uid = `${el._uid}-f-${field.key}`;
+  const uid2 = `${el._uid}-f-${field.key}`;
   const cur = () => {
     const l = el._locate(slotId);
     return l && l.slot.values || {};
@@ -1880,18 +1934,18 @@ function buildField(el, field, slotId, sess) {
   const custom = el._renderer("field", { field, value, slot: el.getSlot(slotId), set, t: el.t });
   if (applyRendered(wrap, custom)) return wrap;
   const label = fieldLabel(field, el.t);
-  const lab = el._mk("label", "field-label", { text: label, attrs: { for: uid } });
+  const lab = el._mk("label", "field-label", { text: label, attrs: { for: uid2 } });
   const t = field.type;
   if (t === "toggle") {
     const row = el._mk("div", "toggle-row");
-    const cb = el._mk("input", "field-input", { generic: ["input"], attrs: { type: "checkbox", id: uid } });
+    const cb = el._mk("input", "field-input", { generic: ["input"], attrs: { type: "checkbox", id: uid2 } });
     cb.checked = !!coerceField(field, value);
     cb.onchange = () => set(cb.checked, true);
     row.append(cb, lab);
     wrap.append(row);
     return wrap;
   }
-  const out = el._mk("output", "field-value", { attrs: { for: uid } });
+  const out = el._mk("output", "field-value", { attrs: { for: uid2 } });
   const show2 = (v) => {
     out.textContent = fmtField(field, v, el.t);
   };
@@ -1899,7 +1953,7 @@ function buildField(el, field, slotId, sess) {
   head.append(lab, out);
   let input;
   if (t === "select") {
-    input = el._mk("select", "field-input", { generic: ["input"], attrs: { id: uid } });
+    input = el._mk("select", "field-input", { generic: ["input"], attrs: { id: uid2 } });
     for (const o of field.options || []) {
       const op = document.createElement("option");
       op.value = String(o.value);
@@ -1914,7 +1968,7 @@ function buildField(el, field, slotId, sess) {
     wrap.append(lab, input);
     return wrap;
   }
-  input = el._mk("input", "field-input", { generic: ["input"], attrs: { id: uid } });
+  input = el._mk("input", "field-input", { generic: ["input"], attrs: { id: uid2 } });
   if (t === "text") {
     input.type = "text";
     input.maxLength = 80;
@@ -2538,6 +2592,7 @@ var RI = 62;
 var RO = 88;
 var RK = 75;
 var NS = "http://www.w3.org/2000/svg";
+var uid = 0;
 function svg(tag, part, attrs = {}) {
   const n = document.createElementNS(NS, tag);
   if (part) {
@@ -2554,6 +2609,20 @@ function rangesOf(el, slots, weekly) {
   if (c && first > 0) ranges.unshift({ slot: c.slot, start: 0, end: first, carry: true });
   return ranges;
 }
+function ringRadii(box) {
+  const cs = getComputedStyle(box);
+  const num = (n, d) => {
+    const v = parseFloat(cs.getPropertyValue(n));
+    return Number.isFinite(v) ? v : d;
+  };
+  RI = num("--dr-dial-inner", 62);
+  RO = num("--dr-dial-outer", 88);
+  if (RI < 10 || RO > 96 || RI > RO - 4) {
+    RI = 62;
+    RO = 88;
+  }
+  RK = (RI + RO) / 2;
+}
 function renderDial(el) {
   const $ = el._$;
   const weekly = el.weekMode;
@@ -2561,30 +2630,41 @@ function renderDial(el) {
   const ranges = rangesOf(el, slots, weekly);
   $.spectrum.hidden = true;
   const box = el._mk("div", "dial");
+  $.trackwrap.replaceChildren(box);
+  ringRadii(box);
   const root = svg("svg", "dial-svg", { viewBox: "0 0 200 200", role: "group", "aria-label": el.t(weekly ? "titleWeek" : "title") });
   root.append(svg("circle", "dial-ring", { cx: 100, cy: 100, r: (RI + RO) / 2, fill: "none", "stroke-width": RO - RI }));
-  const arcs = svg("g"), knobs = svg("g");
+  const defs = svg("defs"), arcs = svg("g"), knobs = svg("g");
+  el._dialUid = el._dialUid || ++uid;
+  root.append(defs);
+  const ticks = svg("g", "dial-ticks");
   for (let h = 0; h < 24; h++) {
+    for (const q of [1, 2, 3]) {
+      const m = pointAt(h * 60 + q * 15, RO + 3), n = pointAt(h * 60 + q * 15, RO + 4.2);
+      ticks.append(svg("line", "dial-tick-minor", { x1: m.x, y1: m.y, x2: n.x, y2: n.y }));
+    }
     const a = pointAt(h * 60, RO + 3), b = pointAt(h * 60, RO + (h % 6 ? 5 : 8));
-    root.append(svg("line", "dial-tick", { x1: a.x, y1: a.y, x2: b.x, y2: b.y }));
+    ticks.append(svg("line", "dial-tick", { x1: a.x, y1: a.y, x2: b.x, y2: b.y }));
     if (h % 6 === 0) {
       const p = pointAt(h * 60, RO + 14);
       const t = svg("text", "dial-tick-label", { x: p.x, y: p.y, "aria-hidden": "true" });
       t.textContent = el.fmt(h * 60);
-      root.append(t);
+      ticks.append(t);
     }
   }
-  const now = svg("line", "dial-now", { x1: 100, y1: 100, x2: 100, y2: 100 });
+  root.append(ticks);
+  const now = svg("line", "dial-now dial-hand", { x1: 100, y1: 100, x2: 100, y2: 100 });
+  const guide = svg("circle", "dial-guide", { cx: 100, cy: 100, r: (RI + RO) / 2, fill: "none" });
+  const hub = svg("circle", "dial-hub", { cx: 100, cy: 100, r: 2.5 });
   const center = svg("g", "dial-center");
   const lines = ["dial-center-time", "dial-center-label", "dial-center-summary", "dial-center-remaining"].map((p, i) => {
     const t = svg("text", p, { x: 100, y: [94, 106, 114, 121][i] });
     center.append(t);
     return t;
   });
-  root.append(arcs, now, knobs, center);
+  root.append(arcs, guide, now, hub, knobs, center);
   box.append(root);
-  $.trackwrap.replaceChildren(box);
-  $.dial = { root, arcs, knobs, now, lines, ranges };
+  $.dial = { root, defs, arcs, knobs, now, hub, lines, ranges };
   el._dial = $.dial;
   drawArcs(el, ranges);
   if (!el.cfg.readonly && !el._badWeek) {
@@ -2621,6 +2701,8 @@ function renderDial(el) {
 function drawArcs(el, ranges) {
   const d = el._dial;
   d.arcs.replaceChildren();
+  d.defs.replaceChildren();
+  const grads = /* @__PURE__ */ new Map();
   for (const r of ranges) {
     const active = el._active === r.slot.id;
     const p = svg("path", active ? "dial-arc dial-arc-active" : "dial-arc", {
@@ -2628,8 +2710,27 @@ function drawArcs(el, ranges) {
       "data-slot-id": r.slot.id,
       "data-open": r.carry ? null : r.slot.id
     });
-    p.style.fill = slotColor(el, r.slot);
-    if (!p.style.fill) p.style.fill = "color-mix(in srgb, currentColor 30%, transparent)";
+    const c = slotColor(el, r.slot);
+    p.style.fill = c;
+    const ok = p.style.fill;
+    p.style.fill = "";
+    p.style.setProperty("--dr-slot-color", c);
+    p.style.setProperty("--dr-arc-fill", ok ? c : "color-mix(in srgb, currentColor 30%, transparent)");
+    if (ok) {
+      if (!grads.has(c)) {
+        const id = `dr-ag-${el._dialUid}-${grads.size}`, g = svg("radialGradient", null, { id, cx: 100, cy: 100, r: RO + 4, gradientUnits: "userSpaceOnUse" });
+        [[(RI - 2) / (RO + 4), "black 18%"], [1, "white 28%"]].forEach(([o, mix]) => {
+          const st = svg("stop", null, { offset: o });
+          st.style.stopColor = `color-mix(in srgb, ${c}, ${mix})`;
+          g.append(st);
+        });
+        d.defs.append(g);
+        grads.set(c, id);
+      }
+      p.style.setProperty("--dr-arc-gradient", `url(#${grads.get(c)})`);
+    }
+    const m = el.modelOf(r.slot.model);
+    if (m && m.off) p.dataset.off = "";
     d.arcs.append(p);
   }
 }
@@ -2642,7 +2743,7 @@ function updateDial(el, n, info) {
   const tip = pointAt(n.minutes, RO + 2);
   d.now.setAttribute("x2", showNow ? tip.x : 100);
   d.now.setAttribute("y2", showNow ? tip.y : 100);
-  d.now.style.display = showNow ? "" : "none";
+  d.now.style.display = d.hub.style.display = showNow ? "" : "none";
   if (el._drag) return;
   const [time, label, summary, left] = d.lines;
   time.textContent = el.fmt(n.minutes);
@@ -2783,6 +2884,7 @@ function cardFor(el, p, info) {
   if (invalid || !model) card.dataset.invalid = "";
   if (model && model.off) card.dataset.off = "";
   card.style.flex = `${p.dur} 1 0`;
+  card.style.setProperty("--dr-slot-color", preview);
   if (p.dur <= 0) card.dataset.zero = "";
   const tint = el._mk("span", "slot-tint");
   tint.style.background = preview;
@@ -2923,11 +3025,16 @@ function renderTrack(el, o = {}) {
   track.setAttribute("aria-label", el.t(weekly ? "titleWeek" : "title"));
   el._pieceEls = fillTrack(el, track, slots, layout, { weekly, day, carry, orient });
   $.trackwrap.replaceChildren(track);
-  $.spectrum.replaceChildren(...layout.pieces.map((p) => {
+  $.spectrum.replaceChildren(...layout.pieces.map((p, i, all) => {
     const seg = el._mk("span", "spectrum-segment");
+    const color = slotColor(el, p.slot);
     seg.style.flex = `${p.dur} 1 0`;
-    seg.style.background = slotColor(el, p.slot);
+    seg.style.background = color;
+    seg.style.setProperty("--dr-slot-color", color);
+    seg.style.setProperty("--dr-next-color", slotColor(el, all[(i + 1) % all.length].slot));
     seg.dataset.piece = p.key;
+    seg.dataset.slotId = p.slot.id;
+    if ((el.modelOf(p.slot.model) || {}).off) seg.dataset.off = "";
     return seg;
   }));
   el._segEls = new Map([...$.spectrum.children].map((s) => [s.dataset.piece, s]));
@@ -3012,6 +3119,7 @@ function updateNow(el, force) {
     if (on && card2.dataset.piece && card2.dataset.piece.startsWith("main:")) card2.setAttribute("aria-current", "true");
     else card2.removeAttribute("aria-current");
   }
+  if (el._segEls) for (const seg of el._segEls.values()) setState(el, seg, "spectrum-segment-active", seg.dataset.slotId === el._active, "active");
   if ($.nowLine) {
     $.nowLine.remove();
     $.nowLine = null;
@@ -3030,7 +3138,8 @@ function updateNow(el, force) {
   const pct = `${(at.frac * 100).toFixed(3)}%`;
   if (el._rows || el.resolvedOrientation === "horizontal") line.style.left = pct;
   else line.style.top = pct;
-  line.append(el._mk("span", "now-badge", { text: el.t("nowLabel") }));
+  if (at.frac > 0.5) line.dataset.flip = "";
+  line.append(el._mk("span", "now-dot"), el._mk("span", "now-badge", { text: el.t("nowLabel") }));
   card.append(line);
   $.nowLine = line;
 }
@@ -4092,6 +4201,7 @@ export {
   index_default as default,
   defaults,
   httpStorageAdapter,
+  icons,
   localStorageAdapter,
   locales,
   mergeConfig,

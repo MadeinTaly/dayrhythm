@@ -1,0 +1,45 @@
+{
+  "$schema": "https://unpkg.com/dayrhythm/schema/config.schema.json",
+  "week": "top",
+  "locale": "it",
+  "theme": "garden",
+  "minGap": 15,
+  "snap": 5,
+  "value": {
+    "week": {
+      "mon": [{ "time": "05:30", "model": "water", "values": { "zone": "all", "flow": 100 } }, { "time": "06:30", "model": "off" }],
+      "tue": [],
+      "wed": [{ "time": "05:30", "model": "water", "values": { "zone": "all", "flow": 100 } }, { "time": "06:30", "model": "off" }],
+      "thu": [],
+      "fri": [{ "time": "05:30", "model": "water", "values": { "zone": "all", "flow": 100 } }, { "time": "06:30", "model": "off" }],
+      "sat": [{ "time": "06:00", "model": "drip", "values": { "zone": "z2", "flow": 40 } }, { "time": "07:00", "model": "off" }],
+      "sun": []
+    }
+  },
+  "models": [
+    { "id": "off", "label": "Spento", "icon": "power", "off": true },
+    {
+      "id": "water", "label": "Irrigazione", "icon": "droplets", "preview": "#3aa6d8",
+      "defaults": { "zone": "all", "flow": 100 }, "summary": "{zone} · {flow}",
+      "fields": [
+        { "key": "zone", "type": "select", "label": "Zona", "default": "all",
+          "options": [{ "value": "all", "label": "Tutte" }, { "value": "z1", "label": "Zona 1 · aiuole" }, { "value": "z2", "label": "Zona 2 · pomodori" }, { "value": "z3", "label": "Zona 3 · insalate" }] },
+        { "key": "flow", "type": "range", "label": "Portata", "min": 10, "max": 100, "step": 10, "unit": "%", "default": 100 }
+      ]
+    },
+    {
+      "id": "drip", "label": "Goccia a goccia", "icon": "sprout", "preview": "#6aa84f",
+      "defaults": { "zone": "z2", "flow": 40 }, "summary": "{zone} · {flow}",
+      "fields": [
+        { "key": "zone", "type": "select", "label": "Zona", "default": "z2",
+          "options": [{ "value": "z1", "label": "Zona 1 · aiuole" }, { "value": "z2", "label": "Zona 2 · pomodori" }, { "value": "z3", "label": "Zona 3 · insalate" }] },
+        { "key": "flow", "type": "range", "label": "Portata", "min": 10, "max": 60, "step": 10, "unit": "%", "default": 40 }
+      ]
+    }
+  ],
+  "presets": [
+    { "id": "estate", "label": "Estate", "slots": [{ "time": "05:30", "model": "water" }, { "time": "06:30", "model": "off" }, { "time": "21:00", "model": "water" }, { "time": "21:45", "model": "off" }] },
+    { "id": "mezza-stagione", "label": "Mezza stagione", "slots": [{ "time": "06:30", "model": "drip" }, { "time": "07:30", "model": "off" }] },
+    { "id": "vacanza", "label": "Vacanza", "slots": [{ "time": "00:00", "model": "off" }] }
+  ]
+}

@@ -22,13 +22,13 @@ const P = {
 /**
  * CSS of one theme: {light, dark?, shape, scheme?, skin?} (the built-in ones above and any JSON theme). `scheme:'dark'`
  * marks a theme whose only palette is dark; without `dark` the light palette serves both schemes. `skin` maps
- * selectors inside the root (comma lists allowed) to declarations.
+ * selectors inside the root (comma lists allowed) to declarations; the key `""` styles the root itself (with enough specificity to beat the base panel rule); a selector starting with `&` is attached to the root (`"&:has(.dr-dial)"`).
  */
 export function themeRules(id, t) {
   const r = `.dr-root[data-theme="${id}"]`;
   const dark = t.dark || t.light;
   const base = t.scheme === 'dark' ? 'dark' : 'light';
-  const skin = Object.entries(t.skin || {}).map(([sel, decl]) => sel.split(',').map((x) => `${r} ${x.trim()}`).join(',') + `{${decl}}`).join('');
+  const skin = Object.entries(t.skin || {}).map(([sel, decl]) => sel.split(',').map((x) => (x = x.trim(), x[0] === '&' || !x ? `${r}.dr-root${x.slice(1)}` : `${r} ${x}`)).join(',') + `{${decl}}`).join('');
   return `${r}{${V({ ...t.light, ...t.shape })};color-scheme:${base}}` +
     (t.dark ? `${r}[data-scheme=dark]{${V(dark)};color-scheme:dark}@media (prefers-color-scheme:dark){${r}[data-scheme=auto]{${V(dark)};color-scheme:dark}}${r}[data-scheme=auto]{color-scheme:light dark}` : '') + skin;
 }

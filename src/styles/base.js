@@ -52,6 +52,7 @@ border:1px solid var(--x-border);border-radius:var(--x-radius-panel);padding:var
 .dr-slot-content{gap:.3rem;padding:.2rem}
 .dr-slot-time{font-variant-numeric:tabular-nums;font-size:.75em;font-weight:500;color:var(--x-muted);white-space:nowrap}
 .dr-slot-label{font-size:.85em;font-weight:600}
+.dr-track[data-orient=horizontal] :is(.dr-slot-label,.dr-slot-model-name){max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dr-track[data-orient=vertical] .dr-slot-time{min-width:3.6rem}
 .dr-track[data-orient=vertical]{container-type:inline-size}
 .dr-track[data-orient=vertical] .dr-slot-label{flex:1 1 auto;min-width:6ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

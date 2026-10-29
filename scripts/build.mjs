@@ -33,6 +33,9 @@ esb('src/core/index.js', 'dist/dayrhythm-core.cjs', ['--format=cjs', '--platform
 // packs (not part of the element bundle)
 esb('packs/index.js', 'dist/dayrhythm-packs.js', ['--format=esm', '--minify']);
 esb('scripts/entries/packs-iife.js', 'dist/dayrhythm-packs.min.js', ['--format=iife', '--minify']);
+esb('icons/index.js', 'dist/dayrhythm-icons.js', ['--format=esm', '--minify']);
+esb('scripts/entries/icons-iife.js', 'dist/dayrhythm-icons.min.js', ['--format=iife', '--minify']);
+copyFileSync(join(root, 'icons/catalog.json'), join(root, 'dist/icons-catalog.json'));
 // themes (not part of the element bundle)
 esb('themes/index.js', 'dist/dayrhythm-themes.js', ['--format=esm', '--minify']);
 esb('scripts/entries/themes-iife.js', 'dist/dayrhythm-themes.min.js', ['--format=iife', '--minify']);
@@ -42,8 +45,10 @@ esb('react/index.js', 'dist/react.min.js', ['--format=esm', '--minify', '--chars
 // site: self-contained copy of what the pages import
 esb('src/index.js', 'site/vendor/dayrhythm.js', ['--format=esm', '--minify']);
 esb('packs/index.js', 'site/vendor/packs.js', ['--format=esm', '--minify']);
+esb('icons/index.js', 'site/vendor/icons.js', ['--format=esm', '--minify']);
 esb('themes/index.js', 'site/vendor/themes.js', ['--format=esm', '--minify']);
 copyFileSync(join(root, 'schema/config.schema.json'), join(root, 'site/vendor/config.schema.json'));
 copyFileSync(join(root, 'schema/validate.js'), join(root, 'site/vendor/schema-validate.js'));
+copyFileSync(join(root, 'icons/catalog.json'), join(root, 'site/vendor/icons-catalog.json'));
 writeFileSync(join(root, 'site/vendor/VERSION'), pkg.version + '\n');
 console.log('done');

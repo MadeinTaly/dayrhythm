@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.0
+
+- **Rich themes.** New skin hooks: `--dr-slot-color` on cards, spectrum segments and dial arcs (`--dr-next-color` on segments), `data-active` / `data-off` on segments and arcs, `now-dot`, dial `dial-ticks`, `dial-tick-minor`, `dial-hand`, `dial-hub`, `dial-guide`, `--dr-dial-inner` / `--dr-dial-outer`, per-arc gradients (`--dr-arc-gradient`), and `&`-prefixed skin keys for the root. See docs/API.md, "Skin hooks for rich themes". Built-in themes unchanged.
+- **Five new themes** in `dayrhythm/themes`: Glow, Arcade, Lumen, Midnight, Kiln (thirteen in all).
+- **Icons by name.** A model `icon` may be a registered name (`"sunrise"`, `"lucide:moon-star"`): `icons.register(map)`, rendered inline and coloured by the theme. `dayrhythm/icons` ships 478 Lucide icons with `icons/catalog.json` (category, English and Italian keywords); `dist/dayrhythm-icons.min.js` registers them. `withLineIcons(pack)` gives any pack line icons. SVG markup in `icon` is sanitized and inlined.
+- **AI skill** in `skill/dayrhythm`: turns a use case into a validated config JSON (models, fields, presets, icons by meaning, theme).
+- Fix: the Now badge stays inside its card; slot names and setting names end with an ellipsis on narrow horizontal cards too.
+
 ## 0.7.3
 
 - Fix (narrow screens): on a vertical track a slot's name no longer breaks one letter per line ("E v e n i n g"). Name and setting stay on one line and end with an ellipsis when short of room; below 24rem the setting's summary is hidden (it is in the editor).

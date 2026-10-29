@@ -13,3 +13,6 @@ export type PackId =
 export const packs: Record<PackId, Pack>;
 declare const pack: Pack;
 export default pack;
+
+/** JSON copy of a pack with each model `icon` replaced by an inline SVG line icon from `dayrhythm/icons`. */
+export function withLineIcons<T extends Pack>(pack: T): T;

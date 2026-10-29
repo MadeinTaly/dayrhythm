@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>dayrhythm themes</title>
-<meta name="description" content="Eight themes for the day-rhythm schedule editor, each a plain JSON object.">
+<meta name="description" content="Thirteen themes for the day-rhythm schedule editor, each a plain JSON object.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@700&family=Instrument+Sans:wght@400;500&family=DM+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&family=Chakra+Petch:wght@600&family=Host+Grotesk:wght@400;500&family=Atkinson+Hyperlegible+Mono&family=Martian+Mono:wght@400;500&family=Onest:wght@400;500&family=Outfit:wght@500&family=JetBrains+Mono&family=Libre+Franklin:wght@400;500;900&family=Hanken+Grotesk:wght@400;500&family=Vollkorn:wght@600&family=Sofia+Sans:wght@400;500&family=Bowlby+One+SC&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@700&family=Instrument+Sans:wght@400;500&family=DM+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&family=Chakra+Petch:wght@600&family=Host+Grotesk:wght@400;500&family=Atkinson+Hyperlegible+Mono&family=Martian+Mono:wght@400;500&family=Onest:wght@400;500&family=Outfit:wght@500&family=JetBrains+Mono&family=Libre+Franklin:wght@400;500;900&family=Hanken+Grotesk:wght@400;500&family=Vollkorn:wght@600&family=Sofia+Sans:wght@400;500&family=Bowlby+One+SC&family=Figtree:wght@400;500;600;700&family=Bungee&family=Chivo:wght@400;700;900&family=Silkscreen:wght@700&family=Instrument+Serif&family=Geist:wght@400;500&family=Geist+Mono&family=Mona+Sans:wdth,wght@100,400;100,500;125,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./site.css">
 </head>
 <body>
@@ -25,7 +25,7 @@
 </header>
 <main id="main" class="container gallery">
   <div class="gallery__head">
-    <h1>Eight themes, all JSON.</h1>
+    <h1>Thirteen themes, all JSON.</h1>
     <p class="lead">Pass one as <code>config.theme</code>, or register the set and call them by name.</p>
   </div>
   <div class="gallery__list" id="list"></div>
@@ -36,22 +36,30 @@
 </footer>
 <script type="module">
 import './site.js';
-import { packs } from './vendor/packs.js';
+import { packs, withLineIcons } from './vendor/packs.js';
 import { themes as registry } from './vendor/dayrhythm.js';
 import set from './vendor/themes.js';
 Object.values(set).forEach((t) => registry.register(t));
 const list = document.getElementById('list');
+const scenes = withLineIcons(packs['light-scenes']);
+scenes.value = scenes.value.map((s) => ({ ...s, label: s.model[0].toUpperCase() + s.model.slice(1) }));
+const dial = { models: [{ id: 'on', label: 'On', preview: '#f2a63c' }, { id: 'off', label: 'Off', off: true }], value: [{ time: '00:00', model: 'off', label: 'Off' }, { time: '19:00', model: 'on', label: 'On' }, { time: '23:00', model: 'on', label: 'On' }] };
+const make = (t, extra, attrs) => {
+  const el = document.createElement('day-rhythm');
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  el.config = { locale: 'en', theme: t.id, credits: false, ...JSON.parse(JSON.stringify(extra)) };
+  return el;
+};
 for (const t of Object.values(set)) {
   const item = document.createElement('article');
   item.className = 'gallery__item';
-  item.innerHTML = `<div class="gallery__meta"><h2></h2><p></p><code></code></div>`;
+  item.innerHTML = `<div class="gallery__meta"><h2></h2><p></p><code></code></div><div class="gallery__demos"></div>`;
   item.querySelector('h2').textContent = t.title;
   item.querySelector('p').textContent = t.description;
   item.querySelector('code').textContent = `theme="${t.id}"`;
-  const el = document.createElement('day-rhythm');
-  el.setAttribute('orientation', 'horizontal');
-  el.config = { ...JSON.parse(JSON.stringify(packs['light-scenes'])), locale: 'en', theme: t.id, credits: false };
-  item.append(el);
+  item.querySelector('.gallery__demos').append(
+    make(t, { ...scenes, presets: [] }, { orientation: 'horizontal' }),
+    make(t, dial, { layout: 'dial' }));
   list.append(item);
 }
 </script>
