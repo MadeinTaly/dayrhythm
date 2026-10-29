@@ -1,4 +1,4 @@
-/*! dayrhythm v0.7.2 | MIT | https://github.com/MadeinTaly/dayrhythm */
+/*! dayrhythm v0.7.3 | MIT | https://github.com/MadeinTaly/dayrhythm */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -6,7 +6,7 @@ var __export = (target, all) => {
 };
 
 // src/version.js
-var VERSION = "0.7.2";
+var VERSION = "0.7.3";
 
 // src/core/time.js
 var WEEKDAYS = Object.freeze(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
@@ -1174,7 +1174,11 @@ border:1px solid var(--x-border);border-radius:var(--x-radius-panel);padding:var
 .dr-slot-time{font-variant-numeric:tabular-nums;font-size:.75em;font-weight:500;color:var(--x-muted);white-space:nowrap}
 .dr-slot-label{font-size:.85em;font-weight:600}
 .dr-track[data-orient=vertical] .dr-slot-time{min-width:3.6rem}
-.dr-track[data-orient=vertical] .dr-slot-label{flex:1}
+.dr-track[data-orient=vertical]{container-type:inline-size}
+.dr-track[data-orient=vertical] .dr-slot-label{flex:1 1 auto;min-width:6ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dr-track[data-orient=vertical] .dr-slot-model{flex:0 1 auto;min-width:0}
+.dr-track[data-orient=vertical] :is(.dr-slot-model-name,.dr-slot-summary){overflow-wrap:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+@container (max-width:24rem){.dr-track[data-orient=vertical] .dr-slot-summary{display:none}}
 .dr-slot-model{padding:.35rem .25rem;min-height:var(--x-tap);border-radius:var(--x-radius-input)}
 .dr-slot-model-name{font-size:.75em;line-height:1.3}
 .dr-slot-summary{font-size:.7em;color:var(--x-muted)}

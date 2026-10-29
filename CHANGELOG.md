@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.3
+
+- Fix (narrow screens): on a vertical track a slot's name no longer breaks one letter per line ("E v e n i n g"). Name and setting stay on one line and end with an ellipsis when short of room; below 24rem the setting's summary is hidden (it is in the editor).
+
 ## 0.7.2
 
 - Fix (touch): scrolling a phone page no longer moves the slots it crosses, and edges still drag at once. 0.7.1 made every edge drag at once, so on a vertical track a scroll that started on an edge moved it. Now the page scrolls across edges; the grip in the middle of an edge drags at once; elsewhere on a vertical track's edge a still press (`touch-hold`, 300 ms again) grabs it; horizontal tracks drag at once and a vertical swipe scrolls the page.
