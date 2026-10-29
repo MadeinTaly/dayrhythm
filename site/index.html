@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23a6dfc5'/%3E%3Cpath d='M6 20h6v-8h6v6h8' fill='none' stroke='%23174d3e' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@700&family=Instrument+Sans:wght@400;500&family=DM+Mono:wght@400;500&family=Host+Grotesk:wght@400;500&family=Atkinson+Hyperlegible+Mono&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&family=Chakra+Petch:wght@600&family=Sofia+Sans:wght@400;500&family=Bowlby+One+SC&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@700&family=Instrument+Sans:wght@400;500&family=DM+Mono:wght@400;500&family=Host+Grotesk:wght@400;500&family=Atkinson+Hyperlegible+Mono&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&family=Chakra+Petch:wght@600&family=Sofia+Sans:wght@400;500&family=Bowlby+One+SC&family=Figtree:wght@400;500;600;700&family=Bungee&family=Chivo:wght@400;700;900&family=Silkscreen:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./site.css">
 </head>
 <body>
@@ -44,6 +44,8 @@
       <p class="tray__title">Heating schedule, the whole week</p>
       <div class="skins" role="group" aria-label="Theme">
         <button class="key" type="button" data-theme="dose" aria-pressed="true">Dose</button>
+        <button class="key" type="button" data-theme="glow" aria-pressed="false">Glow</button>
+        <button class="key" type="button" data-theme="arcade" aria-pressed="false">Arcade</button>
         <button class="key" type="button" data-theme="console" aria-pressed="false">Console</button>
         <button class="key" type="button" data-theme="blueprint" aria-pressed="false">Blueprint</button>
         <button class="key" type="button" data-theme="sticker" aria-pressed="false">Sticker</button>
@@ -120,11 +122,13 @@
 
 <script type="module">
 import './site.js';
-import { packs } from './vendor/packs.js';
-import { themes } from './vendor/dayrhythm.js';
+import { packs, withLineIcons } from './vendor/packs.js';
+import { themes, icons } from './vendor/dayrhythm.js';
 import set from './vendor/themes.js';
+import iconSet from './vendor/icons.js';
 Object.values(set).forEach((t) => themes.register(t));
-const pack = (id, extra) => ({ ...JSON.parse(JSON.stringify(packs[id])), locale: 'en', ...extra });
+icons.register(iconSet);
+const pack = (id, extra) => ({ ...withLineIcons(packs[id], { names: true }), locale: 'en', ...extra });
 const el = document.getElementById('dr');
 const status = document.getElementById('host-status');
 const btn = document.getElementById('host-apply');

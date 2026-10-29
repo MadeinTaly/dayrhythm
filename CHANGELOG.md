@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.1
+
+- `withLineIcons(pack, { names: true })` puts icon names instead of SVG markup in the pack (for pages that registered the icon set; keeps the JSON short).
+- Site: the playground offers all thirteen themes and shows the packs with line icons; the home page adds Glow and Arcade.
+
 ## 0.8.0
 
 - **Rich themes.** New skin hooks: `--dr-slot-color` on cards, spectrum segments and dial arcs (`--dr-next-color` on segments), `data-active` / `data-off` on segments and arcs, `now-dot`, dial `dial-ticks`, `dial-tick-minor`, `dial-hand`, `dial-hub`, `dial-guide`, `--dr-dial-inner` / `--dr-dial-outer`, per-arc gradients (`--dr-arc-gradient`), and `&`-prefixed skin keys for the root. See docs/API.md, "Skin hooks for rich themes". Built-in themes unchanged.

@@ -6,7 +6,7 @@ const [lib, packMod, validateMod, schema] = await Promise.all([
   import(P.lib), import(P.packs), import(P.validate), fetch(P.schema).then((r) => r.json()),
 ]);
 const { core } = lib;
-const { packs } = packMod;
+const packs = Object.fromEntries(Object.entries(packMod.packs).map(([k, p]) => [k, packMod.withLineIcons ? packMod.withLineIcons(p, { names: true }) : p]));
 const { validate } = validateMod;
 
 const $ = (id) => document.getElementById(id);

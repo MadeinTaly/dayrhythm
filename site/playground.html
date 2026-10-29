@@ -104,9 +104,14 @@
 <script>window.DR_PATHS = { lib: './vendor/dayrhythm.js', packs: './vendor/packs.js', validate: './vendor/schema-validate.js', schema: './vendor/config.schema.json' };</script>
 <script type="module">
 // Register the named themes first, then load the playground so config.theme resolves.
-import { themes } from './vendor/dayrhythm.js';
+import { themes, icons } from './vendor/dayrhythm.js';
 import set from './vendor/themes.js';
+import iconSet from './vendor/icons.js';
 Object.values(set).forEach((t) => themes.register(t));
+icons.register(iconSet);
+// every theme in the picker, the new ones first
+const sel = document.getElementById('c-theme');
+sel.replaceChildren(...[...Object.keys(set), 'organic', 'neutral', 'flat', 'none'].map((id) => new Option(id, id)));
 await import('./playground.js');
 </script>
 </body>

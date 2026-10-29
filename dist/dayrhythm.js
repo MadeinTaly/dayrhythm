@@ -1,4 +1,4 @@
-/*! dayrhythm v0.8.0 | MIT | https://github.com/MadeinTaly/dayrhythm */
+/*! dayrhythm v0.8.1 | MIT | https://github.com/MadeinTaly/dayrhythm */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -6,7 +6,7 @@ var __export = (target, all) => {
 };
 
 // src/version.js
-var VERSION = "0.8.0";
+var VERSION = "0.8.1";
 
 // src/core/time.js
 var WEEKDAYS = Object.freeze(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);

@@ -41,11 +41,12 @@ const BY_PACK = {
 };
 
 /** JSON copy of a pack whose model icons are inline SVG line icons (see `dayrhythm/icons`) instead of emoji. */
-export function withLineIcons(pack) {
+export function withLineIcons(pack, opts) {
   const copy = JSON.parse(JSON.stringify(pack));
   for (const m of copy.models || []) {
-    const svg = icons[BY_PACK[copy.id]?.[m.id] ?? BY_MODEL[m.id]];
-    if (svg) m.icon = svg;
+    const name = BY_PACK[copy.id]?.[m.id] ?? BY_MODEL[m.id];
+    // { names: true }: the icon name, for pages that registered the icon set (keeps the JSON short)
+    if (name && icons[name]) m.icon = opts && opts.names ? name : icons[name];
   }
   return copy;
 }
