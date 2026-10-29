@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.0
+
+- **JSON themes.** `theme` takes a theme object as well as a name: `{ id, light, dark?, shape?, skin? }`, plain JSON (also as the `theme` attribute). Registered themes (`themes.register(theme)`) are used by name. The built-in themes use the same format internally.
+- **Eight themes** in the optional `dayrhythm/themes` set (`dist/dayrhythm-themes.min.js` registers them on `DayRhythm.themes`): Dose, Blueprint, Console, Terminal, Ultraviolet, Brutal, Garden, Sticker. Gallery: `site/themes.html`.
+- Fix: a `value` inside a config set after the element was connected (`el.config = { ...pack, value }`) was ignored, so the slots kept the default models ("Unknown"). It now replaces the value, as at connection. The home page demo showed this.
+
 ## 0.6.0
 
 - **Touch: hold to drag** (`touch-hold`, default 300 ms). On touch screens an edge moves only after a short still press; a tap or a swipe that lands on an edge no longer drags it. `touch-hold="0"` restores the immediate drag.

@@ -1,4 +1,4 @@
-/*! dayrhythm v0.6.0 | MIT | https://github.com/MadeinTaly/dayrhythm */
+/*! dayrhythm v0.7.0 | MIT | https://github.com/MadeinTaly/dayrhythm */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -6,7 +6,7 @@ var __export = (target, all) => {
 };
 
 // src/version.js
-var VERSION = "0.6.0";
+var VERSION = "0.7.0";
 
 // src/core/time.js
 var WEEKDAYS = Object.freeze(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
@@ -801,12 +801,12 @@ function makeT(code, messages) {
     for (const t2 of chain) if (t2[k] != null) return t2[k];
     return void 0;
   };
-  const t = (key, vars2) => {
+  const t = (key, vars) => {
     let s;
-    if (vars2 && typeof vars2.count === "number" && pr) s = lookup(`${key}_${pr.select(vars2.count)}`);
+    if (vars && typeof vars.count === "number" && pr) s = lookup(`${key}_${pr.select(vars.count)}`);
     if (s == null) s = lookup(key);
     if (s == null) return key;
-    return vars2 ? String(s).replace(/\{(\w+)\}/g, (m, k) => vars2[k] != null ? vars2[k] : m) : String(s);
+    return vars ? String(s).replace(/\{(\w+)\}/g, (m, k) => vars[k] != null ? vars[k] : m) : String(s);
   };
   t.has = (key) => lookup(key) !== void 0;
   return t;
@@ -1230,14 +1230,34 @@ var P = {
     shape: { "radius-panel": "0", "radius-dialog": "0", "radius-card": "0", "radius-card-h": "0", "radius-chip": "0", "radius-input": "0", "radius-button": "0", "radius-spectrum": "0", "radius-tab": "0", font: 'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif', "tint-opacity": ".85" }
   }
 };
-function vars(t, scheme) {
-  return V({ ...P[t][scheme], ...P[t].shape });
+function themeRules(id, t) {
+  const r = `.dr-root[data-theme="${id}"]`;
+  const dark = t.dark || t.light;
+  const base = t.scheme === "dark" ? "dark" : "light";
+  const skin = Object.entries(t.skin || {}).map(([sel, decl]) => sel.split(",").map((x) => `${r} ${x.trim()}`).join(",") + `{${decl}}`).join("");
+  return `${r}{${V({ ...t.light, ...t.shape })};color-scheme:${base}}` + (t.dark ? `${r}[data-scheme=dark]{${V(dark)};color-scheme:dark}@media (prefers-color-scheme:dark){${r}[data-scheme=auto]{${V(dark)};color-scheme:dark}}${r}[data-scheme=auto]{color-scheme:light dark}` : "") + skin;
 }
-var themeCSS = ["organic", "neutral", "flat"].map((t) => `
-.dr-root[data-theme=${t}]{${vars(t, "light")};color-scheme:light}
-.dr-root[data-theme=${t}][data-scheme=dark]{${V(P[t].dark)};color-scheme:dark}
-@media (prefers-color-scheme:dark){.dr-root[data-theme=${t}][data-scheme=auto]{${V(P[t].dark)};color-scheme:dark}}
-.dr-root[data-theme=${t}][data-scheme=auto]{color-scheme:light dark}`).join("") + `
+var themes = {
+  register(theme) {
+    if (theme && theme.id && !BUILTIN.includes(theme.id)) this[theme.id] = theme;
+    return theme;
+  }
+};
+var BUILTIN = ["organic", "neutral", "flat", "none"];
+function resolveTheme(v) {
+  if (typeof v === "string" && BUILTIN.includes(v)) return { id: v, def: null };
+  if (typeof v === "string" && v.trim().startsWith("{")) {
+    try {
+      v = JSON.parse(v);
+    } catch (e) {
+      v = null;
+    }
+  }
+  const def = typeof v === "string" ? themes[v] : v && typeof v === "object" && v.light ? v : null;
+  if (!def) return { id: "organic", def: null };
+  return { id: String(def.id || "custom").replace(/[^\w-]/g, ""), def };
+}
+var themeCSS = ["organic", "neutral", "flat"].map((t) => themeRules(t, P[t])).join("") + `
 .dr-root[data-theme=flat] :is(.dr-slot,.dr-button,.dr-preset,.dr-model-option,.dr-week-tab,.dr-input){border-width:2px}
 .dr-root[data-theme=flat]{--x-shadow:none}
 .dr-root[data-theme=flat] :focus-visible{outline:3px solid var(--x-focus);outline-offset:2px}
@@ -1771,6 +1791,13 @@ function region(el, name, main) {
   } else r.setAttribute("name", name);
   return r;
 }
+function themeStyles(el, root, theme) {
+  if (!theme.def) return;
+  const s = document.createElement("style");
+  const css = themeRules(theme.id, theme.def);
+  s.textContent = el._renderMode === "light" ? `@layer dayrhythm{${css}}` : css;
+  root.append(s);
+}
 function userStyles(el, root) {
   const css = el.cfg.styles;
   if (!css) return;
@@ -1786,7 +1813,8 @@ function buildRoot(el) {
   $.root = root;
   root.setAttribute("role", "group");
   root.setAttribute("aria-label", el.t(el.weekMode ? "titleWeek" : "title"));
-  root.dataset.theme = ["organic", "neutral", "flat", "none"].includes(cfg.theme) ? cfg.theme : "organic";
+  const theme = resolveTheme(cfg.theme);
+  root.dataset.theme = theme.id;
   root.dataset.scheme = ["light", "dark"].includes(cfg.colorScheme) ? cfg.colorScheme : "auto";
   if (cfg.disabled) {
     root.dataset.disabled = "";
@@ -1810,6 +1838,7 @@ function buildRoot(el) {
   attachDrag(el);
   const credits = creditsEl(el);
   root.append($.header, $.weekTop, $.presets, $.toolbar, $.spectrum, $.trackwrap, $.footer, $.weekBottom, ...credits ? [credits] : [], $.live, $.dialog);
+  themeStyles(el, root, theme);
   userStyles(el, root);
   if (el._root && el._root.parentNode) el._root.remove();
   el._root = root;
@@ -3358,10 +3387,19 @@ var DayRhythmElement = class extends Base {
   set config(v) {
     this._L.prop = isPlain(v) ? v : {};
     this._invalidate();
+    this._configValue(v);
   }
   configure(partial) {
     this._L.prop = mergeConfig(this._L.prop, partial);
     this._invalidate();
+    this._configValue(partial);
+  }
+  /** A `value` in a config set after the first connection replaces the value, as it would have at connection. */
+  _configValue(c) {
+    if (this._init && isPlain(c) && c.value !== void 0) {
+      this._cfg = null;
+      this.setValue(c.value);
+    }
   }
   reloadConfig() {
     this._readScript();
@@ -4041,5 +4079,6 @@ export {
   locales,
   mergeConfig,
   packs,
+  themes,
   VERSION as version
 };

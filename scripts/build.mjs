@@ -33,12 +33,16 @@ esb('src/core/index.js', 'dist/dayrhythm-core.cjs', ['--format=cjs', '--platform
 // packs (not part of the element bundle)
 esb('packs/index.js', 'dist/dayrhythm-packs.js', ['--format=esm', '--minify']);
 esb('scripts/entries/packs-iife.js', 'dist/dayrhythm-packs.min.js', ['--format=iife', '--minify']);
+// themes (not part of the element bundle)
+esb('themes/index.js', 'dist/dayrhythm-themes.js', ['--format=esm', '--minify']);
+esb('scripts/entries/themes-iife.js', 'dist/dayrhythm-themes.min.js', ['--format=iife', '--minify']);
 // react wrapper (react stays external, size reference only; the published file is react/index.js)
 esb('react/index.js', 'dist/react.min.js', ['--format=esm', '--minify', '--charset=utf8', '--external:react', '--external:react-dom', '--external:../src/*']);
 
 // site: self-contained copy of what the pages import
 esb('src/index.js', 'site/vendor/dayrhythm.js', ['--format=esm', '--minify']);
 esb('packs/index.js', 'site/vendor/packs.js', ['--format=esm', '--minify']);
+esb('themes/index.js', 'site/vendor/themes.js', ['--format=esm', '--minify']);
 copyFileSync(join(root, 'schema/config.schema.json'), join(root, 'site/vendor/config.schema.json'));
 copyFileSync(join(root, 'schema/validate.js'), join(root, 'site/vendor/schema-validate.js'));
 writeFileSync(join(root, 'site/vendor/VERSION'), pkg.version + '\n');

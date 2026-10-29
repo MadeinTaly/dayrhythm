@@ -89,7 +89,7 @@ export interface Config {
   editor?: 'auto' | 'quick' | 'full'; randomize?: boolean; readonly?: boolean; disabled?: boolean; labelMax?: number; touchHold?: number;
   week?: 'auto' | 'top' | 'bottom' | 'off'; day?: Weekday | null; firstDay?: 'auto' | Weekday;
   weekPreview?: boolean; weekCopy?: boolean; linkDays?: boolean; weekLayout?: 'tabs' | 'rows';
-  theme?: 'organic' | 'neutral' | 'flat' | 'none'; colorScheme?: 'auto' | 'light' | 'dark'; locale?: string | null;
+  theme?: 'organic' | 'neutral' | 'flat' | 'none' | (string & {}) | import('./themes.js').Theme; colorScheme?: 'auto' | 'light' | 'dark'; locale?: string | null;
   /** Flat `{ key: string }` and/or per-locale `{ it: { key: string } }`. */
   messages?: Record<string, string | Record<string, string>>;
   classes?: Partial<Record<PartKey, string | string[]>>;

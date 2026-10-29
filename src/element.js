@@ -118,8 +118,10 @@ export class DayRhythmElement extends Base {
   }
 
   get config() { return this.cfg; }
-  set config(v) { this._L.prop = isPlain(v) ? v : {}; this._invalidate(); }
-  configure(partial) { this._L.prop = mergeConfig(this._L.prop, partial); this._invalidate(); }
+  set config(v) { this._L.prop = isPlain(v) ? v : {}; this._invalidate(); this._configValue(v); }
+  configure(partial) { this._L.prop = mergeConfig(this._L.prop, partial); this._invalidate(); this._configValue(partial); }
+  /** A `value` in a config set after the first connection replaces the value, as it would have at connection. */
+  _configValue(c) { if (this._init && isPlain(c) && c.value !== undefined) { this._cfg = null; this.setValue(c.value); } }
   reloadConfig() { this._readScript(); this._readConfigAttr(); this._readAttrs(); this._invalidate(); }
 
   /** JSON-safe subset of what the app supplied (config layers, no built-in defaults). */

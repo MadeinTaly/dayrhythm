@@ -35,7 +35,7 @@ export interface DayRhythmProps {
   onReady?(detail: {}): void;
 
   // common options as direct props (override `config`)
-  theme?: 'organic' | 'neutral' | 'flat' | 'none';
+  theme?: 'organic' | 'neutral' | 'flat' | 'none' | (string & {}) | import('./themes.js').Theme;
   colorScheme?: 'auto' | 'light' | 'dark';
   locale?: string;
   week?: 'auto' | 'top' | 'bottom' | 'off';

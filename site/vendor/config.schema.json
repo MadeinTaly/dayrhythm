@@ -40,7 +40,7 @@
     "firstDay": { "oneOf": [{ "const": "auto" }, { "$ref": "#/$defs/weekday" }] },
     "weekPreview": { "type": "boolean" }, "weekCopy": { "type": "boolean" }, "linkDays": { "type": "boolean" },
     "weekLayout": { "enum": ["tabs", "rows"], "default": "tabs" },
-    "theme": { "enum": ["organic", "neutral", "flat", "none"] },
+    "theme": { "anyOf": [{ "type": "string" }, { "type": "object", "required": ["light"], "properties": { "id": { "type": "string" }, "light": { "type": "object" }, "dark": { "type": "object" }, "shape": { "type": "object" }, "skin": { "type": "object" } } }] },
     "colorScheme": { "enum": ["auto", "light", "dark"] },
     "locale": { "type": ["string", "null"] },
     "messages": { "type": "object", "description": "Flat {key: string} and/or per-locale {it: {key: string}}.", "additionalProperties": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": { "type": "string" } }] } },

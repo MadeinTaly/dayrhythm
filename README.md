@@ -70,6 +70,62 @@ Themes: `organic` (default), `neutral`, `flat`, `none` (headless). Customise wit
 - `::part(slot-active)` and friends in shadow mode.
 - `classes` per part, and `render="light"` so page utility classes (Tailwind) reach the parts.
 
+### JSON themes
+
+`theme` also takes a whole theme as JSON: colours per scheme, shape, and optional per-part declarations.
+
+```js
+el.theme = {
+  id: 'mine',
+  light: { bg: '#fff', surface: '#fff', ink: '#111', muted: '#555', accent: '#0a7', border: '#ddd' },
+  dark: { bg: '#111', surface: '#1b1b1b', ink: '#eee', muted: '#aaa', accent: '#4d9', border: '#333' },
+  shape: { 'radius-card': '8px', font: 'system-ui, sans-serif' },
+  skin: { '.dr-slot-time': 'font-family: ui-monospace, monospace' },
+};
+```
+
+Eight ready-made themes ship as `dayrhythm/themes` (outside the element bundle): **Dose, Blueprint, Console,
+Terminal, Ultraviolet, Brutal, Garden, Sticker**. Pass one as `theme`, or register them and use the names:
+
+```js
+import { themes } from 'dayrhythm';
+import set from 'dayrhythm/themes';
+Object.values(set).forEach((t) => themes.register(t));
+el.theme = 'dose';
+```
+
+From a CDN: load `dist/dayrhythm-themes.min.js` after `dayrhythm.min.js` and they register themselves. The themes
+name web fonts with system fallbacks: load the fonts on your page for the exact look. Gallery: `site/themes.html`.
+
+The theme set was designed with the wonderful [Hallmark](https://www.usehallmark.com/).
+
+<details><summary>Hallmark license (MIT)</summary>
+
+```
+MIT License
+
+Copyright (c) 2026 Hallmark contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+</details>
+
 ## Credits and donation
 
 By default the component shows a small "Made with dayrhythm" link to this repository. `credits: false` removes it, `credits: "support"` adds a donation link (never on by default). The library makes no network requests for this.

@@ -19,15 +19,36 @@ const P = {
   },
 };
 
-function vars(t, scheme) {
-  return V({ ...P[t][scheme], ...P[t].shape });
+/**
+ * CSS of one theme: {light, dark?, shape, scheme?, skin?} (the built-in ones above and any JSON theme). `scheme:'dark'`
+ * marks a theme whose only palette is dark; without `dark` the light palette serves both schemes. `skin` maps
+ * selectors inside the root (comma lists allowed) to declarations.
+ */
+export function themeRules(id, t) {
+  const r = `.dr-root[data-theme="${id}"]`;
+  const dark = t.dark || t.light;
+  const base = t.scheme === 'dark' ? 'dark' : 'light';
+  const skin = Object.entries(t.skin || {}).map(([sel, decl]) => sel.split(',').map((x) => `${r} ${x.trim()}`).join(',') + `{${decl}}`).join('');
+  return `${r}{${V({ ...t.light, ...t.shape })};color-scheme:${base}}` +
+    (t.dark ? `${r}[data-scheme=dark]{${V(dark)};color-scheme:dark}@media (prefers-color-scheme:dark){${r}[data-scheme=auto]{${V(dark)};color-scheme:dark}}${r}[data-scheme=auto]{color-scheme:light dark}` : '') + skin;
 }
 
-export const themeCSS = ['organic', 'neutral', 'flat'].map((t) => `
-.dr-root[data-theme=${t}]{${vars(t, 'light')};color-scheme:light}
-.dr-root[data-theme=${t}][data-scheme=dark]{${V(P[t].dark)};color-scheme:dark}
-@media (prefers-color-scheme:dark){.dr-root[data-theme=${t}][data-scheme=auto]{${V(P[t].dark)};color-scheme:dark}}
-.dr-root[data-theme=${t}][data-scheme=auto]{color-scheme:light dark}`).join('') + `
+/** Themes added at runtime (`dayrhythm/themes` registers its set here); config.theme may name one or be one. */
+export const themes = {
+  register(theme) { if (theme && theme.id && !BUILTIN.includes(theme.id)) this[theme.id] = theme; return theme; },
+};
+const BUILTIN = ['organic', 'neutral', 'flat', 'none'];
+
+/** config.theme (a name or a theme object) -> { id, def }; def is null for the built-in themes. */
+export function resolveTheme(v) {
+  if (typeof v === 'string' && BUILTIN.includes(v)) return { id: v, def: null };
+  if (typeof v === 'string' && v.trim().startsWith('{')) { try { v = JSON.parse(v); } catch (e) { v = null; } } // theme='{...}' attribute
+  const def = typeof v === 'string' ? themes[v] : v && typeof v === 'object' && v.light ? v : null;
+  if (!def) return { id: 'organic', def: null };
+  return { id: String(def.id || 'custom').replace(/[^\w-]/g, ''), def };
+}
+
+export const themeCSS = ['organic', 'neutral', 'flat'].map((t) => themeRules(t, P[t])).join('') + `
 .dr-root[data-theme=flat] :is(.dr-slot,.dr-button,.dr-preset,.dr-model-option,.dr-week-tab,.dr-input){border-width:2px}
 .dr-root[data-theme=flat]{--x-shadow:none}
 .dr-root[data-theme=flat] :focus-visible{outline:3px solid var(--x-focus);outline-offset:2px}

@@ -1,7 +1,7 @@
 // Shadow/light root setup and the component's shared stylesheet.
 import { structureCSS } from '../../styles/structure.js';
 import { baseCSS } from '../../styles/base.js';
-import { themeCSS } from '../../styles/themes.js';
+import { themeCSS, themeRules, resolveTheme } from '../../styles/themes.js';
 import { dialCSS } from '../../styles/dial.js';
 import { attachDrag } from '../drag.js';
 import { classList, camel } from '../dom.js';
@@ -78,6 +78,14 @@ export function region(el, name, main) {
   return r;
 }
 
+function themeStyles(el, root, theme) {
+  if (!theme.def) return;
+  const s = document.createElement('style');
+  const css = themeRules(theme.id, theme.def);
+  s.textContent = el._renderMode === 'light' ? `@layer dayrhythm{${css}}` : css;
+  root.append(s);
+}
+
 function userStyles(el, root) {
   const css = el.cfg.styles;
   if (!css) return;
@@ -94,7 +102,8 @@ export function buildRoot(el) {
   $.root = root;
   root.setAttribute('role', 'group');
   root.setAttribute('aria-label', el.t(el.weekMode ? 'titleWeek' : 'title'));
-  root.dataset.theme = ['organic', 'neutral', 'flat', 'none'].includes(cfg.theme) ? cfg.theme : 'organic';
+  const theme = resolveTheme(cfg.theme);
+  root.dataset.theme = theme.id;
   root.dataset.scheme = ['light', 'dark'].includes(cfg.colorScheme) ? cfg.colorScheme : 'auto';
   if (cfg.disabled) { root.dataset.disabled = ''; root.inert = true; }
   if (cfg.readonly) root.dataset.readonly = '';
@@ -116,6 +125,7 @@ export function buildRoot(el) {
 
   const credits = creditsEl(el);
   root.append($.header, $.weekTop, $.presets, $.toolbar, $.spectrum, $.trackwrap, $.footer, $.weekBottom, ...(credits ? [credits] : []), $.live, $.dialog);
+  themeStyles(el, root, theme);
   userStyles(el, root);
   if (el._root && el._root.parentNode) el._root.remove();
   el._root = root;
