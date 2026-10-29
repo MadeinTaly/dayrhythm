@@ -22,6 +22,7 @@ display:flex;flex-direction:column;gap:calc(var(--x-gap)*2.5);position:relative;
 .dr-spectrum-segment{flex:0 1 0;min-width:0}
 .dr-track-wrap{position:relative;max-width:100%}
 .dr-root[data-orient=horizontal] .dr-track-wrap{overflow-x:auto;overflow-y:hidden}
+.dr-root,.dr-root *{-webkit-tap-highlight-color:transparent}
 .dr-track{display:flex;position:relative;gap:0;user-select:none;-webkit-user-select:none}
 .dr-track[data-orient=horizontal]{flex-direction:row;height:var(--x-track-thickness);min-width:calc(var(--n,1)*(var(--x-card-min) + var(--x-handle)))}
 .dr-track[data-orient=vertical]{flex-direction:column;min-height:max(var(--x-track-length),calc(var(--n,1)*(var(--x-card-min) + var(--x-handle))))}

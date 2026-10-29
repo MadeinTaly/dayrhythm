@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.1
+
+- Fix (touch): edges move at once again when dragged with a finger. Since 0.6.0 an edge waited for a 300 ms still press, and a normal swipe on it neither dragged it nor scrolled the page, so on phones dragging looked broken. `touch-hold` now defaults to `0`; set it (e.g. `300`) to bring the hold back.
+- Fix (touch): no more blue tap-highlight square on Android when tapping the dial or other parts of the component.
+
 ## 0.7.0
 
 - **JSON themes.** `theme` takes a theme object as well as a name: `{ id, light, dark?, shape?, skin? }`, plain JSON (also as the `theme` attribute). Registered themes (`themes.register(theme)`) are used by name. The built-in themes use the same format internally.

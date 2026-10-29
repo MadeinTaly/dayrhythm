@@ -11,7 +11,7 @@ export const defaults = {
   layout: 'strip', origin: 'first', seamDrag: true, push: true, orientation: 'auto', breakpoint: 640,
   add: true, remove: true, rename: true, timeEdit: true, showPresets: true, showDays: true,
   spectrum: true, nowLine: true, clockOffset: 0, timezone: null, timeFormat: '24h',
-  editor: 'auto', randomize: false, readonly: false, disabled: false, labelMax: 40, touchHold: 300,
+  editor: 'auto', randomize: false, readonly: false, disabled: false, labelMax: 40, touchHold: 0,
   week: 'auto', day: null, firstDay: 'auto', weekPreview: true, weekCopy: true, linkDays: false, weekLayout: 'tabs',
   theme: 'organic', colorScheme: 'auto', locale: null,
   messages: {}, classes: {}, render: 'shadow', inheritStyles: false, styles: null, credits: true,
