@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.2
+
+- Fix (touch): scrolling a phone page no longer moves the slots it crosses, and edges still drag at once. 0.7.1 made every edge drag at once, so on a vertical track a scroll that started on an edge moved it. Now the page scrolls across edges; the grip in the middle of an edge drags at once; elsewhere on a vertical track's edge a still press (`touch-hold`, 300 ms again) grabs it; horizontal tracks drag at once and a vertical swipe scrolls the page.
+
 ## 0.7.1
 
 - Fix (touch): edges move at once again when dragged with a finger. Since 0.6.0 an edge waited for a 300 ms still press, and a normal swipe on it neither dragged it nor scrolled the page, so on phones dragging looked broken. `touch-hold` now defaults to `0`; set it (e.g. `300`) to bring the hold back.

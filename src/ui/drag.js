@@ -7,6 +7,8 @@ export function attachDrag(el) {
   const wrap = el._$.trackwrap;
   wrap.addEventListener('pointerdown', (e) => onDown(el, e));
   wrap.addEventListener('keydown', (e) => onKey(el, e));
+  // an edge grabbed after a still press sits where the page may pan: keep the finger on the edge
+  wrap.addEventListener('touchmove', (e) => { if (el._drag && el._drag.held && e.cancelable) e.preventDefault(); }, { passive: false });
 }
 
 const handleOf = (e) => (e.target.closest ? e.target.closest('[data-handle]') : null);
@@ -35,8 +37,11 @@ function onDown(el, e) {
   const h = handleOf(e);
   if (!h || h.hasAttribute('data-alias') || 'dial' in h.dataset || (e.button && e.button > 0) || el._drag || el._hold) return;
   const hold = +el.cfg.touchHold;
-  if (e.pointerType !== 'touch' || !(hold > 0)) { startDrag(el, e, h); return; }
-  // Touch: the edge moves only after a still press, so a tap or a swipe that lands on it leaves it alone.
+  const vertical = h.parentElement && h.parentElement.dataset.orient === 'vertical';
+  const grip = e.target.closest && e.target.closest('.dr-handle-grip');
+  if (e.pointerType !== 'touch' || !vertical || grip || !(hold > 0)) { startDrag(el, e, h); return; }
+  // Touch across a vertical track, off the grip: the page scrolls on that same axis, so the edge moves only after
+  // a still press and a swipe that lands on it scrolls the page.
   const at = { pointerId: e.pointerId, clientX: e.clientX, clientY: e.clientY, preventDefault() {} };
   const stop = () => {
     clearTimeout(timer);
@@ -49,7 +54,7 @@ function onDown(el, e) {
     if (Math.hypot(ev.clientX - e.clientX, ev.clientY - e.clientY) > 10) stop();
     else { at.clientX = ev.clientX; at.clientY = ev.clientY; }
   };
-  const timer = setTimeout(() => { stop(); if (h.isConnected && !el._drag) startDrag(el, at, h); }, hold);
+  const timer = setTimeout(() => { stop(); if (h.isConnected && !el._drag) { startDrag(el, at, h); if (el._drag) el._drag.held = true; } }, hold);
   el._hold = stop;
   h.addEventListener('pointermove', move);
   h.addEventListener('pointerup', stop);

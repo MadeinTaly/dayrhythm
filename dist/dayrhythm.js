@@ -1,4 +1,4 @@
-/*! dayrhythm v0.7.1 | MIT | https://github.com/MadeinTaly/dayrhythm */
+/*! dayrhythm v0.7.2 | MIT | https://github.com/MadeinTaly/dayrhythm */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -6,7 +6,7 @@ var __export = (target, all) => {
 };
 
 // src/version.js
-var VERSION = "0.7.1";
+var VERSION = "0.7.2";
 
 // src/core/time.js
 var WEEKDAYS = Object.freeze(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
@@ -508,7 +508,7 @@ var defaults = {
   readonly: false,
   disabled: false,
   labelMax: 40,
-  touchHold: 0,
+  touchHold: 300,
   week: "auto",
   day: null,
   firstDay: "auto",
@@ -1065,6 +1065,10 @@ display:flex;flex-direction:column;gap:calc(var(--x-gap)*2.5);position:relative;
 .dr-track[data-orient=horizontal] .dr-handle{cursor:ew-resize;flex-direction:column}
 .dr-track[data-orient=horizontal] .dr-handle::before{top:0;bottom:0;left:calc(50% - var(--x-tap)/2);width:var(--x-tap)}
 .dr-track[data-orient=vertical] .dr-handle{cursor:ns-resize}
+/* touch: the page keeps scrolling across an edge; the grip (and, across a vertical track, only the grip) drags at once */
+.dr-track[data-orient] .dr-handle{touch-action:pan-y}
+.dr-track[data-orient=vertical] .dr-handle-grip{position:relative;touch-action:none}
+.dr-track[data-orient=vertical] .dr-handle-grip::after{content:'';position:absolute;left:-1.25rem;right:-1.25rem;top:calc(2px - var(--x-tap)/2);height:var(--x-tap)}
 .dr-track[data-orient=vertical] .dr-handle::before{left:0;right:0;top:calc(50% - var(--x-tap)/2);height:var(--x-tap)}
 .dr-handle[data-alias]{pointer-events:none}
 .dr-handle[data-alias]:not([data-dragging]),.dr-handle[data-hide]{visibility:hidden}
@@ -1341,6 +1345,9 @@ function attachDrag(el) {
   const wrap = el._$.trackwrap;
   wrap.addEventListener("pointerdown", (e) => onDown(el, e));
   wrap.addEventListener("keydown", (e) => onKey(el, e));
+  wrap.addEventListener("touchmove", (e) => {
+    if (el._drag && el._drag.held && e.cancelable) e.preventDefault();
+  }, { passive: false });
 }
 var handleOf = (e) => e.target.closest ? e.target.closest("[data-handle]") : null;
 function setFlex(node, dur) {
@@ -1363,7 +1370,9 @@ function onDown(el, e) {
   const h = handleOf(e);
   if (!h || h.hasAttribute("data-alias") || "dial" in h.dataset || e.button && e.button > 0 || el._drag || el._hold) return;
   const hold = +el.cfg.touchHold;
-  if (e.pointerType !== "touch" || !(hold > 0)) {
+  const vertical = h.parentElement && h.parentElement.dataset.orient === "vertical";
+  const grip = e.target.closest && e.target.closest(".dr-handle-grip");
+  if (e.pointerType !== "touch" || !vertical || grip || !(hold > 0)) {
     startDrag(el, e, h);
     return;
   }
@@ -1385,7 +1394,10 @@ function onDown(el, e) {
   };
   const timer = setTimeout(() => {
     stop();
-    if (h.isConnected && !el._drag) startDrag(el, at, h);
+    if (h.isConnected && !el._drag) {
+      startDrag(el, at, h);
+      if (el._drag) el._drag.held = true;
+    }
   }, hold);
   el._hold = stop;
   h.addEventListener("pointermove", move);

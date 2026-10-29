@@ -136,7 +136,7 @@ dayrhythm is free (MIT). If it is useful to you, an optional donation is welcome
 
 ## Development
 
-`npm test` (Node test runner, no dependencies), `npm run build` (esbuild through `npx`), `npm run serve` then open `/site/` or `/examples/`. The contract is `docs/API.md`; design choices are in `docs/DECISIONS.md`.
+`npm test` (Node test runner, no dependencies), `scripts/touch-check.mjs` (real touch drags in a mobile-emulated Chrome), `npm run build` (esbuild through `npx`), `npm run serve` then open `/site/` or `/examples/`. The contract is `docs/API.md`; design choices are in `docs/DECISIONS.md`.
 
 ## License
 
