@@ -10,7 +10,6 @@
   "bugs": "https://github.com/MadeinTaly/dayrhythm/issues",
   "type": "module",
   "sideEffects": ["./src/index.js", "./src/element.js", "./dist/*"],
-  "private": true,
   "main": "./src/index.js",
   "module": "./src/index.js",
   "types": "./types/index.d.ts",
